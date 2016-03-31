@@ -143,6 +143,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fConvertTo</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="frmScreen.pas">
+            <Form>fScreen</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <RcItem Include="..\..\my\图标\导出图片.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>Bitmap_ToJPG</ResourceId>
@@ -226,7 +230,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='调试' And '$(Platform)'=='Win64'">
@@ -234,7 +238,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='发布' And '$(Platform)'=='Win32'">
@@ -242,7 +246,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='发布' And '$(Platform)'=='Win64'">
@@ -250,7 +254,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
 </Project>

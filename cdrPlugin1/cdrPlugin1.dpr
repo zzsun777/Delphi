@@ -16,7 +16,8 @@ uses
   frmTest in 'frmTest.pas' {fTest},
   Utils in 'Utils.pas',
   ApplicationEvent in 'ApplicationEvent.pas',
-  frmConvertTo in 'frmConvertTo.pas' {fConvertTo};
+  frmConvertTo in 'frmConvertTo.pas' {fConvertTo},
+  frmScreen in 'frmScreen.pas' {fScreen};
 
 {$R *.res}
 
