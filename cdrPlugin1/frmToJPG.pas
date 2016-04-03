@@ -89,7 +89,12 @@ type
     procedure GetSelctionDocuments(var docs: TDocuments);
     procedure GetPageNumers(var ns: TList);
   public
-    function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;
+    {function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;}
+    procedure OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray); override;
+    procedure DocumentNew(const Doc: Document; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); override;
+    procedure QueryDocumentClose(const Doc: Document; var Cancel: WordBool); override;
+    procedure DocumentClose(const Doc: Document); override;
+    procedure SelectionChange; override;
   end;
 
 var
@@ -185,21 +190,30 @@ begin
   cbb_FiletypeChange(nil);
 end;
 
-function TfToJPG.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HResult;
+{function TfToJPG.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HResult;
 var
   p: TDispParams;
+  tn: Integer;
 begin
+  IVGApplicationEvents(Self).Invoke(dispid, IID, LocaleID, Flags, Params, VarResult, ExcepInfo, ArgErr);
   p := TDispParams(Params);
-  {if dispid <> 21 then
-    AddMessage(Format('ID:%d', [dispid]));}
+  if dispid <> 21 then
+    AddMessage(Format('ID:%d,%s', [dispid, GUIDToString(IID)]));
+  tn := 0;
+  if mApp.VersionMajor < 15 then
+  begin
+    tn := 1;
+  end;
   case dispid of
-    $0001:
+    DISPID_DOC_QUERYCLOSE:
+      begin
+      end;
+    DISPID_DOC_QUERYSAVE:
       begin
 
       end;
-    $0008:
+    DISPID_DOC_QUERYPRINT:
       begin
-
       end;
     $0009:
       begin
@@ -207,22 +221,27 @@ begin
       end;
     $0010:
       begin
-        if mApp.Documents.Count = 1 then
+        if mApp.Documents.Count = tn then
         begin
           AddMessage('^文档已全部关闭，退出。。');
           Close;
           Exit;
-        end
-        else
-        begin
-          SetName;
         end;
+        SetName;
+      end;
+
+    $000F:
+      begin
+        if mApp.Documents.Count = tn then
+        begin
+          AddMessage('^文档已全部关闭，退出。。');
+          Close;
+          Exit;
+        end;
+        SetName;
+
       end;
     $0011: // DISPID_APP_SELCHANGE
-      begin
-        //AddMessage(Format('  17 len:%d', [VarResult]));
-      end;
-    $0015: // DISPID_APP_ONPLUGINCMDSTATE
       begin
         if mApp.ActiveDocument.Selection.Shapes.Count > 0 then
         begin
@@ -237,8 +256,54 @@ begin
             rb_CurDocument.Checked := True;
         end;
       end;
+    $0015: // DISPID_APP_ONPLUGINCMDSTATE
+      begin
+      end;
   end;
   Result := S_OK;
+end;}
+
+procedure TfToJPG.OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray);
+begin
+  AddMessage(EventName);
+end;
+
+procedure TfToJPG.DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool);
+begin
+  AddMessage('新建');
+end;
+
+procedure TfToJPG.QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool);
+begin
+end;
+
+procedure TfToJPG.DocumentClose(const Doc: IVGDocument);
+begin
+
+  AddMessage('关闭' + Doc.Name);
+  if mApp.Documents.Count = 0 then
+  begin
+    AddMessage('^文档已全部关闭，退出。。');
+    Close;
+    Exit;
+  end;
+  SetName;
+end;
+
+procedure TfToJPG.SelectionChange;
+begin
+  if mApp.ActiveDocument.Selection.Shapes.Count > 0 then
+  begin
+    rb_Selection.Enabled := true;
+    rb_SelectionArea.Enabled := True;
+  end
+  else
+  begin
+    rb_Selection.Enabled := False;
+    rb_SelectionArea.Enabled := False;
+    if rb_Selection.Checked or rb_SelectionArea.Checked then
+      rb_CurDocument.Checked := True;
+  end;
 end;
 
 procedure TfToJPG.AddMessage(msg: string);
@@ -649,7 +714,7 @@ begin
       ExportPic(mApp.ActiveDocument.ActivePage);
     end;
 done:
-    Application.ProcessMessages;
+    //Application.ProcessMessages;
     AddMessage('^处理完成');
 
     EnableMenuItem(GetSystemMenu(self.Handle, False), SC_CLOSE, MF_ENABLED);
@@ -701,7 +766,7 @@ begin
       AddMessage(Format('页面 %s 无对象，跳过!', [page.Name]));
       Exit;
     end;
-    //page.Activate;
+
     if rb_Document.Checked then
     begin
       namen := mApp.ActiveDocument.Name;
@@ -768,7 +833,6 @@ begin
     begin
       DestDir := DestDir + '\';
     end;
-
     if rb_Selection.Checked then
     begin
       FileName := DestDir + namen + GetPageName(page) + GetIndex + ext;
@@ -825,6 +889,7 @@ begin
         begin
           exit;
         end;
+        page.Activate;
         ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
         ef.Finish;
         if hz then
@@ -841,6 +906,7 @@ begin
         begin
           Exit;
         end;
+        page.Activate;
         ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
         ef.Finish;
       end
@@ -855,6 +921,7 @@ begin
     begin
       Exit;
     end;
+    page.Activate;
     ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
     ef.Finish;
   except

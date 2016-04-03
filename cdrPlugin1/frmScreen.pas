@@ -50,7 +50,7 @@ begin
   py := GetDeviceCaps(dc, VERTRES);
   lbl2.Caption := Format('ÆÁÄ»·Ö±æÂÊÎª:%d¡Á%d', [px, py]);
 
-  edt5.Text := mApp.ap
+  //edt5.Text := mApp.ap
 end;
 
 end.

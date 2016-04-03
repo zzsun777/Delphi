@@ -121,7 +121,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\..\..\..\RAD Studio\10.0\Imports\VGCore_TLB.pas"/>
+        <DCCReference Include="X8\VGCore_TLB.pas"/>
         <DCCReference Include="frmMain.pas">
             <Form>fMain</Form>
         </DCCReference>

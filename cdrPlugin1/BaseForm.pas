@@ -19,7 +19,7 @@ type
     { Private declarations }
     cmdName: string;
     mApp: IVGApplication;
-    m_lCookie: Integer;
+    m_lCookie, m_dCookie: Integer;
     {INI Œƒº˛…Ë÷√}
     settingsSection: string;
     settingsIniFilename: string;
@@ -31,6 +31,30 @@ type
   public
     procedure StartEvent(hide: WordBool = False; withCMD: WordBool = True);
     procedure EndEvent;
+  public
+    function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;
+    procedure QueryDocumentClose(const Doc: Document; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentSave(const Doc: Document; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentPrint(const Doc: Document; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentExport(const Doc: Document; var Cancel: WordBool); dynamic;
+    procedure QueryQuit(var Cancel: WordBool); dynamic;
+    procedure DocumentOpen(const Doc: Document; const FileName: WideString); dynamic;
+    procedure DocumentNew(const Doc: Document; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); dynamic;
+    procedure DocumentClose(const Doc: Document); dynamic;
+    procedure DocumentBeforeSave(const Doc: Document; SaveAs: WordBool; const FileName: WideString); dynamic;
+    procedure DocumentAfterSave(const Doc: Document; SaveAs: WordBool; const FileName: WideString); dynamic;
+    procedure DocumentBeforePrint(const Doc: Document); dynamic;
+    procedure DocumentAfterPrint(const Doc: Document); dynamic;
+    procedure DocumentBeforeExport(const Doc: Document; const FileName: WideString; Filter: cdrFilter; SaveBitmap: WordBool); dynamic;
+    procedure DocumentAfterExport(const Doc: Document; const FileName: WideString; Filter: cdrFilter; SaveBitmap: WordBool); dynamic;
+    procedure WindowActivate(const Doc: Document; const Window: Window); dynamic;
+    procedure WindowDeactivate(const Doc: Document; const Window: Window); dynamic;
+    procedure SelectionChange; dynamic;
+    procedure Start; dynamic;
+    procedure Quit; dynamic;
+    procedure OnPluginCommand(const CommandID: WideString); dynamic;
+    procedure OnUpdatePluginCommand(const CommandID: WideString; var Enabled: WordBool; var Checked: cdrCommandCheckState); dynamic;
+    procedure OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray); dynamic;
   end;
 
 var
@@ -61,6 +85,8 @@ begin
   begin
     mApp.UnadviseEvents(m_lCookie);
   end;
+  if m_dCookie <> 0 then
+    mApp.ActiveDocument.UnadviseEvents(m_dCookie);
 end;
 
 procedure TTBaseForm.StartEvent(hide: WordBool; withCMD: WordBool);
@@ -130,8 +156,192 @@ end;
 
 procedure TTBaseForm.AddEventListen;
 begin
-  m_lCookie := mApp.AdviseEvents(self);
-  mApp.EventsEnabled := True;
+  m_lCookie := mApp.AdviseEvents(Self);
+  m_dCookie := mApp.ActiveDocument.AdviseEvents(self);
+end;
+
+function TTBaseForm.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HRESULT;
+var
+  Cancel: WordBool;
+begin
+  Cancel := False;
+  case dispid of
+    DISPID_APP_QUERYDOCUMENTCLOSE:
+      begin
+        Self.QueryDocumentClose(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
+        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+      end;
+    DISPID_APP_QUERYDOCUMENTSAVE:
+      begin
+        Self.QueryDocumentSave(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
+        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+      end;
+    DISPID_APP_QUERYDOCUMENTPRINT:
+      begin
+        Self.QueryDocumentPrint(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
+        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+      end;
+    DISPID_APP_QUERYDOCUMENTEXPORT:
+      begin
+        Self.QueryDocumentExport(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
+        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+      end;
+    DISPID_APP_QUERYQUIT:
+      begin
+        Self.QueryQuit(Cancel);
+        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+      end;
+    DISPID_APP_DOCUMENTOPEN:
+      begin
+        Self.DocumentOpen(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), TDispParams(Params).rgvarg^[0].bstrVal^);
+      end;
+    DISPID_APP_DOCUMENTNEW:
+      begin
+        Self.DocumentNew(IVGDocument(TDispParams(Params).rgvarg^[3].dispVal), TDispParams(Params).rgvarg^[2].pbool^, TDispParams(Params).rgvarg^[1].bstrVal^, TDispParams(Params).rgvarg^[0].pbool^);
+      end;
+    DISPID_APP_DOCUMENTCLOSE:
+      begin
+        Self.DocumentClose(IVGDocument(TDispParams(Params).rgvarg^[0].dispVal));
+      end;
+    DISPID_APP_DOCUMENTBEFORESAVE:
+      begin
+        Self.DocumentBeforeSave(IVGDocument(TDispParams(Params).rgvarg^[2].dispVal), TDispParams(Params).rgvarg^[1].pbool^, TDispParams(Params).rgvarg^[0].bstrVal^);
+      end;
+    DISPID_APP_DOCUMENTAFTERSAVE:
+      begin
+        self.DocumentAfterSave(IVGDocument(TDispParams(Params).rgvarg^[2].dispVal), TDispParams(Params).rgvarg^[1].pbool^, TDispParams(Params).rgvarg^[0].bstrVal^);
+      end;
+    DISPID_APP_DOCUMENTBEFOREPRINT:
+      begin
+
+      end;
+    DISPID_APP_DOCUMENTAFTERPRINT:
+      begin
+
+      end;
+    DISPID_APP_DOCUMENTBEFOREEXPORT:
+      begin
+
+      end;
+    DISPID_APP_WINDOWACTIVATE:
+      begin
+
+      end;
+    DISPID_APP_SELECTIONCHANGE:
+      begin
+        Self.SelectionChange;
+      end;
+  end;
+  Result := S_OK;
+end;
+
+procedure TTBaseForm.QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.QueryDocumentSave(const Doc: IVGDocument; var Cancel: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.QueryDocumentPrint(const Doc: IVGDocument; var Cancel: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.QueryDocumentExport(const Doc: IVGDocument; var Cancel: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.QueryQuit(var Cancel: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentOpen(const Doc: IVGDocument; const FileName: WideString);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentClose(const Doc: IVGDocument);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentBeforeSave(const Doc: IVGDocument; SaveAs: WordBool; const FileName: WideString);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentAfterSave(const Doc: IVGDocument; SaveAs: WordBool; const FileName: WideString);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentBeforePrint(const Doc: IVGDocument);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentAfterPrint(const Doc: IVGDocument);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentBeforeExport(const Doc: IVGDocument; const FileName: WideString; Filter: TOleEnum; SaveBitmap: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.DocumentAfterExport(const Doc: IVGDocument; const FileName: WideString; Filter: TOleEnum; SaveBitmap: WordBool);
+begin
+
+end;
+
+procedure TTBaseForm.WindowActivate(const Doc: IVGDocument; const Window: IVGWindow);
+begin
+
+end;
+
+procedure TTBaseForm.WindowDeactivate(const Doc: IVGDocument; const Window: IVGWindow);
+begin
+
+end;
+
+procedure TTBaseForm.SelectionChange;
+begin
+
+end;
+
+procedure TTBaseForm.Start;
+begin
+
+end;
+
+procedure TTBaseForm.Quit;
+begin
+
+end;
+
+procedure TTBaseForm.OnPluginCommand(const CommandID: WideString);
+begin
+
+end;
+
+procedure TTBaseForm.OnUpdatePluginCommand(const CommandID: WideString; var Enabled: WordBool; var Checked: TOleEnum);
+begin
+
+end;
+
+procedure TTBaseForm.OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray);
+begin
 end;
 
 end.

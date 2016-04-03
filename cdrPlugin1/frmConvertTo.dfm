@@ -571,7 +571,7 @@ inherited fConvertTo: TfConvertTo
     Top = 8
     Width = 180
     Height = 113
-    ActivePage = ts2
+    ActivePage = ts1
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #36716#26354

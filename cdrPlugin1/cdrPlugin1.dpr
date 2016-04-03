@@ -9,7 +9,7 @@ uses
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
-  VGCore_TLB in '..\..\..\..\RAD Studio\10.0\Imports\VGCore_TLB.pas',
+  VGCore_TLB in '.\X8\VGCore_TLB.pas',
   frmMain in 'frmMain.pas' {fMain},
   BaseForm in 'BaseForm.pas' {TBaseForm},
   frmToJPG in 'frmToJPG.pas' {fToJPG},
@@ -88,7 +88,7 @@ end;
 
 procedure TisnPlugin.AddButton(ID: WideString; Icon: WideString);
 var
-  btn: CommandBarControl;
+  btn: ICUIControl;
   bmp: TBitmap;
   icn: TIcon;
   fn: string;
