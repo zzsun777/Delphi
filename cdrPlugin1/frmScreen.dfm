@@ -1,8 +1,9 @@
 inherited fScreen: TfScreen
   Caption = #23631#24149#23610#23544#21644#23454#29289'1 : 1'#26657#27491
   ClientHeight = 356
+  ClientWidth = 430
   OnCreate = FormCreate
-  ExplicitWidth = 651
+  ExplicitWidth = 446
   ExplicitHeight = 395
   PixelsPerInch = 96
   TextHeight = 13
@@ -77,24 +78,53 @@ inherited fScreen: TfScreen
     end
     object edt4: TEdit
       Left = 150
-      Top = 72
+      Top = 80
       Width = 67
       Height = 21
       TabOrder = 3
     end
     object edt5: TEdit
       Left = 238
-      Top = 72
+      Top = 45
       Width = 67
       Height = 21
+      Enabled = False
       TabOrder = 4
     end
     object edt6: TEdit
       Left = 238
-      Top = 45
+      Top = 80
       Width = 67
       Height = 21
+      Enabled = False
       TabOrder = 5
     end
+    object btn1: TButton
+      Left = 230
+      Top = 107
+      Width = 75
+      Height = 25
+      Caption = #37325#26032#35745#31639
+      TabOrder = 6
+      OnClick = btn1Click
+    end
+  end
+  object btn2: TButton
+    Left = 8
+    Top = 223
+    Width = 75
+    Height = 25
+    Caption = #35774#32622
+    TabOrder = 1
+    OnClick = btn2Click
+  end
+  object btn3: TButton
+    Left = 120
+    Top = 224
+    Width = 113
+    Height = 25
+    Caption = #37325#21551'CorelDraw'
+    TabOrder = 2
+    OnClick = btn3Click
   end
 end

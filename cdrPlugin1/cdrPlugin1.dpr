@@ -9,7 +9,7 @@ uses
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
-  VGCore_TLB in '.\X8\VGCore_TLB.pas',
+  VGCore_TLB in 'X8\VGCore_TLB.pas',
   frmMain in 'frmMain.pas' {fMain},
   BaseForm in 'BaseForm.pas' {TBaseForm},
   frmToJPG in 'frmToJPG.pas' {fToJPG},
@@ -17,7 +17,10 @@ uses
   Utils in 'Utils.pas',
   ApplicationEvent in 'ApplicationEvent.pas',
   frmConvertTo in 'frmConvertTo.pas' {fConvertTo},
-  frmScreen in 'frmScreen.pas' {fScreen};
+  frmScreen in 'frmScreen.pas' {fScreen},
+  frmCropMark in 'frmCropMark.pas' {fCropMark},
+  CnConsts in 'cnvcl\CnConsts.pas',
+  CnSpin in 'cnvcl\CnSpin.pas';
 
 {$R *.res}
 
@@ -35,8 +38,9 @@ type
     m_ulRefCount: ULONG;
     m_bEnabled: Boolean;
     myCommandBar: CommandBar;
+    btIndex: Integer;
     procedure OnAppStart; safecall;
-    procedure AddButton(ID, Icon: WideString);
+    procedure AddButton(ID, Icon: WideString; guid: WideString = '');
   public
     constructor Create;
   public
@@ -76,8 +80,21 @@ begin
     except
       myCommandBar := self.mApp.CommandBars.Add('tisn99', cuiBarFloating, True);
       myCommandBar.Visible := true;
-      AddButton(CommandID_ToJPG, 'ToJPG');
-      AddButton(CommandID_ConvertTo, 'ConvertTo');
+      if mApp.VersionMajor < 18 then
+      begin
+        AddButton(CommandID_ToJPG, 'ToJPG', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
+        AddButton(CommandID_ConvertTo, 'ConvertTo', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
+      end;
+    end;
+    if mApp.VersionMajor > 17 then
+    begin
+      for I := 1 to myCommandBar.Controls.Count do
+      begin
+        myCommandBar.Controls.Remove(1);
+      end;
+      btIndex := 0;
+      AddButton(CommandID_ToJPG, 'ToJPG', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
+      AddButton(CommandID_ConvertTo, 'ConvertTo', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
     end;
   end
   else
@@ -86,7 +103,7 @@ begin
   end;
 end;
 
-procedure TisnPlugin.AddButton(ID: WideString; Icon: WideString);
+procedure TisnPlugin.AddButton(ID: WideString; Icon: WideString; guid: WideString);
 var
   btn: ICUIControl;
   bmp: TBitmap;
@@ -94,13 +111,22 @@ var
   fn: string;
 begin
   btn := myCommandBar.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
-  btn.Visible := True;
+  //btn.Visible := True;
   bmp := TBitmap.Create;
   bmp.LoadFromResourceName(HInstance, 'Bitmap_' + Icon);
   fn := mApp.CorelScriptTools.GetTempFolder + '\tisntmp.bmp';
   bmp.SaveToFile(fn);
   bmp.Destroy;
-  btn.SetCustomIcon(fn);
+  if mApp.VersionMajor < 18 then
+  begin
+    {X8不支持此方法}
+    btn.SetCustomIcon(fn);
+  end
+  else
+  begin
+    btn.SetIcon2('guid://' + guid);
+  end;
+  FreeAndNil(btn);
   DeleteFile(fn);
 end;
 
@@ -191,10 +217,10 @@ begin
           strCMD := TDispParams(Params).rgvarg^[0].bstrVal;
           if strCMD = CommandID_ToJPG then
           begin
-            f := TfToJPG.Create(nil, mApp);
+            {f := TfToJPG.Create(nil, mApp);
+            f.Show; }
+            f := TfMain.Create(nil, mApp);
             f.Show;
-            {frm_Main := TfMain.Create(nil, mApp);
-            frm_Main.Show;}
           end
           else if strCMD = CommandID_ConvertTo then
           begin

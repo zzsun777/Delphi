@@ -2,6 +2,10 @@ unit Utils;
 
 interface
 
+uses
+  Winapi.ShlObj, System.SysUtils, Winapi.Windows, Winapi.Messages, System.Variants,
+  System.Classes;
+
 const
   IID_IUnknown: TGUID = '{00000000-0000-0000-C000-000000000046}';
   IID_IDispatch: TGUID = '{00020400-0000-0000-C000-000000000046}';
@@ -60,7 +64,21 @@ const
   DISPID_APP_ONPLUGINCOMMAND = $14;
   DISPID_APP_ONUPDATEPLUGINCOMMAND = $15;
 
+function GetFolderPath(nFolder: Integer): string;
+
 implementation
+
+function GetFolderPath(nFolder: Integer): string;
+var
+  pList: PItemIDList;
+  cPath: array[0..MAX_PATH] of Char;
+begin
+  Result := '';
+  ZeroMemory(@cPath, sizeof(cPath));
+  if SHGetSpecialFolderLocation(0, nFolder, pList) = S_OK then
+    if SHGetPathFromIDList(pList, cPath) then
+      Result := StrPas(cPath);
+end;
 
 end.
 

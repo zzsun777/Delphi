@@ -6,7 +6,7 @@
         <MainSource>cdrPlugin1.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">发布</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
     </PropertyGroup>
@@ -51,6 +51,12 @@
         <Cfg_2>true</Cfg_2>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+        <Cfg_2_Win64>true</Cfg_2_Win64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <Manifest_File>None</Manifest_File>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -78,9 +84,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <PostBuildEvent><![CDATA[copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg"
+        <PostBuildEvent><![CDATA[copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg"
+copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg"
+copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\cdrPlugin1.cpg"
+copy "$(PROJECTDIR)\UI\config.xml" "D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\config.xml"
+copy "$(PROJECTDIR)\UI\coreldrw.addon" "D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\coreldrw.addon"
 $(PostBuildEvent)]]></PostBuildEvent>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
         <DCC_UsePackage>bindcompfmx;DBXSqliteDriver;fmx;rtl;dbrtl;DbxClientDriver;IndySystem;bindcomp;inetdb;DBXInterBaseDriver;DataSnapClient;DataSnapCommon;DBXOdbcDriver;DataSnapServer;DataSnapProviderClient;xmlrtl;DBXSybaseASEDriver;DbxCommonDriver;vclimg;IndyProtocols;DBXMySQLDriver;dbxcds;bindengine;vclactnband;vcldb;bindcompdbx;vcldsnap;bindcompvcl;soaprtl;vclie;DBXDb2Driver;vcltouch;websnap;DBXOracleDriver;CustomIPTransport;VclSmp;dsnap;DBXInformixDriver;IndyIPServer;fmxase;vcl;IndyCore;DBXMSSQLDriver;IndyIPCommon;DBXFirebirdDriver;dsnapcon;inet;fmxobj;vclx;inetdbxpress;webdsnap;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;IndyIPClient;$(DCC_UsePackage)</DCC_UsePackage>
@@ -117,6 +126,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+    </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
@@ -147,6 +160,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fScreen</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="frmCropMark.pas">
+            <Form>fCropMark</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="cnvcl\CnConsts.pas"/>
+        <DCCReference Include="cnvcl\CnSpin.pas"/>
         <RcItem Include="..\..\my\图标\导出图片.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>Bitmap_ToJPG</ResourceId>
@@ -154,6 +173,14 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <RcItem Include="..\..\my\图标\文字转曲.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>Bitmap_ConvertTo</ResourceId>
+        </RcItem>
+        <RcItem Include="..\..\my\图标\导出图片.ico">
+            <ResourceType>ICON</ResourceType>
+            <ResourceId>200</ResourceId>
+        </RcItem>
+        <RcItem Include="..\..\my\图标\文字转曲.ico">
+            <ResourceType>ICON</ResourceType>
+            <ResourceId>201</ResourceId>
         </RcItem>
         <BuildConfiguration Include="发布">
             <Key>Cfg_2</Key>
@@ -215,7 +242,224 @@ $(PostBuildEvent)]]></PostBuildEvent>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
-            <Deployment/>
+            <Deployment>
+                <DeployFile LocalName="Win64\发布\cdrPlugin1.cpg" Configuration="发布" Class="ProjectOutput">
+                    <Platform Name="Win64"/>
+                </DeployFile>
+                <DeployFile LocalName="Win64\发布\cdrPlugin1.rsm" Configuration="发布" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>cdrPlugin1.rsm</RemoteName>
+                    </Platform>
+                </DeployFile>
+                <DeployClass Required="true" Name="DependencyPackage">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.bpl</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch2048">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXInfoPList">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSDeviceInfoPList">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch1024">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSResource">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSSimulatorInfoPList">
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXEntitlements">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch640">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXResource">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\Resources</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch320">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch768">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Required="true" Name="ProjectOutput">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="File">
+                    <Platform Name="iOSDevice">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="DebugSymbols">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="DependencyFramework">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.framework</Extensions>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSEntitlements">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch1536">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="AdditionalDebugSymbols">
+                    <Platform Name="iOSDevice">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <ProjectRoot Platform="iOSDevice" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+            </Deployment>
             <Platforms>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
@@ -225,6 +469,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
     </ProjectExtensions>
     <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+    <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <PropertyGroup Condition="'$(Config)'=='调试' And '$(Platform)'=='Win32'">
         <PreBuildEvent/>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
@@ -238,7 +483,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(PROJECTDIR)\UI\config.xml&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\config.xml&quot;&amp;&amp;copy &quot;$(PROJECTDIR)\UI\coreldrw.addon&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\coreldrw.addon&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='发布' And '$(Platform)'=='Win32'">
@@ -254,7 +499,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(PROJECTDIR)\UI\config.xml&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\config.xml&quot;&amp;&amp;copy &quot;$(PROJECTDIR)\UI\coreldrw.addon&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\Addons\cdrPlugin1\coreldrw.addon&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
 </Project>

@@ -33,22 +33,22 @@ type
     procedure EndEvent;
   public
     function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;
-    procedure QueryDocumentClose(const Doc: Document; var Cancel: WordBool); dynamic;
-    procedure QueryDocumentSave(const Doc: Document; var Cancel: WordBool); dynamic;
-    procedure QueryDocumentPrint(const Doc: Document; var Cancel: WordBool); dynamic;
-    procedure QueryDocumentExport(const Doc: Document; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentSave(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentPrint(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
+    procedure QueryDocumentExport(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
     procedure QueryQuit(var Cancel: WordBool); dynamic;
-    procedure DocumentOpen(const Doc: Document; const FileName: WideString); dynamic;
-    procedure DocumentNew(const Doc: Document; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); dynamic;
-    procedure DocumentClose(const Doc: Document); dynamic;
-    procedure DocumentBeforeSave(const Doc: Document; SaveAs: WordBool; const FileName: WideString); dynamic;
-    procedure DocumentAfterSave(const Doc: Document; SaveAs: WordBool; const FileName: WideString); dynamic;
-    procedure DocumentBeforePrint(const Doc: Document); dynamic;
-    procedure DocumentAfterPrint(const Doc: Document); dynamic;
-    procedure DocumentBeforeExport(const Doc: Document; const FileName: WideString; Filter: cdrFilter; SaveBitmap: WordBool); dynamic;
-    procedure DocumentAfterExport(const Doc: Document; const FileName: WideString; Filter: cdrFilter; SaveBitmap: WordBool); dynamic;
-    procedure WindowActivate(const Doc: Document; const Window: Window); dynamic;
-    procedure WindowDeactivate(const Doc: Document; const Window: Window); dynamic;
+    procedure DocumentOpen(const Doc: IVGDocument; const FileName: WideString); dynamic;
+    procedure DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); dynamic;
+    procedure DocumentClose(const Doc: IVGDocument); dynamic;
+    procedure DocumentBeforeSave(const Doc: IVGDocument; SaveAs: WordBool; const FileName: WideString); dynamic;
+    procedure DocumentAfterSave(const Doc: IVGDocument; SaveAs: WordBool; const FileName: WideString); dynamic;
+    procedure DocumentBeforePrint(const Doc: IVGDocument); dynamic;
+    procedure DocumentAfterPrint(const Doc: IVGDocument); dynamic;
+    procedure DocumentBeforeExport(const Doc: IVGDocument; const FileName: WideString; Filter: cdrFilter; SaveBitmap: WordBool); dynamic;
+    procedure DocumentAfterExport(const Doc: IVGDocument; const FileName: WideString; Filter: cdrFilter; SaveBitmap: WordBool); dynamic;
+    procedure WindowActivate(const Doc: IVGDocument; const Window: IVGWindow); dynamic;
+    procedure WindowDeactivate(const Doc: IVGDocument; const Window: IVGWindow); dynamic;
     procedure SelectionChange; dynamic;
     procedure Start; dynamic;
     procedure Quit; dynamic;
@@ -135,8 +135,8 @@ begin
       Result := False;
       Exit;
     end;
-  end
-  else if needShape then
+  end;
+  if needShape then
   begin
     if mApp.Documents.Count = 0 then
     begin
@@ -157,59 +157,61 @@ end;
 procedure TTBaseForm.AddEventListen;
 begin
   m_lCookie := mApp.AdviseEvents(Self);
-  m_dCookie := mApp.ActiveDocument.AdviseEvents(self);
+  //m_dCookie := mApp.ActiveDocument.AdviseEvents(self);
 end;
 
 function TTBaseForm.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HRESULT;
 var
   Cancel: WordBool;
+  DispParams: TDispParams;
 begin
   Cancel := False;
+  DispParams := TDispParams(Params);
   case dispid of
     DISPID_APP_QUERYDOCUMENTCLOSE:
       begin
-        Self.QueryDocumentClose(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
-        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+        Self.QueryDocumentClose(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+        DispParams.rgvarg^[0].pbool^ := Cancel;
       end;
     DISPID_APP_QUERYDOCUMENTSAVE:
       begin
-        Self.QueryDocumentSave(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
-        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+        Self.QueryDocumentSave(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+        DispParams.rgvarg^[0].pbool^ := Cancel;
       end;
     DISPID_APP_QUERYDOCUMENTPRINT:
       begin
-        Self.QueryDocumentPrint(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
-        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+        Self.QueryDocumentPrint(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+        DispParams.rgvarg^[0].pbool^ := Cancel;
       end;
     DISPID_APP_QUERYDOCUMENTEXPORT:
       begin
-        Self.QueryDocumentExport(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), Cancel);
-        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+        Self.QueryDocumentExport(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+        DispParams.rgvarg^[0].pbool^ := Cancel;
       end;
     DISPID_APP_QUERYQUIT:
       begin
         Self.QueryQuit(Cancel);
-        TDispParams(Params).rgvarg^[0].pbool^ := Cancel;
+        DispParams.rgvarg^[0].pbool^ := Cancel;
       end;
     DISPID_APP_DOCUMENTOPEN:
       begin
-        Self.DocumentOpen(IVGDocument(TDispParams(Params).rgvarg^[1].dispVal), TDispParams(Params).rgvarg^[0].bstrVal^);
+        Self.DocumentOpen(IVGDocument(DispParams.rgvarg^[1].dispVal), DispParams.rgvarg^[0].pbstrVal^);
       end;
     DISPID_APP_DOCUMENTNEW:
       begin
-        Self.DocumentNew(IVGDocument(TDispParams(Params).rgvarg^[3].dispVal), TDispParams(Params).rgvarg^[2].pbool^, TDispParams(Params).rgvarg^[1].bstrVal^, TDispParams(Params).rgvarg^[0].pbool^);
+        Self.DocumentNew(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].vbool, DispParams.rgvarg^[1].pbstrVal^,DispParams.rgvarg^[0].vbool);
       end;
     DISPID_APP_DOCUMENTCLOSE:
       begin
-        Self.DocumentClose(IVGDocument(TDispParams(Params).rgvarg^[0].dispVal));
+        Self.DocumentClose(IVGDocument(DispParams.rgvarg^[0].dispVal));
       end;
     DISPID_APP_DOCUMENTBEFORESAVE:
       begin
-        Self.DocumentBeforeSave(IVGDocument(TDispParams(Params).rgvarg^[2].dispVal), TDispParams(Params).rgvarg^[1].pbool^, TDispParams(Params).rgvarg^[0].bstrVal^);
+        Self.DocumentBeforeSave(IVGDocument(DispParams.rgvarg^[2].dispVal), DispParams.rgvarg^[1].vbool, DispParams.rgvarg^[0].pbstrVal^);
       end;
     DISPID_APP_DOCUMENTAFTERSAVE:
       begin
-        self.DocumentAfterSave(IVGDocument(TDispParams(Params).rgvarg^[2].dispVal), TDispParams(Params).rgvarg^[1].pbool^, TDispParams(Params).rgvarg^[0].bstrVal^);
+        self.DocumentAfterSave(IVGDocument(DispParams.rgvarg^[2].dispVal), DispParams.rgvarg^[1].vbool, DispParams.rgvarg^[0].pbstrVal^);
       end;
     DISPID_APP_DOCUMENTBEFOREPRINT:
       begin

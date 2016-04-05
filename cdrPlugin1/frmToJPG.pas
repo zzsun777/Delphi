@@ -91,9 +91,10 @@ type
   public
     {function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;}
     procedure OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray); override;
-    procedure DocumentNew(const Doc: Document; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); override;
-    procedure QueryDocumentClose(const Doc: Document; var Cancel: WordBool); override;
-    procedure DocumentClose(const Doc: Document); override;
+    procedure DocumentOpen(const Doc: IVGDocument; const FileName: WideString); override;
+    procedure DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); override;
+    procedure QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool); override;
+    procedure DocumentClose(const Doc: IVGDocument); override;
     procedure SelectionChange; override;
   end;
 
@@ -179,6 +180,7 @@ begin
   LoadSettings;
   AddEventListen;
   SetName;
+  Self.SelectionChange;
 
   chklst_Documents.Items.Clear;
   for I := 1 to mApp.Documents.Count do
@@ -268,9 +270,14 @@ begin
   AddMessage(EventName);
 end;
 
+procedure TfToJPG.DocumentOpen(const Doc: IVGDocument; const FileName: WideString);
+begin
+  SetName;
+end;
+
 procedure TfToJPG.DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool);
 begin
-  AddMessage('新建');
+  SetName;
 end;
 
 procedure TfToJPG.QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool);
@@ -278,10 +285,15 @@ begin
 end;
 
 procedure TfToJPG.DocumentClose(const Doc: IVGDocument);
+var
+  N:Integer;
 begin
-
-  AddMessage('关闭' + Doc.Name);
-  if mApp.Documents.Count = 0 then
+  N := 1;
+  if mApp.VersionMajor > 14 then
+  begin
+    N := 0;
+  end;
+  if mApp.Documents.Count = N then
   begin
     AddMessage('^文档已全部关闭，退出。。');
     Close;
