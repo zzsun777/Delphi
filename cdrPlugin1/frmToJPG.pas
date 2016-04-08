@@ -178,7 +178,6 @@ begin
   end;
   settingsSection := 'µ¼³öÍ¼Æ¬';
   LoadSettings;
-  AddEventListen;
   SetName;
   Self.SelectionChange;
 

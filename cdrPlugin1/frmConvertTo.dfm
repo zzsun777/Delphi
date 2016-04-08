@@ -1,5 +1,4 @@
 inherited fConvertTo: TfConvertTo
-  BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = #36716#25442
   ClientHeight = 159
@@ -571,12 +570,12 @@ inherited fConvertTo: TfConvertTo
     Top = 8
     Width = 180
     Height = 113
-    ActivePage = ts1
+    ActivePage = ts2
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #36716#26354
       object btn1: TButton
-        Left = 24
+        Left = 12
         Top = 16
         Width = 75
         Height = 25

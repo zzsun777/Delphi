@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <config>
   <resources>
-    <resource name="cdrPlugin2Resource" path="cdrPlugin2.cpg">
+    <resource name="cdrPlugin1Resource" path="cdrPlugin1.cpg">
       <resourceMap>
         <resEntry id="57e469be-c42a-41d4-9892-c7ac0b00cd79" icon="200"/>
         <resEntry id="b9bd86de-975c-4b2a-a3c3-2601dfb08bd0" icon="201"/>
-		
+        <resEntry id="7013f31a-dc2e-41d8-bb73-f48ce435f3de" icon="202"/>
       </resourceMap>
     </resource>
   </resources>

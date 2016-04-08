@@ -1,6 +1,8 @@
 library cdrPlugin1;
 
 
+
+
 {$R *.dres}
 
 uses
@@ -15,12 +17,13 @@ uses
   frmToJPG in 'frmToJPG.pas' {fToJPG},
   frmTest in 'frmTest.pas' {fTest},
   Utils in 'Utils.pas',
-  ApplicationEvent in 'ApplicationEvent.pas',
   frmConvertTo in 'frmConvertTo.pas' {fConvertTo},
   frmScreen in 'frmScreen.pas' {fScreen},
   frmCropMark in 'frmCropMark.pas' {fCropMark},
   CnConsts in 'cnvcl\CnConsts.pas',
-  CnSpin in 'cnvcl\CnSpin.pas';
+  CnSpin in 'cnvcl\CnSpin.pas',
+  Generics.Collections,
+  frmOnekeyPS in 'frmOnekeyPS.pas' {fOnekeyPS};
 
 {$R *.res}
 
@@ -30,16 +33,19 @@ var
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
-      CommandID_ConvertTo: string = 'tisn2016_转换';
-      CommandID_ToJPG: string = 'tisn2016_导出图片';
+      CommandBarName: WideString = 'tisn201600401';
+      CommandID_ConvertTo: WideString = 'cdrplugin1_转换';
+      CommandID_ToJPG: WideString = 'cdrplugin1_导出图片';
+      CommandID_CropMark: WideString = 'cdrplugin1_裁切标记';
   private
     mApp: IVGApplication;
     m_lCookie: longint;
     m_ulRefCount: ULONG;
-    m_bEnabled: Boolean;
     myCommandBar: CommandBar;
-    btIndex: Integer;
+    cmdList: TDictionary<WideString, WideString>;
     procedure OnAppStart; safecall;
+    procedure AddPluginCommands;
+    procedure RemovePluginCommands;
     procedure AddButton(ID, Icon: WideString; guid: WideString = '');
   public
     constructor Create;
@@ -64,42 +70,72 @@ type
 constructor TisnPlugin.Create;
 begin
   m_ulRefCount := 0;
-  //MessageBox(0, PWideChar(IntTostr(g_hResource)), 'Create', 0);
+  cmdList := TDictionary<WideString, WideString>.Create;
+  cmdList.Add(CommandID_ToJPG, '导出图片');
+  cmdList.Add(CommandID_ConvertTo, '转换');
+  cmdList.Add(CommandID_CropMark, '裁切标记');
 end;
 
 procedure TisnPlugin.OnAppStart;
 var
   i: Integer;
 begin
-  mApp.AddPluginCommand(CommandID_ToJPG, '导出图片', '导出图片');
-  mApp.AddPluginCommand(CommandID_ConvertTo, '转换', '转换');
-  if mApp.VersionMajor < 19 then
+  AddPluginCommands;
+  if mApp.VersionMajor >= 18 then
   begin
     try
-      myCommandBar := mApp.CommandBars.Item['tisn99'];
+      myCommandBar := mApp.CommandBars.Item[CommandBarName];
     except
-      myCommandBar := self.mApp.CommandBars.Add('tisn99', cuiBarFloating, True);
+      myCommandBar := self.mApp.CommandBars.Add(CommandBarName, cuiBarFloating, False);
       myCommandBar.Visible := true;
-      if mApp.VersionMajor < 18 then
-      begin
-        AddButton(CommandID_ToJPG, 'ToJPG', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
-        AddButton(CommandID_ConvertTo, 'ConvertTo', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
-      end;
     end;
-    if mApp.VersionMajor > 17 then
+    for I := 1 to myCommandBar.Controls.Count do
     begin
-      for I := 1 to myCommandBar.Controls.Count do
-      begin
-        myCommandBar.Controls.Remove(1);
-      end;
-      btIndex := 0;
-      AddButton(CommandID_ToJPG, 'ToJPG', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
-      AddButton(CommandID_ConvertTo, 'ConvertTo', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
+      myCommandBar.Controls.Remove(1);
     end;
+    AddButton(CommandID_ToJPG, '', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
+    AddButton(CommandID_ConvertTo, '', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
+    AddButton(CommandID_CropMark, '', '7013f31a-dc2e-41d8-bb73-f48ce435f3de');
   end
   else
   begin
+    try
+      myCommandBar := mApp.CommandBars.Item[CommandBarName];
+    except
+      myCommandBar := self.mApp.CommandBars.Add(CommandBarName, cuiBarFloating, False);
+      myCommandBar.Visible := true;
+      try
+        AddButton(CommandID_ToJPG, 'ToJPG');
+        AddButton(CommandID_ConvertTo, 'ConvertTo');
+        AddButton(CommandID_CropMark, 'CropMark');
+      except
+        on o: Exception do
+        begin
+          MessageBox(0, PWideChar(o.Message), '0123', 0);
+        end;
 
+      end;
+    end;
+  end;
+end;
+
+procedure TisnPlugin.AddPluginCommands;
+var
+  pair: TPair<WideString, WideString>;
+begin
+  for pair in cmdList do
+  begin
+    mApp.AddPluginCommand(pair.Key, pair.Value, pair.Value);
+  end;
+end;
+
+procedure TisnPlugin.RemovePluginCommands;
+var
+  pair: TPair<WideString, WideString>;
+begin
+  for pair in cmdList do
+  begin
+    mApp.RemovePluginCommand(pair.Key);
   end;
 end;
 
@@ -107,27 +143,24 @@ procedure TisnPlugin.AddButton(ID: WideString; Icon: WideString; guid: WideStrin
 var
   btn: ICUIControl;
   bmp: TBitmap;
-  icn: TIcon;
   fn: string;
 begin
   btn := myCommandBar.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
-  //btn.Visible := True;
-  bmp := TBitmap.Create;
-  bmp.LoadFromResourceName(HInstance, 'Bitmap_' + Icon);
-  fn := mApp.CorelScriptTools.GetTempFolder + '\tisntmp.bmp';
-  bmp.SaveToFile(fn);
-  bmp.Destroy;
-  if mApp.VersionMajor < 18 then
+  if mApp.VersionMajor >= 18 then
   begin
-    {X8不支持此方法}
-    btn.SetCustomIcon(fn);
+    btn.SetIcon2('guid://' + guid);
   end
   else
   begin
-    btn.SetIcon2('guid://' + guid);
+    bmp := TBitmap.Create;
+    bmp.LoadFromResourceName(HInstance, 'Bitmap_' + Icon);
+    fn := mApp.CorelScriptTools.GetTempFolder + '\tisntmp.bmp';
+    bmp.SaveToFile(fn);
+    bmp.Destroy;
+    {X8不支持此方法}
+    btn.SetCustomIcon(fn);
+    DeleteFile(fn);
   end;
-  FreeAndNil(btn);
-  DeleteFile(fn);
 end;
 
 procedure TisnPlugin.OnLoad(const Application: IVGApplication);
@@ -137,7 +170,6 @@ begin
   begin
     self.mApp._AddRef;
   end;
-
 end;
 
 procedure TisnPlugin.StartSession;
@@ -154,8 +186,7 @@ procedure TisnPlugin.StopSession;
 begin
   try
     self.mApp.UnadviseEvents(self.m_lCookie);
-    self.mApp.RemovePluginCommand(CommandID_ToJPG);
-    self.mApp.RemovePluginCommand(CommandID_ConvertTo);
+    RemovePluginCommands;
 
     //X4中不会自动释放，导致关闭CorelDraw程序后进程不会退出，所以在这手动释放一下
     self.mApp._Release;
@@ -193,13 +224,12 @@ end;
 
 function TisnPlugin.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;
 var
-  nHandle: Integer;
-  hAppWnd: HWND;
   strCMD: WideString;
   f: TTBaseForm;
+  DispParams: TDispParams;
 begin
-  //nHandle := mApp.AppWindow.Handle;
-  //hAppWnd := HWND(nHandle);
+  f := nil;
+  DispParams := TDispParams(Params);
   case dispid of
     $0011:
       begin // DISPID_APP_SELCHANGE
@@ -212,32 +242,35 @@ begin
     $0014:
       begin // DISPID_APP_ONPLUGINCMD
       {单击按钮事件}
-        if Variant(TDispParams(Params).cArgs = 1) then
+        if Variant(DispParams.cArgs = 1) then
         begin
-          strCMD := TDispParams(Params).rgvarg^[0].bstrVal;
+          strCMD := DispParams.rgvarg^[0].bstrVal;
           if strCMD = CommandID_ToJPG then
           begin
-            {f := TfToJPG.Create(nil, mApp);
-            f.Show; }
             f := TfMain.Create(nil, mApp);
-            f.Show;
           end
           else if strCMD = CommandID_ConvertTo then
           begin
             f := TfConvertTo.Create(nil, mApp);
+          end
+          else if strCMD = CommandID_CropMark then
+          begin
+            f := TfCropMark.Create(nil, mApp);
+          end;
+          if f <> nil then
+          begin
             f.Show;
           end;
         end;
       end;
     $0015:
       begin // DISPID_APP_ONPLUGINCMDSTATE
-      {图标是否有效}
-        if TDispParams(Params).cArgs = 3 then
+        if DispParams.cArgs = 3 then
         begin
-          strCMD := TDispParams(Params).rgvarg^[2].bstrVal;
-          if (strCMD = CommandID_ToJPG) or (strCMD = CommandID_ConvertTo) then
+          strCMD := DispParams.rgvarg^[2].bstrVal;
+          if cmdList.ContainsKey(strCMD) then
           begin
-            TDispParams(Params).rgvarg^[1].pbool^ := mApp.Documents.Count > 0;
+            DispParams.rgvarg^[1].pbool^ := mApp.Documents.Count > 0;
           end;
         end;
       end;

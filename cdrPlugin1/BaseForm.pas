@@ -19,7 +19,7 @@ type
     { Private declarations }
     cmdName: string;
     mApp: IVGApplication;
-    m_lCookie, m_dCookie: Integer;
+    m_lCookie: Integer;
     {INI 文件设置}
     settingsSection: string;
     settingsIniFilename: string;
@@ -71,10 +71,11 @@ var
 begin
   self.mApp := App;
   m_lCookie := 0;
+  AddEventListen;
 
   GetModuleFileName(GetModuleHandle(PWideChar(GetModuleName(HInstance))), @ModuleFileName[0], SizeOf(ModuleFileName));
   dllPath := ModuleFileName;
-  settingsIniFilename := ExtractFilePath(dllPath) + 'cdrPlugin1.ini';
+  settingsIniFilename := ExtractFilePath(dllPath) + ChangeFileExt(ExtractFileName(GetModuleName(HInstance)), '') + '.ini';
   inherited Create(AOwner);
 end;
 
@@ -85,8 +86,6 @@ begin
   begin
     mApp.UnadviseEvents(m_lCookie);
   end;
-  if m_dCookie <> 0 then
-    mApp.ActiveDocument.UnadviseEvents(m_dCookie);
 end;
 
 procedure TTBaseForm.StartEvent(hide: WordBool; withCMD: WordBool);
@@ -131,7 +130,7 @@ begin
   begin
     if mApp.Documents.Count = 0 then
     begin
-      MessageBox(self.Handle, '没有文档被打开！', '错误', 0);
+      MessageBox(self.Handle, '没有文档被打开！', '错误', MB_OK + MB_ICONSTOP);
       Result := False;
       Exit;
     end;
@@ -140,13 +139,13 @@ begin
   begin
     if mApp.Documents.Count = 0 then
     begin
-      MessageBox(self.Handle, '没有文档被打开！', '错误', 0);
+      MessageBox(self.Handle, '没有文档被打开！', '错误', MB_OK + MB_ICONSTOP);
       Result := False;
       Exit;
     end;
     if mApp.ActiveDocument.ActivePage.Shapes.Count = 0 then
     begin
-      MessageBox(self.Handle, '到少需要一个对象！', '错误', 0);
+      MessageBox(self.Handle, '到少需要一个对象！', '错误', MB_OK + MB_ICONSTOP);
       Result := False;
       Exit;
     end;
@@ -156,8 +155,8 @@ end;
 
 procedure TTBaseForm.AddEventListen;
 begin
-  m_lCookie := mApp.AdviseEvents(Self);
-  //m_dCookie := mApp.ActiveDocument.AdviseEvents(self);
+  if m_lCookie <> 0 then
+    m_lCookie := mApp.AdviseEvents(Self);
 end;
 
 function TTBaseForm.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HRESULT;
@@ -199,7 +198,7 @@ begin
       end;
     DISPID_APP_DOCUMENTNEW:
       begin
-        Self.DocumentNew(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].vbool, DispParams.rgvarg^[1].pbstrVal^,DispParams.rgvarg^[0].vbool);
+        Self.DocumentNew(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].vbool, DispParams.rgvarg^[1].pbstrVal^, DispParams.rgvarg^[0].vbool);
       end;
     DISPID_APP_DOCUMENTCLOSE:
       begin
@@ -273,8 +272,19 @@ begin
 end;
 
 procedure TTBaseForm.DocumentClose(const Doc: IVGDocument);
+var
+  N: Integer;
 begin
-
+  N := 1;
+  if mApp.VersionMajor > 14 then
+  begin
+    N := 0;
+  end;
+  if mApp.Documents.Count = N then
+  begin
+    Close;
+    Exit;
+  end;
 end;
 
 procedure TTBaseForm.DocumentBeforeSave(const Doc: IVGDocument; SaveAs: WordBool; const FileName: WideString);

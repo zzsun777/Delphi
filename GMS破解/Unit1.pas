@@ -42,8 +42,9 @@ procedure TForm1.btn_CRKClick(Sender: TObject);
 var
   fileName: string;
   fs, fo: TFileStream;
+  tw: TBinaryWriter;
   oldB, newB: TBytes;
-  I: Integer;
+  I, J: Integer;
   xors: WordBool;
 begin
   fileName := edt1.Text;
@@ -52,8 +53,8 @@ begin
     try
       fs := TFileStream.Create(fileName, fmOpenRead);
       SetLength(oldB, fs.Size);
-      SetLength(newB, fs.Size);
       fs.ReadBuffer(oldB, fs.Size);
+      fs.Free;
       for I := 0 to fs.Size do
       begin
         if (oldB[i] = $2f) and (oldB[i + 1] = $30) and (oldB[i + 2] = $ee) and (oldB[i + 3] = $1f) then
@@ -67,15 +68,27 @@ begin
         RenameFile(fileName, fileName + '.bak');
         try
           fs := TFileStream.Create(fileName, fmCreate);
+          tw := TBinaryWriter.Create(fs);
+          tw.Write('GMS');
+          tw.Write(1);
+          tw.Write(Integer($0a));
+          tw.Write(Integer($02));
+          tw.Write(Char($00));
+          for J := I to Length(oldB) do
+          begin
+            tw.Write(oldB[J] xor $FF);
+          end;
+          tw.Close;
+          fs.Free;
         finally
         end;
       end
       else
       begin
-
+        MessageBox(Self.Handle, '文件未加密', '提示', MB_OK + MB_ICONINFORMATION);
       end;
     finally
-      fs.Free;
+     // fs.Free;
     end;
   end;
 end;

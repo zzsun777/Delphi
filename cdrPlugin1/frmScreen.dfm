@@ -1,10 +1,10 @@
 inherited fScreen: TfScreen
   Caption = #23631#24149#23610#23544#21644#23454#29289'1 : 1'#26657#27491
-  ClientHeight = 356
-  ClientWidth = 430
+  ClientHeight = 265
+  ClientWidth = 335
   OnCreate = FormCreate
-  ExplicitWidth = 446
-  ExplicitHeight = 395
+  ExplicitWidth = 351
+  ExplicitHeight = 304
   PixelsPerInch = 96
   TextHeight = 13
   object lbl1: TLabel
