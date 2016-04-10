@@ -1,6 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
+  ActiveControl = btn_Exit
   BorderStyle = bsToolWindow
   Caption = 'GMS'#30772#35299
   ClientHeight = 71
@@ -12,6 +13,8 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object edt1: TEdit
@@ -46,6 +49,7 @@ object Form1: TForm1
     Height = 25
     Caption = #31227#38500#23494#30721
     TabOrder = 3
+    OnClick = btn_RemovePWDClick
   end
   object btn_Exit: TButton
     Left = 268

@@ -13,9 +13,9 @@ type
 
 implementation
 
-function HexUtility.Replace(var all: TBytes; s: TBytes; t: TBytes): Integer;
+class function HexUtility.Replace(var all: TBytes; s, t: TBytes): Integer;
 var
-  replace_count, I, J, K: Integer;
+  replace_count, I, J, K, L: Integer;
   temp: TList;
   catch_s: WordBool;
 begin
@@ -26,10 +26,15 @@ begin
     Exit;
   end;
   replace_count := 0;
-  for I := 0 to (Length(all) - Length(s)) + 1 do
+  I := 0;
+  while I < (Length(all) - Length(s)) + 1 do
   begin
     catch_s := True;
-    for J := 0 to Length(s) do
+    if all[I] = $43 then
+    begin
+      I := I;
+    end;
+    for J := 0 to Length(s) - 1 do
     begin
       if all[i + j] <> s[j] then
       begin
@@ -40,26 +45,35 @@ begin
     if catch_s then
     begin
       Inc(replace_count);
-      for K := 0 to Length(t) do
+      for K := 0 to Length(t) - 1 do
       begin
-        temp.Add(t[K]);
+        temp.Add(PByte(t[K]));
       end;
-      i := i + Length(s) - 1;
+      i := i + Length(s);
+      Continue;
     end
     else
     begin
-      temp.Add(all[I]);
+      temp.Add(PByte(all[I]));
     end;
     if I = Length(all) - Length(s) then
     begin
       if not catch_s then
       begin
-        temp.Add(all[Length(all) - 2]);
-        temp.Add(all[Length(all) - 1]);
+        temp.Add(PByte(all[Length(all) - 2]));
+        temp.Add(PByte(all[Length(all) - 1]));
       end;
     end;
+    Inc(I);
   end;
-  all := temp.It
+  for I := 0 to (Length(all) - Length(s)) + 1 do
+  begin
+
+  end;
+  for L := 0 to temp.Count - 1 do
+  begin
+    all[L] := Byte(temp.Items[L]);
+  end;
 end;
 
 end.
