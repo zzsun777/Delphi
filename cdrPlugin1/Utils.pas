@@ -4,9 +4,10 @@ interface
 
 uses
   Winapi.ShlObj, System.SysUtils, Winapi.Windows, Winapi.Messages, System.Variants,
-  System.Classes;
+  System.Classes, System.IniFiles;
 
 const
+  DEBUG: Boolean = True;
   IID_IUnknown: TGUID = '{00000000-0000-0000-C000-000000000046}';
   IID_IDispatch: TGUID = '{00020400-0000-0000-C000-000000000046}';
   cdrCmdCategoryPlugins = 'ab489730-8791-45d2-a825-b78bbe0d6a5d';
@@ -65,6 +66,16 @@ const
   DISPID_APP_ONUPDATEPLUGINCOMMAND = $15;
 
 function GetFolderPath(nFolder: Integer): string;
+/// <summary>
+/// 获取全局设置<b>TIniFile</b>，注意Destroy
+/// </summary>
+/// <returns>返回一个<b>TIniFile</b></returns>
+function GetSettingsInifile: TIniFile;
+
+type
+  DebugUtils = class
+    class procedure ShowMessage(msg: WideString);
+  end;
 
 implementation
 
@@ -78,6 +89,26 @@ begin
   if SHGetSpecialFolderLocation(0, nFolder, pList) = S_OK then
     if SHGetPathFromIDList(pList, cPath) then
       Result := StrPas(cPath);
+end;
+
+function GetSettingsInifile: TIniFile;
+var
+  ModuleFileName: array[0..255] of char;
+  dllPath: WideString;
+  settingsIniFilename: WideString;
+begin
+  GetModuleFileName(GetModuleHandle(PWideChar(GetModuleName(HInstance))), @ModuleFileName[0], SizeOf(ModuleFileName));
+  dllPath := ModuleFileName;
+  settingsIniFilename := ExtractFilePath(dllPath) + ChangeFileExt(ExtractFileName(GetModuleName(HInstance)), '') + '.ini';
+  Result := TIniFile.Create(settingsIniFilename);
+end;
+
+class procedure DebugUtils.ShowMessage(msg: WideString);
+begin
+  if DEBUG then
+  begin
+    MessageBox(HInstance, PWideChar(msg), 'DEBUG', 0);
+  end;
 end;
 
 end.

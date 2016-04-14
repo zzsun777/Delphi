@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, BaseForm, Vcl.ComCtrls,
-  Vcl.StdCtrls, VGCore_TLB;
+  Vcl.StdCtrls, VGCore_TLB, Utils;
 
 type
   TfConvertTo = class(TTBaseForm)
@@ -15,6 +15,7 @@ type
     btn1: TButton;
     rb1: TRadioButton;
     rb2: TRadioButton;
+    btn2: TButton;
     procedure btn1Click(Sender: TObject);
   private
     { Private declarations }
@@ -64,7 +65,14 @@ begin
   TThread.CreateAnonymousThread(
     procedure
     begin
-      ConvertToCurves;
+      try
+        ConvertToCurves;
+      except
+        on e: Exception do
+        begin
+          debugUtils.ShowMessage(e.Message);
+        end;
+      end;
     end).Start;
 end;
 

@@ -570,7 +570,7 @@ inherited fConvertTo: TfConvertTo
     Top = 8
     Width = 180
     Height = 113
-    ActivePage = ts2
+    ActivePage = ts1
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #36716#26354
@@ -582,6 +582,14 @@ inherited fConvertTo: TfConvertTo
         Caption = #25991#23383#36716#26354
         TabOrder = 0
         OnClick = btn1Click
+      end
+      object btn2: TButton
+        Left = 12
+        Top = 47
+        Width = 75
+        Height = 25
+        Caption = 'btn2'
+        TabOrder = 1
       end
     end
     object ts2: TTabSheet

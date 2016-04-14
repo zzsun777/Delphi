@@ -177,6 +177,7 @@ begin
     exit;
   end;
   settingsSection := 'µ¼³öÍ¼Æ¬';
+  AddEventListen;
   LoadSettings;
   SetName;
   Self.SelectionChange;
@@ -733,7 +734,7 @@ done:
   except
     on E: Exception do
     begin
-      MessageDlg('Export_' + e.ToString, mtInformation, mbYesNoCancel, 0)
+      debugUtils.ShowMessage('Export_' + e.ToString);
     end;
 
   end;
@@ -920,6 +921,7 @@ begin
         page.Activate;
         ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
         ef.Finish;
+        Exit;
       end
       else
       begin
@@ -938,7 +940,7 @@ begin
   except
     on E: Exception do
     begin
-      MessageDlg('ExportPic' + e.ToString, mtInformation, mbYesNoCancel, 0)
+      debugUtils.ShowMessage('ExportPic' + e.ToString);
     end;
   end;
 end;

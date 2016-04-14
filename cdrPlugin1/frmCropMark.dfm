@@ -73,7 +73,7 @@ inherited fCropMark: TfCropMark
           Height = 13
           Caption = #27627#31859
         end
-        object nudLen: TCnSpinEdit
+        object nudLen: TSpinEdit
           Left = 45
           Top = 29
           Width = 56
@@ -83,7 +83,7 @@ inherited fCropMark: TfCropMark
           TabOrder = 0
           Value = 2
         end
-        object nudOffset: TCnSpinEdit
+        object nudOffset: TSpinEdit
           Left = 45
           Top = 57
           Width = 56
@@ -170,10 +170,6 @@ inherited fCropMark: TfCropMark
     object ts2: TTabSheet
       Caption = #27880#20876#26631#35760
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object grp3: TGroupBox
         Left = 3
         Top = 3
@@ -414,7 +410,7 @@ inherited fCropMark: TfCropMark
     Width = 64
     Left = 296
     Bitmap = {
-      494C0101050010001C0040004000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010105001000200040004000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000000100008000000001002000000000000000
       0200000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

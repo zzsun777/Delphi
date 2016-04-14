@@ -5,8 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, BaseForm, Vcl.StdCtrls,
-  Vcl.ComCtrls, CnSpin, VGCore_TLB, Vcl.Samples.Spin, Winapi.ActiveX, Vcl.ExtCtrls,
-  Vcl.ImgList, Vcl.Imaging.pngimage;
+  Vcl.ComCtrls, VGCore_TLB, Vcl.Samples.Spin, Winapi.ActiveX, Vcl.ExtCtrls,
+  Vcl.ImgList, Vcl.Imaging.pngimage, System.ImageList;
 
 type
   TfCropMark = class(TTBaseForm)
@@ -14,8 +14,8 @@ type
     ts1: TTabSheet;
     grp1: TGroupBox;
     lbl1: TLabel;
-    nudLen: TCnSpinEdit;
-    nudOffset: TCnSpinEdit;
+    nudLen: TSpinEdit;
+    nudOffset: TSpinEdit;
     lbl2: TLabel;
     lbl3: TLabel;
     lbl4: TLabel;

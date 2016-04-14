@@ -1,7 +1,10 @@
 library cdrPlugin1;
 
-
-
+{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009/2010) }
+{$IF CompilerVersion >= 21.0}
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$IFEND}
 
 {$R *.dres}
 
@@ -20,10 +23,9 @@ uses
   frmConvertTo in 'frmConvertTo.pas' {fConvertTo},
   frmScreen in 'frmScreen.pas' {fScreen},
   frmCropMark in 'frmCropMark.pas' {fCropMark},
-  CnConsts in 'cnvcl\CnConsts.pas',
-  CnSpin in 'cnvcl\CnSpin.pas',
   Generics.Collections,
-  frmOnekeyPS in 'frmOnekeyPS.pas' {fOnekeyPS};
+  frmOnekeyPS in 'frmOnekeyPS.pas' {fOnekeyPS},
+  frmQrcode in 'frmQrcode.pas' {fQrcode};
 
 {$R *.res}
 
@@ -33,7 +35,9 @@ var
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
+      CVersion: Integer = 20160414;
       CommandBarName: WideString = 'tisn201600401';
+      CommandID_All: WideString = 'cdrplugin1_全部';
       CommandID_ConvertTo: WideString = 'cdrplugin1_转换';
       CommandID_ToJPG: WideString = 'cdrplugin1_导出图片';
       CommandID_CropMark: WideString = 'cdrplugin1_裁切标记';
@@ -71,6 +75,7 @@ constructor TisnPlugin.Create;
 begin
   m_ulRefCount := 0;
   cmdList := TDictionary<WideString, WideString>.Create;
+  cmdList.Add(CommandID_All, '所有');
   cmdList.Add(CommandID_ToJPG, '导出图片');
   cmdList.Add(CommandID_ConvertTo, '转换');
   cmdList.Add(CommandID_CropMark, '裁切标记');
@@ -96,6 +101,7 @@ begin
     AddButton(CommandID_ToJPG, '', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
     AddButton(CommandID_ConvertTo, '', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
     AddButton(CommandID_CropMark, '', '7013f31a-dc2e-41d8-bb73-f48ce435f3de');
+    AddButton(CommandID_All, '', 'bfe15904-fff6-4e4a-8c42-df09db08a046');
   end
   else
   begin
@@ -108,6 +114,7 @@ begin
         AddButton(CommandID_ToJPG, 'ToJPG');
         AddButton(CommandID_ConvertTo, 'ConvertTo');
         AddButton(CommandID_CropMark, 'CropMark');
+        AddButton(CommandID_All, 'All');
       except
         on o: Exception do
         begin
@@ -245,9 +252,13 @@ begin
         if Variant(DispParams.cArgs = 1) then
         begin
           strCMD := DispParams.rgvarg^[0].bstrVal;
-          if strCMD = CommandID_ToJPG then
+          if strCMD = CommandID_All then
           begin
             f := TfMain.Create(nil, mApp);
+          end
+          else if strCMD = CommandID_ToJPG then
+          begin
+            f := TfToJPG.Create(nil, mApp);
           end
           else if strCMD = CommandID_ConvertTo then
           begin

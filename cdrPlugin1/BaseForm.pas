@@ -33,6 +33,11 @@ type
     procedure EndEvent;
   public
     function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;
+    /// <summary>
+    /// 文档关闭之前
+    /// </summary>
+    /// <param name="Doc">关闭的文档</param>
+    /// <param name="Cancel">是否取消</param>
     procedure QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
     procedure QueryDocumentSave(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
     procedure QueryDocumentPrint(const Doc: IVGDocument; var Cancel: WordBool); dynamic;
@@ -71,7 +76,6 @@ var
 begin
   self.mApp := App;
   m_lCookie := 0;
-  AddEventListen;
 
   GetModuleFileName(GetModuleHandle(PWideChar(GetModuleName(HInstance))), @ModuleFileName[0], SizeOf(ModuleFileName));
   dllPath := ModuleFileName;
@@ -155,8 +159,7 @@ end;
 
 procedure TTBaseForm.AddEventListen;
 begin
-  if m_lCookie <> 0 then
-    m_lCookie := mApp.AdviseEvents(Self);
+  m_lCookie := mApp.AdviseEvents(Self);
 end;
 
 function TTBaseForm.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HRESULT;
@@ -214,19 +217,19 @@ begin
       end;
     DISPID_APP_DOCUMENTBEFOREPRINT:
       begin
-
+        self.DocumentBeforePrint(IVGDocument(DispParams.rgvarg^[0].dispVal));
       end;
     DISPID_APP_DOCUMENTAFTERPRINT:
       begin
-
+        Self.DocumentAfterPrint(IVGDocument(DispParams.rgvarg^[0].dispVal));
       end;
     DISPID_APP_DOCUMENTBEFOREEXPORT:
       begin
-
+        Self.DocumentBeforeExport(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].pbstrVal^, DispParams.rgvarg^[1].lVal, DispParams.rgvarg^[0].vbool);
       end;
     DISPID_APP_WINDOWACTIVATE:
       begin
-
+        Self.WindowActivate(IVGDocument(DispParams.rgvarg^[1].dispVal),IVGWindow(DispParams.rgvarg^[0].dispVal));
       end;
     DISPID_APP_SELECTIONCHANGE:
       begin
