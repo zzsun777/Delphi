@@ -82,14 +82,14 @@ var
   I: Integer;
 begin
   ss1 := ss.FindShapes('', cdrTextShape, True, '');
-  for I := 1 to ss.Count do
+  for I := 1 to ss1.Count do
   begin
-    ss[I].ConvertToCurves;
+    ss1[I].ConvertToCurves;
   end;
-  ss1 := ss.FindShapes('', 0, True, '@com.PowerClip <> null');
-  for I := 1 to ss.Count do
+  ss1 := ss.FindShapes('', cdrNoShape, True, '@com.PowerClip <> null');
+  for I := 1 to ss1.Count do
   begin
-    ConvertToCurves(ss1.Shapes);
+    ConvertToCurves(ss1[I].PowerClip.Shapes);
   end;
 end;
 

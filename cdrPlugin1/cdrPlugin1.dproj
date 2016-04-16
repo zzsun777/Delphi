@@ -6,7 +6,7 @@
         <MainSource>cdrPlugin1.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">发布</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
     </PropertyGroup>
@@ -278,9 +278,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="2">
-                <DeployFile LocalName="图标\导出图片.ico" Configuration="调试" Class="ProjectFile">
+                <DeployFile LocalName="Win32\调试\cdrPlugin1.rsm" Configuration="调试" Class="DebugSymbols">
                     <Platform Name="Win32">
-                        <RemoteDir>.\</RemoteDir>
+                        <RemoteName>cdrPlugin1.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -349,19 +349,19 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="图标\文字转曲.bmp" Configuration="调试" Class="ProjectFile">
+                <DeployFile LocalName="图标\导出图片.ico" Configuration="调试" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\调试\cdrPlugin1.rsm" Configuration="调试" Class="DebugSymbols">
+                <DeployFile LocalName="图标\裁切线.bmp" Configuration="调试" Class="ProjectFile">
                     <Platform Name="Win32">
-                        <RemoteName>cdrPlugin1.rsm</RemoteName>
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="图标\裁切线.bmp" Configuration="调试" Class="ProjectFile">
+                <DeployFile LocalName="图标\文字转曲.bmp" Configuration="调试" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

@@ -709,7 +709,7 @@ begin
       end
       else
       begin
-        for I := 0 to ns.Count do
+        for I := 0 to ns.Count - 1 do
         begin
           ExportPic(mApp.ActiveDocument.Pages.Item[Integer(ns.Items[I]^)]);
         end;

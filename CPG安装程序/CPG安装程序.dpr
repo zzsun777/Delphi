@@ -6,11 +6,14 @@ program CPG°²×°³ÌÐò;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
+
+
 {$R *.dres}
 
 uses
   Vcl.Forms,
-  Main in 'Main.pas' {Form1};
+  Main in 'Main.pas' {Form1},
+  Utils in 'Utils.pas';
 
 {$R *.res}
 
