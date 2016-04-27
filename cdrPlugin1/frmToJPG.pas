@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, BaseForm, Vcl.StdCtrls,
-  VGCore_TLB, Vcl.FileCtrl, IniFiles, Vcl.CheckLst, Utils, Winapi.ActiveX, Vcl.ComCtrls;
+  VGCore_TLB, Vcl.FileCtrl, IniFiles, Vcl.CheckLst, Utils, Winapi.ActiveX, Vcl.ComCtrls,
+  ArrayEx;
 
 type
   TDocuments = array of IVGDocument;
@@ -87,9 +88,8 @@ type
     function GetExt: string;
     function GetFilter: cdrFilter;
     procedure GetSelctionDocuments(var docs: TDocuments);
-    procedure GetPageNumers(var ns: TList);
+    procedure GetPageNumers(var ns: TArrayEx<Integer>);
   public
-    {function Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;}
     procedure OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray); override;
     procedure DocumentOpen(const Doc: IVGDocument; const FileName: WideString); override;
     procedure DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); override;
@@ -178,6 +178,7 @@ begin
   end;
   settingsSection := '导出图片';
   AddEventListen;
+  settingsIniFile := GetSettingsInifile;
   LoadSettings;
   SetName;
   Self.SelectionChange;
@@ -191,79 +192,6 @@ begin
   chk_PageAreaClick(nil);
   cbb_FiletypeChange(nil);
 end;
-
-{function TfToJPG.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HResult;
-var
-  p: TDispParams;
-  tn: Integer;
-begin
-  IVGApplicationEvents(Self).Invoke(dispid, IID, LocaleID, Flags, Params, VarResult, ExcepInfo, ArgErr);
-  p := TDispParams(Params);
-  if dispid <> 21 then
-    AddMessage(Format('ID:%d,%s', [dispid, GUIDToString(IID)]));
-  tn := 0;
-  if mApp.VersionMajor < 15 then
-  begin
-    tn := 1;
-  end;
-  case dispid of
-    DISPID_DOC_QUERYCLOSE:
-      begin
-      end;
-    DISPID_DOC_QUERYSAVE:
-      begin
-
-      end;
-    DISPID_DOC_QUERYPRINT:
-      begin
-      end;
-    $0009:
-      begin
-
-      end;
-    $0010:
-      begin
-        if mApp.Documents.Count = tn then
-        begin
-          AddMessage('^文档已全部关闭，退出。。');
-          Close;
-          Exit;
-        end;
-        SetName;
-      end;
-
-    $000F:
-      begin
-        if mApp.Documents.Count = tn then
-        begin
-          AddMessage('^文档已全部关闭，退出。。');
-          Close;
-          Exit;
-        end;
-        SetName;
-
-      end;
-    $0011: // DISPID_APP_SELCHANGE
-      begin
-        if mApp.ActiveDocument.Selection.Shapes.Count > 0 then
-        begin
-          rb_Selection.Enabled := true;
-          rb_SelectionArea.Enabled := True;
-        end
-        else
-        begin
-          rb_Selection.Enabled := False;
-          rb_SelectionArea.Enabled := False;
-          if rb_Selection.Checked or rb_SelectionArea.Checked then
-            rb_CurDocument.Checked := True;
-        end;
-      end;
-    $0015: // DISPID_APP_ONPLUGINCMDSTATE
-      begin
-      end;
-  end;
-  Result := S_OK;
-end;}
 
 procedure TfToJPG.OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray);
 begin
@@ -286,12 +214,12 @@ end;
 
 procedure TfToJPG.DocumentClose(const Doc: IVGDocument);
 var
-  N:Integer;
+  N: Integer;
 begin
   N := 1;
   if mApp.VersionMajor > 14 then
   begin
-    N := 0;
+    N := 1;
   end;
   if mApp.Documents.Count = N then
   begin
@@ -299,7 +227,7 @@ begin
     Close;
     Exit;
   end;
-  SetName;
+  //SetName;
 end;
 
 procedure TfToJPG.SelectionChange;
@@ -316,6 +244,8 @@ begin
     if rb_Selection.Checked or rb_SelectionArea.Checked then
       rb_CurDocument.Checked := True;
   end;
+  SetName;
+  rb_CurDocumentClick(nil);
 end;
 
 procedure TfToJPG.AddMessage(msg: string);
@@ -328,18 +258,23 @@ procedure TfToJPG.SetName;
 var
   n: string;
 begin
-  n := mApp.ActiveDocument.Name;
-  if n.ToLower.EndsWith('.cdr') then
-  begin
-    n := n.Replace('.cdr', '');
+  try
+    n := mApp.ActiveDocument.Name;
+    if n.ToLower.EndsWith('.cdr') then
+    begin
+      n := n.Replace('.cdr', '');
+    end;
+    edt_fileName.Text := n;
+  except
+    on e: Exception do
+    begin
+      DebugUtils.ShowMessage('TfToJPG.SetName错误：' + e.Message);
+    end;
   end;
-  edt_fileName.Text := n;
 end;
 
 procedure TfToJPG.LoadSettings;
 begin
-  if settingsIniFile = nil then
-    settingsIniFile := TIniFile.Create(settingsIniFilename);
   edt_Location.Text := settingsIniFile.ReadString(settingsSection, '保存位置', 'D:\');
   cbb_ColorMode.ItemIndex := settingsIniFile.ReadInteger(settingsSection, '颜色模式', 5);
   cbb_CompressType.ItemIndex := settingsIniFile.ReadInteger(settingsSection, '压缩模式', 9);
@@ -371,15 +306,12 @@ begin
   else
   begin
     lst1.Canvas.Font.Color := clWindowText;
-    ;
     lst1.Canvas.TextRect(Rect, Rect.Left, Rect.Top, n);
   end;
 end;
 
 procedure TfToJPG.SaveSettings;
 begin
-  if settingsIniFile = nil then
-    settingsIniFile := TIniFile.Create(settingsIniFilename);
   settingsIniFile.WriteString(settingsSection, '保存位置', edt_Location.Text);
   settingsIniFile.WriteInteger(settingsSection, '颜色模式', cbb_ColorMode.ItemIndex);
   settingsIniFile.WriteInteger(settingsSection, '压缩模式', cbb_CompressType.ItemIndex);
@@ -601,7 +533,7 @@ begin
   docs := ds;
 end;
 
-procedure TfToJPG.GetPageNumers(var ns: TList);
+procedure TfToJPG.GetPageNumers(var ns: TArrayEx<Integer>);
 var
   nu: string;
   p: Integer;
@@ -624,7 +556,7 @@ begin
         edt_PagezNum.SetFocus;
         Exit;
       end;
-      ns.Add(@p);
+
     end
     else
     begin
@@ -633,19 +565,19 @@ begin
       TryStrToInt(strPages[1], intEnd);
       for I := intStart to intEnd do
       begin
-        ns.Add(@I);
+        ns.Insert(ns.Len, I);
       end;
     end;
   end
   else
   begin
     strPages := nu.Split([',']);
-    for I := 0 to Length(strPages) do
+    for I := 0 to Length(strPages) - 1 do
     begin
       if strPages[I].IndexOf('-') = -1 then
       begin
         TryStrToInt(strPages[I], p);
-        ns.Add(@p);
+        ns.Insert(ns.Len, p);
       end
       else
       begin
@@ -654,7 +586,7 @@ begin
         TryStrToInt(strSubPages[1], intEnd);
         for J := intStart to intEnd do
         begin
-          ns.Add(@J);
+          ns.Insert(ns.Len, J);
         end;
       end;
     end;
@@ -665,7 +597,7 @@ procedure TfToJPG.Export_;
 var
   d: IVGDocument;
   ds: TDocuments;
-  ns: TList;
+  ns: TArrayEx<Integer>;
   I: Integer;
 label
   done;
@@ -700,18 +632,24 @@ begin
     else if rb_Page.Checked then
     begin
       AddMessage('导出页');
-      ns := TList.Create;
+      ns := [];
       GetPageNumers(ns);
-      if ns.Count = 0 then
+      if ns.Len = 0 then
       begin
-        AddMessage('无效页面范围，请重新输入');
+        AddMessage('无效页面范围，请重新输入^');
         goto done;
       end
       else
       begin
-        for I := 0 to ns.Count - 1 do
+        for I := 0 to ns.Len - 1 do
         begin
-          ExportPic(mApp.ActiveDocument.Pages.Item[Integer(ns.Items[I]^)]);
+          AddMessage(Format('处理页：%d', [ns[I]]));
+          if ns[I] > mApp.ActiveDocument.Pages.Count then
+          begin
+            AddMessage('^页码超出范围跳过');
+            Continue;
+          end;
+          ExportPic(mApp.ActiveDocument.Pages.Item[ns[I]]);
         end;
       end;
     end
@@ -728,7 +666,6 @@ begin
 done:
     //Application.ProcessMessages;
     AddMessage('^处理完成');
-
     EnableMenuItem(GetSystemMenu(self.Handle, False), SC_CLOSE, MF_ENABLED);
     grp1.Enabled := True;
   except

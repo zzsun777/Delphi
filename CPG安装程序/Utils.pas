@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, System.Zip,
-  System.IniFiles, Winapi.ShlObj, System.IOUtils, Generics.Collections;
+  System.IniFiles, Winapi.ShlObj, System.IOUtils, Generics.Collections, Winapi.TlHelp32;
 
 var
   OldWow64RedirectionValue: LongBool = True;
@@ -19,6 +19,13 @@ function IsWin64: Boolean;
 function DisableWowRedirection: Boolean;
 
 function RevertWowRedirection: Boolean;
+/// <summary>
+/// 检测XX进程是否存在函数
+/// </summary>
+/// <param name="ExeFileName"></param>
+/// <returns></returns>
+
+function CheckTask(ExeFileName: string): Boolean;
 
 implementation
 
@@ -90,6 +97,26 @@ begin
       Wow64RevertWow64FsRedirection(OldWow64RedirectionValue);
   except
     Result := False;
+  end;
+end;
+
+function CheckTask(ExeFileName: string): Boolean; //检测XX进程是否存在函数
+const
+  PROCESS_TERMINATE = $0001;
+var
+  ContinueLoop: BOOL;
+  FSnapshotHandle: THandle;
+  FProcessEntry32: TProcessEntry32;
+begin
+  result := False;
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  FProcessEntry32.dwSize := Sizeof(FProcessEntry32);
+  ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+  while integer(ContinueLoop) <> 0 do
+  begin
+    if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) = UpperCase(ExeFileName)) or (UpperCase(FProcessEntry32.szExeFile) = UpperCase(ExeFileName))) then
+      result := True;
+    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
 end;
 

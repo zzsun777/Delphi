@@ -76,10 +76,6 @@ var
 begin
   self.mApp := App;
   m_lCookie := 0;
-
-  GetModuleFileName(GetModuleHandle(PWideChar(GetModuleName(HInstance))), @ModuleFileName[0], SizeOf(ModuleFileName));
-  dllPath := ModuleFileName;
-  settingsIniFilename := ExtractFilePath(dllPath) + ChangeFileExt(ExtractFileName(GetModuleName(HInstance)), '') + '.ini';
   inherited Create(AOwner);
 end;
 
@@ -169,72 +165,79 @@ var
 begin
   Cancel := False;
   DispParams := TDispParams(Params);
-  case dispid of
-    DISPID_APP_QUERYDOCUMENTCLOSE:
-      begin
-        Self.QueryDocumentClose(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
-        DispParams.rgvarg^[0].pbool^ := Cancel;
-      end;
-    DISPID_APP_QUERYDOCUMENTSAVE:
-      begin
-        Self.QueryDocumentSave(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
-        DispParams.rgvarg^[0].pbool^ := Cancel;
-      end;
-    DISPID_APP_QUERYDOCUMENTPRINT:
-      begin
-        Self.QueryDocumentPrint(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
-        DispParams.rgvarg^[0].pbool^ := Cancel;
-      end;
-    DISPID_APP_QUERYDOCUMENTEXPORT:
-      begin
-        Self.QueryDocumentExport(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
-        DispParams.rgvarg^[0].pbool^ := Cancel;
-      end;
-    DISPID_APP_QUERYQUIT:
-      begin
-        Self.QueryQuit(Cancel);
-        DispParams.rgvarg^[0].pbool^ := Cancel;
-      end;
-    DISPID_APP_DOCUMENTOPEN:
-      begin
-        Self.DocumentOpen(IVGDocument(DispParams.rgvarg^[1].dispVal), DispParams.rgvarg^[0].pbstrVal^);
-      end;
-    DISPID_APP_DOCUMENTNEW:
-      begin
-        Self.DocumentNew(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].vbool, DispParams.rgvarg^[1].pbstrVal^, DispParams.rgvarg^[0].vbool);
-      end;
-    DISPID_APP_DOCUMENTCLOSE:
-      begin
-        Self.DocumentClose(IVGDocument(DispParams.rgvarg^[0].dispVal));
-      end;
-    DISPID_APP_DOCUMENTBEFORESAVE:
-      begin
-        Self.DocumentBeforeSave(IVGDocument(DispParams.rgvarg^[2].dispVal), DispParams.rgvarg^[1].vbool, DispParams.rgvarg^[0].pbstrVal^);
-      end;
-    DISPID_APP_DOCUMENTAFTERSAVE:
-      begin
-        self.DocumentAfterSave(IVGDocument(DispParams.rgvarg^[2].dispVal), DispParams.rgvarg^[1].vbool, DispParams.rgvarg^[0].pbstrVal^);
-      end;
-    DISPID_APP_DOCUMENTBEFOREPRINT:
-      begin
-        self.DocumentBeforePrint(IVGDocument(DispParams.rgvarg^[0].dispVal));
-      end;
-    DISPID_APP_DOCUMENTAFTERPRINT:
-      begin
-        Self.DocumentAfterPrint(IVGDocument(DispParams.rgvarg^[0].dispVal));
-      end;
-    DISPID_APP_DOCUMENTBEFOREEXPORT:
-      begin
-        Self.DocumentBeforeExport(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].pbstrVal^, DispParams.rgvarg^[1].lVal, DispParams.rgvarg^[0].vbool);
-      end;
-    DISPID_APP_WINDOWACTIVATE:
-      begin
-        Self.WindowActivate(IVGDocument(DispParams.rgvarg^[1].dispVal),IVGWindow(DispParams.rgvarg^[0].dispVal));
-      end;
-    DISPID_APP_SELECTIONCHANGE:
-      begin
-        Self.SelectionChange;
-      end;
+  try
+    case dispid of
+      DISPID_APP_QUERYDOCUMENTCLOSE:
+        begin
+          Self.QueryDocumentClose(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+          DispParams.rgvarg^[0].pbool^ := Cancel;
+        end;
+      DISPID_APP_QUERYDOCUMENTSAVE:
+        begin
+          Self.QueryDocumentSave(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+          DispParams.rgvarg^[0].pbool^ := Cancel;
+        end;
+      DISPID_APP_QUERYDOCUMENTPRINT:
+        begin
+          Self.QueryDocumentPrint(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+          DispParams.rgvarg^[0].pbool^ := Cancel;
+        end;
+      DISPID_APP_QUERYDOCUMENTEXPORT:
+        begin
+          Self.QueryDocumentExport(IVGDocument(DispParams.rgvarg^[1].dispVal), Cancel);
+          DispParams.rgvarg^[0].pbool^ := Cancel;
+        end;
+      DISPID_APP_QUERYQUIT:
+        begin
+          Self.QueryQuit(Cancel);
+          DispParams.rgvarg^[0].pbool^ := Cancel;
+        end;
+      DISPID_APP_DOCUMENTOPEN:
+        begin
+          Self.DocumentOpen(IVGDocument(DispParams.rgvarg^[1].dispVal), DispParams.rgvarg^[0].pbstrVal^);
+        end;
+      DISPID_APP_DOCUMENTNEW:
+        begin
+          Self.DocumentNew(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].vbool, DispParams.rgvarg^[1].pbstrVal^, DispParams.rgvarg^[0].vbool);
+        end;
+      DISPID_APP_DOCUMENTCLOSE:
+        begin
+          Self.DocumentClose(IVGDocument(DispParams.rgvarg^[0].dispVal));
+        end;
+      DISPID_APP_DOCUMENTBEFORESAVE:
+        begin
+          Self.DocumentBeforeSave(IVGDocument(DispParams.rgvarg^[2].dispVal), DispParams.rgvarg^[1].vbool, DispParams.rgvarg^[0].pbstrVal^);
+        end;
+      DISPID_APP_DOCUMENTAFTERSAVE:
+        begin
+          self.DocumentAfterSave(IVGDocument(DispParams.rgvarg^[2].dispVal), DispParams.rgvarg^[1].vbool, DispParams.rgvarg^[0].pbstrVal^);
+        end;
+      DISPID_APP_DOCUMENTBEFOREPRINT:
+        begin
+          self.DocumentBeforePrint(IVGDocument(DispParams.rgvarg^[0].dispVal));
+        end;
+      DISPID_APP_DOCUMENTAFTERPRINT:
+        begin
+          Self.DocumentAfterPrint(IVGDocument(DispParams.rgvarg^[0].dispVal));
+        end;
+      DISPID_APP_DOCUMENTBEFOREEXPORT:
+        begin
+          Self.DocumentBeforeExport(IVGDocument(DispParams.rgvarg^[3].dispVal), DispParams.rgvarg^[2].pbstrVal^, DispParams.rgvarg^[1].lVal, DispParams.rgvarg^[0].vbool);
+        end;
+      DISPID_APP_WINDOWACTIVATE:
+        begin
+          Self.WindowActivate(IVGDocument(DispParams.rgvarg^[1].dispVal), IVGWindow(DispParams.rgvarg^[0].dispVal));
+        end;
+      DISPID_APP_SELECTIONCHANGE:
+        begin
+          Self.SelectionChange;
+        end;
+    end;
+  except
+    on e: Exception do
+    begin
+      DebugUtils.ShowMessage('TTBaseForm.Invoke´íÎó£º' + e.Message);
+    end;
   end;
   Result := S_OK;
 end;

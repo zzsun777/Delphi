@@ -1,8 +1,8 @@
 inherited fConvertTo: TfConvertTo
   BorderStyle = bsSingle
   Caption = #36716#25442
-  ClientHeight = 159
-  ClientWidth = 197
+  ClientHeight = 197
+  ClientWidth = 291
   Icon.Data = {
     0000010009001010020001000100B0000000960000001010020001000100B000
     000046010000101000000100200068040000F601000020200200010001003001
@@ -561,16 +561,16 @@ inherited fConvertTo: TfConvertTo
     8FF1FFFF0000FFFF87E1FFFF0000FFFFC3C3FFFF0000FFFFC003FFFF0000FFFF
     E007FFFF0000FFFFF00FFFFF0000}
   Position = poDesktopCenter
-  ExplicitWidth = 203
-  ExplicitHeight = 188
+  ExplicitWidth = 297
+  ExplicitHeight = 226
   PixelsPerInch = 96
   TextHeight = 13
   object pgc1: TPageControl
     Left = 8
     Top = 8
-    Width = 180
-    Height = 113
-    ActivePage = ts1
+    Width = 273
+    Height = 153
+    ActivePage = ts3
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #36716#26354
@@ -595,11 +595,53 @@ inherited fConvertTo: TfConvertTo
     object ts2: TTabSheet
       Caption = #39068#33394#27169#24335
       ImageIndex = 1
+      object btn_ToCMYK: TButton
+        Left = 127
+        Top = 20
+        Width = 75
+        Height = 25
+        Caption = #36716#25442#20026'CMYK'
+        TabOrder = 0
+        OnClick = btn_ToCMYKClick
+      end
+      object chk_CFillOutLine: TCheckBox
+        Left = 8
+        Top = 24
+        Width = 97
+        Height = 17
+        Caption = #22635#20805#36718#24275
+        Checked = True
+        State = cbChecked
+        TabOrder = 1
+      end
+      object chk_CBMP: TCheckBox
+        Left = 8
+        Top = 47
+        Width = 97
+        Height = 17
+        Caption = #20301#22270
+        Checked = True
+        State = cbChecked
+        TabOrder = 2
+      end
+    end
+    object ts3: TTabSheet
+      Caption = #22270#29255
+      ImageIndex = 2
+      object btn_CompressPic: TButton
+        Left = 3
+        Top = 3
+        Width = 75
+        Height = 25
+        Caption = #21387#32553#22270#29255
+        TabOrder = 0
+        OnClick = btn_CompressPicClick
+      end
     end
   end
   object rb1: TRadioButton
     Left = 20
-    Top = 127
+    Top = 167
     Width = 79
     Height = 17
     Caption = #24403#21069#39029#38754
@@ -609,10 +651,19 @@ inherited fConvertTo: TfConvertTo
   end
   object rb2: TRadioButton
     Left = 105
-    Top = 127
+    Top = 167
     Width = 79
     Height = 17
     Caption = #25152#26377#39029#38754
     TabOrder = 2
+  end
+  object btn_OneKey: TButton
+    Left = 206
+    Top = 163
+    Width = 75
+    Height = 25
+    Caption = #19968#38190#23384#26700#38754
+    TabOrder = 3
+    OnClick = btn_OneKeyClick
   end
 end

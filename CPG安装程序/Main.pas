@@ -52,11 +52,8 @@ type
     X864l: TDictionary<string, string>;
     iniF: TIniFile;
     ARegistry: TRegistry;
-    function GetFolderPath(nFolder: Integer): string;
     procedure GetInstalledPath;
     procedure Install;
-  public
-    { Public declarations }
   end;
 
 var
@@ -281,18 +278,6 @@ begin
   chk_X864.Enabled := X864s;
 end;
 
-function TForm1.GetFolderPath(nFolder: Integer): string;
-var
-  pList: PItemIDList;
-  cPath: array[0..MAX_PATH] of Char;
-begin
-  Result := '';
-  ZeroMemory(@cPath, sizeof(cPath));
-  if SHGetSpecialFolderLocation(0, nFolder, pList) = S_OK then
-    if SHGetPathFromIDList(pList, cPath) then
-      Result := StrPas(cPath);
-end;
-
 procedure TForm1.GetInstalledPath;
 var
   t1: TStrings;
@@ -471,6 +456,11 @@ var
   I: Integer;
   k, v: string;
 begin
+  if CheckTask('CorelDRW.exe') then
+  begin
+    MessageBox(Handle, 'CorelDraw正在运行，请退出后重试！', '错误', MB_OK + MB_ICONERROR);
+    Exit;
+  end;
   if chk_X4.Checked then
   begin
     for k in X4l.Keys do

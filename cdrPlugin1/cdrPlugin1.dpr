@@ -6,6 +6,8 @@ library cdrPlugin1;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
+
+
 {$R *.dres}
 
 uses
@@ -25,17 +27,18 @@ uses
   frmCropMark in 'frmCropMark.pas' {fCropMark},
   Generics.Collections,
   frmOnekeyPS in 'frmOnekeyPS.pas' {fOnekeyPS},
-  frmQrcode in 'frmQrcode.pas' {fQrcode};
+  frmQrcode in 'frmQrcode.pas' {fQrcode},
+  ArrayEx in 'ArrayEx.pas',
+  System.IOUtils,
+  frmSelect in 'frmSelect.pas' {fSelect},
+  System.IniFiles;
 
 {$R *.res}
-
-var
-  g_hResource: HINST = 0;
 
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
-      CVersion: Integer = 20160414;
+      CVersion: Integer = 20160422;
       CommandBarName: WideString = 'tisn201600401';
       CommandID_All: WideString = 'cdrplugin1_全部';
       CommandID_ConvertTo: WideString = 'cdrplugin1_转换';
@@ -45,12 +48,13 @@ type
     mApp: IVGApplication;
     m_lCookie: longint;
     m_ulRefCount: ULONG;
-    myCommandBar: CommandBar;
+    myCommandBar: ICUICommandBar;
     cmdList: TDictionary<WideString, WideString>;
     procedure OnAppStart; safecall;
     procedure AddPluginCommands;
     procedure RemovePluginCommands;
-    procedure AddButton(ID, Icon: WideString; guid: WideString = '');
+    procedure AddButton(ID, Icon: WideString; guid: WideString = ''; ctn: ICUICommandBar = nil);
+    function AddButtonGroup(name: WideString): ICUICommandBar;
   public
     constructor Create;
   public
@@ -84,8 +88,57 @@ end;
 procedure TisnPlugin.OnAppStart;
 var
   i: Integer;
+  b: ICUICommandBar;
+  st: TResourceStream;
+  tmpPath: string;
+  inifile: TIniFile;
+  rVersion: Integer;
 begin
   AddPluginCommands;
+  inifile := GetSettingsInifile;
+  rVersion := inifile.ReadInteger('插件配置', '版本号', 0);
+  //如果版本号不对，强制删除当前工具栏
+  if rVersion <> CVersion then
+  begin
+    try
+      mApp.CommandBars.Item[CommandBarName].Delete;
+    finally
+      inifile.WriteInteger('插件配置', '版本号', CVersion);
+    end;
+  end;
+  inifile.Destroy;
+  try
+    myCommandBar := mApp.CommandBars.Item[CommandBarName];
+  except
+
+    tmpPath := TPath.GetTempPath + '\';
+    if mApp.VersionMajor < 17 then
+    begin
+      st := TResourceStream.Create(HInstance, 'toolbar_X4', RT_RCDATA);
+      st.SaveToFile(tmpPath + 'TTx4.xslt');
+      st.Free;
+      mApp.ImportWorkspace(tmpPath + 'TTx4.xslt');
+      DeleteFile(tmpPath + 'TTx4.xslt')
+    end
+    else if mApp.VersionMajor = 17 then
+    begin
+      st := TResourceStream.Create(HInstance, 'toolbar_X7', RT_RCDATA);
+      st.SaveToFile(tmpPath + 'TTx7.cdws');
+      st.Free;
+      mApp.ImportWorkspace(tmpPath + 'TTx7.cdws');
+      DeleteFile(tmpPath + 'TTx7.cdws')
+    end
+    else if mApp.VersionMajor >= 18 then
+    begin
+      st := TResourceStream.Create(HInstance, 'toolbar_X8', RT_RCDATA);
+      st.SaveToFile(tmpPath + 'TTx8.cdws');
+      st.Free;
+      mApp.ImportWorkspace(tmpPath + 'TTx8.cdws');
+      DeleteFile(tmpPath + 'TTx8.cdws')
+    end;
+    mApp.CommandBars.Item[CommandBarName].Visible := True;
+  end;
+  Exit;
   if mApp.VersionMajor >= 18 then
   begin
     try
@@ -98,6 +151,8 @@ begin
     begin
       myCommandBar.Controls.Remove(1);
     end;
+
+    //myCommandBar.Controls.AddToggleButton('57e469be-c42a-41d4-9892-c7ac0b00cd78', 0, False);
     AddButton(CommandID_ToJPG, '', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
     AddButton(CommandID_ConvertTo, '', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
     AddButton(CommandID_CropMark, '', '7013f31a-dc2e-41d8-bb73-f48ce435f3de');
@@ -146,13 +201,20 @@ begin
   end;
 end;
 
-procedure TisnPlugin.AddButton(ID: WideString; Icon: WideString; guid: WideString);
+procedure TisnPlugin.AddButton(ID, Icon: WideString; guid: WideString = ''; ctn: ICUICommandBar = nil);
 var
   btn: ICUIControl;
   bmp: TBitmap;
   fn: string;
 begin
-  btn := myCommandBar.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
+  if ctn = nil then
+  begin
+    btn := myCommandBar.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
+  end
+  else
+  begin
+    btn := ctn.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
+  end;
   if mApp.VersionMajor >= 18 then
   begin
     btn.SetIcon2('guid://' + guid);
@@ -168,6 +230,18 @@ begin
     btn.SetCustomIcon(fn);
     DeleteFile(fn);
   end;
+end;
+
+function TisnPlugin.AddButtonGroup(name: WideString): ICUICommandBar;
+var
+  bg: ICUIControl;
+begin
+  bg := myCommandBar.Controls.Add(cdrControlIDNewmenu, 0, False);
+
+  bg.Caption := name;
+  bg.DescriptionText := name;
+  bg.Visible := True;
+  Result := mApp.CommandBars[name];
 end;
 
 procedure TisnPlugin.OnLoad(const Application: IVGApplication);
@@ -319,7 +393,6 @@ end;
 function TisnPlugin._AddRef;
 begin
   inc(self.m_ulRefCount);
-  //OutputDebugString(PWideChar(Format('_AddRef:%d', [m_ulRefCount])));
   Result := self.m_ulRefCount;
 end;
 
@@ -327,7 +400,6 @@ end;
 function TisnPlugin._Release;
 begin
   dec(self.m_ulRefCount);
-  //OutputDebugString(PWideChar(Format('_Release:%d', [m_ulRefCount])));
   if (self.m_ulRefCount = 0) then
   begin
     Destroy;
@@ -346,7 +418,6 @@ begin
   case Reason of
     DLL_PROCESS_ATTACH:
       begin
-        g_hResource := HInstance;
       end;
   end;
   Result := True;

@@ -1,0 +1,93 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  Caption = #33258#29992
+  ClientHeight = 397
+  ClientWidth = 717
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnClose = FormClose
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  object lst1: TListBox
+    Left = 8
+    Top = 8
+    Width = 156
+    Height = 344
+    ItemHeight = 13
+    TabOrder = 0
+    OnClick = lst1Click
+  end
+  object redt1: TRichEdit
+    Left = 170
+    Top = 8
+    Width = 541
+    Height = 169
+    Hint = #23567#22270#26631'Base64'
+    Font.Charset = GB2312_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    ParentShowHint = False
+    ScrollBars = ssVertical
+    ShowHint = True
+    TabOrder = 1
+    Zoom = 100
+  end
+  object redt2: TRichEdit
+    Left = 170
+    Top = 183
+    Width = 541
+    Height = 169
+    Hint = #22823#22270#26631'Base64'
+    Font.Charset = GB2312_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    ParentShowHint = False
+    ScrollBars = ssVertical
+    ShowHint = True
+    TabOrder = 2
+    Zoom = 100
+  end
+  object btn1: TButton
+    Left = 8
+    Top = 358
+    Width = 75
+    Height = 25
+    Caption = #28155#21152
+    TabOrder = 3
+    OnClick = btn1Click
+  end
+  object btn2: TButton
+    Left = 89
+    Top = 358
+    Width = 75
+    Height = 25
+    Caption = #21024#38500
+    TabOrder = 4
+    OnClick = btn2Click
+  end
+  object btn3: TButton
+    Left = 538
+    Top = 358
+    Width = 75
+    Height = 25
+    Caption = #20445#23384
+    TabOrder = 5
+    OnClick = btn3Click
+  end
+end

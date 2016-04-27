@@ -11,6 +11,8 @@ const
   IID_IUnknown: TGUID = '{00000000-0000-0000-C000-000000000046}';
   IID_IDispatch: TGUID = '{00020400-0000-0000-C000-000000000046}';
   cdrCmdCategoryPlugins = 'ab489730-8791-45d2-a825-b78bbe0d6a5d';
+  cdrControlIDSeparator = '266435b4-6e53-460f-9fa7-f45be187d400';
+  cdrControlIDNewmenu = 'bc6d3e54-d8cd-449a-aa61-cd442d6617eb';
   E_NOTIMPL = HResult($80004001);
   E_NOINTERFACE = HResult($80004002);
   S_OK = HResult($0);
@@ -74,6 +76,10 @@ function GetSettingsInifile: TIniFile;
 
 type
   DebugUtils = class
+    /// <summary>
+    /// 显示调试信息
+    /// </summary>
+    /// <param name="msg"></param>
     class procedure ShowMessage(msg: WideString);
   end;
 
@@ -107,7 +113,7 @@ class procedure DebugUtils.ShowMessage(msg: WideString);
 begin
   if DEBUG then
   begin
-    MessageBox(HInstance, PWideChar(msg), 'DEBUG', 0);
+    MessageBox(0, PWideChar(msg), 'DEBUG', 0);
   end;
 end;
 
