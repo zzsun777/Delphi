@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{A455DB4A-F960-409C-A0F4-5BE55B07DD6B}</ProjectGuid>
-        <ProjectVersion>18.0</ProjectVersion>
+        <ProjectVersion>18.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>cdrPlugin1.dpr</MainSource>
         <Base>True</Base>
@@ -75,10 +75,10 @@
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <OutputExt>cpg</OutputExt>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <Debugger_HostApplication>D:\Program Files (x86)\CorelDRAW X4\Programs\CorelDRW.exe</Debugger_HostApplication>
-        <Debugger_CWD>D:\Program Files (x86)\CorelDRAW X4\Programs</Debugger_CWD>
-        <PostBuildEvent><![CDATA[copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg"
-copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files (x86)\Corel\CorelDRAW Graphics Suite X5\Draw\plugins\cdrPlugin1.cpg"
+        <Debugger_HostApplication>\\TT3\D\Program Files (x86)\CorelDRAW X4\Programs\CorelDRW.exe</Debugger_HostApplication>
+        <Debugger_CWD>\\TT3\D\Program Files (x86)\CorelDRAW X4\Programs</Debugger_CWD>
+        <PostBuildEvent><![CDATA[copy "$(OUTPUTDIR)cdrPlugin1.cpg" "\\TT3\D\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg"
+copy "$(OUTPUTDIR)cdrPlugin1.cpg" "\\TT3\D\Program Files (x86)\Corel\CorelDRAW Graphics Suite X5\Draw\plugins\cdrPlugin1.cpg"
 copy "$(OUTPUTDIR)cdrPlugin1.cpg" "$(PROJECTDIR)\..\CPG安装程序\安装\32\cdrPlugin1.cpg"
 $(PostBuildEvent)]]></PostBuildEvent>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -90,9 +90,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <OutputExt>cpg</OutputExt>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <PostBuildEvent><![CDATA[copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg"
-copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg"
-copy "$(OUTPUTDIR)cdrPlugin1.cpg" "D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg"
+        <PostBuildEvent><![CDATA[copy "$(OUTPUTDIR)cdrPlugin1.cpg" "\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg"
+copy "$(OUTPUTDIR)cdrPlugin1.cpg" "\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg"
+copy "$(OUTPUTDIR)cdrPlugin1.cpg" "\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg"
 copy "$(OUTPUTDIR)cdrPlugin1.cpg" "$(PROJECTDIR)\..\CPG安装程序\安装\64\cdrPlugin1.cpg"
 $(PostBuildEvent)]]></PostBuildEvent>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
@@ -108,15 +108,15 @@ $(PostBuildEvent)]]></PostBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <Debugger_CWD>D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins</Debugger_CWD>
+        <Debugger_CWD>\\TT3\D\Program Files (x86)\CorelDRAW X4\Draw\Plugins</Debugger_CWD>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Debugger_HostApplication>D:\Program Files (x86)\CorelDRAW X4\Programs\CorelDRW.exe</Debugger_HostApplication>
+        <Debugger_HostApplication>D:\Program Files\CorelDRAW X4\Programs\CorelDRW.exe</Debugger_HostApplication>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <Debugger_HostApplication>D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Programs64\CorelDRW.exe</Debugger_HostApplication>
-        <Debugger_CWD>D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64</Debugger_CWD>
+        <Debugger_HostApplication>D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\CorelDRW.exe</Debugger_HostApplication>
+        <Debugger_CWD>D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64</Debugger_CWD>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -180,6 +180,72 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="ArrayEx.pas"/>
         <DCCReference Include="frmSelect.pas">
             <Form>fSelect</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="frmGroupSelection.pas">
+            <Form>fGroupSelection</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="QRCode\Encode\DelphiZXIngQRCode.pas"/>
+        <DCCReference Include="QRCode\Encode\QR_URL.pas"/>
+        <DCCReference Include="QRCode\Encode\QR_Win1251.pas"/>
+        <DCCReference Include="QRCode\Encode\QRGraphics.pas"/>
+        <DCCReference Include="QRCode\Decode\ScanManager.pas"/>
+        <DCCReference Include="QRCode\Decode\1D Barcodes\Code93Reader.pas"/>
+        <DCCReference Include="QRCode\Decode\1D Barcodes\Code128Reader.pas"/>
+        <DCCReference Include="QRCode\Decode\1D Barcodes\ITFReader.pas"/>
+        <DCCReference Include="QRCode\Decode\1D Barcodes\MultiFormatOneDReader.pas"/>
+        <DCCReference Include="QRCode\Decode\1D Barcodes\OneDReader.pas"/>
+        <DCCReference Include="QRCode\Decode\1D Barcodes\Reader.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\QRCodeReader.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\BitMatrixParser.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\Datablock.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\Datamask.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\DecodedBitStreamParser.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\ErrorCorrectionLevel.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\FormatInformation.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\GenericGF.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\Mode.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\QRCodeDecoderMetadata.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\QRDecoder.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\ReedSolomonDecoder.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Decoder\Version.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Detector\AlignmentPattern.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Detector\AlignmentPatternFinder.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Detector\Detector.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Detector\FinderPattern.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Detector\FinderPatternFinder.pas"/>
+        <DCCReference Include="QRCode\Decode\2D Barcodes\Detector\FinderPatternInfo.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\BarcodeFormat.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\BitArray.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\Bitmatrix.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\BitSource.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\CharacterSetECI.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\DecodeHintType.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\DecoderResult.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\DefaultGridSampler.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\DetectorResult.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\Helpers.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\MathUtils.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\MultiFormatReader.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\PerspectiveTransform.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\ReadResult.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\ResultMetadataType.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\ResultPoint.pas"/>
+        <DCCReference Include="QRCode\Decode\Common\StringUtils.pas"/>
+        <DCCReference Include="QRCode\Decode\Filtering\Binarizer.pas"/>
+        <DCCReference Include="QRCode\Decode\Filtering\BinaryBitmap.pas"/>
+        <DCCReference Include="QRCode\Decode\Filtering\GlobalHistogramBinarizer.pas"/>
+        <DCCReference Include="QRCode\Decode\Filtering\HybridBinarizer.pas"/>
+        <DCCReference Include="QRCode\Decode\Filtering\LuminanceSource.pas"/>
+        <DCCReference Include="QRCode\Decode\Filtering\RGBLuminanceSource.Pas"/>
+        <DCCReference Include="QRCode\Encode\SVGImage.pas"/>
+        <DCCReference Include="CaptureImageTool\CaptureImageTool.pas">
+            <Form>Form1</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="frmFontRecognition.pas">
+            <Form>fFontRecognition</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <RcItem Include="UI\x4.xslt">
@@ -257,14 +323,14 @@ $(PostBuildEvent)]]></PostBuildEvent>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp230.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
-            <Deployment Version="2">
-                <DeployFile LocalName="图标\文字转曲.bmp" Configuration="调试" Class="ProjectFile">
-                    <Platform Name="Win32">
-                        <RemoteDir>.\</RemoteDir>
+            <Deployment Version="3">
+                <DeployFile LocalName="Win64\发布\cdrPlugin1.cpg" Configuration="发布" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>cdrPlugin1.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="图标\裁切线.bmp" Configuration="调试" Class="ProjectFile">
+                <DeployFile LocalName="图标\文字转曲.bmp" Configuration="调试" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -277,6 +343,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="图标\一键PS.bmp" Configuration="调试" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="QRCode\Decode\Filtering\RGBLuminanceSource.Pas" Configuration="发布" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -296,6 +368,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 </DeployFile>
                 <DeployFile LocalName="图标\all.ico" Configuration="调试" Class="ProjectFile">
                     <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="QRCode\Decode\Filtering\RGBLuminanceSource.Pas" Configuration="发布" Class="ProjectFile">
+                    <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -336,12 +414,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="UI\x8\x8.cdws" Configuration="发布" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="UI\x4.xslt" Configuration="发布" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -360,7 +432,19 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="UI\x8\x8.cdws" Configuration="发布" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="图标\导出图片.ico" Configuration="调试" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="图标\裁切线.bmp" Configuration="调试" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -368,12 +452,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 </DeployFile>
                 <DeployFile LocalName="Win32\调试\cdrPlugin1.cpg" Configuration="调试" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>cdrPlugin1.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\发布\cdrPlugin1.cpg" Configuration="发布" Class="ProjectOutput">
-                    <Platform Name="Win64">
                         <RemoteName>cdrPlugin1.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -435,17 +513,20 @@ $(PostBuildEvent)]]></PostBuildEvent>
                     </Platform>
                 </DeployClass>
                 <DeployClass Required="true" Name="ProjectOutput">
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
                     <Platform Name="Win32">
                         <Operation>0</Operation>
                     </Platform>
-                    <Platform Name="iOSDevice64">
+                    <Platform Name="Linux64">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="OSX32">
                         <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Android">
@@ -498,12 +579,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="AndroidLibnativeX86File">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\x86</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
+                <DeployClass Name="AndroidLibnativeX86File"/>
                 <DeployClass Name="ProjectiOSSimulatorInfoPList">
                     <Platform Name="iOSSimulator">
                         <Operation>1</Operation>
@@ -591,11 +667,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSEntitlements">
                     <Platform Name="iOSDevice64">
-                        <RemoteDir>../</RemoteDir>
+                        <RemoteDir>..\</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="iOSDevice32">
-                        <RemoteDir>../</RemoteDir>
+                        <RemoteDir>..\</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -619,7 +695,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXEntitlements">
                     <Platform Name="OSX32">
-                        <RemoteDir>../</RemoteDir>
+                        <RemoteDir>..\</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -774,6 +850,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
@@ -782,6 +859,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
+            <ModelSupport>False</ModelSupport>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>
@@ -793,7 +871,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\Corel\CorelDRAW Graphics Suite X5\Draw\plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\32\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files (x86)\Corel\CorelDRAW Graphics Suite X5\Draw\plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\32\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='调试' And '$(Platform)'=='Win64'">
@@ -801,7 +879,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\64\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\64\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='发布' And '$(Platform)'=='Win32'">
@@ -809,7 +887,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files (x86)\Corel\CorelDRAW Graphics Suite X5\Draw\plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\32\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files (x86)\CorelDRAW X4\Draw\Plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files (x86)\Corel\CorelDRAW Graphics Suite X5\Draw\plugins\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\32\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='发布' And '$(Platform)'=='Win64'">
@@ -817,7 +895,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\64\cdrPlugin1.cpg&quot;</PostBuildEvent>
+        <PostBuildEvent>copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X6\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;\\TT3\D\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64\cdrPlugin1.cpg&quot;&amp;&amp;copy &quot;$(OUTPUTDIR)cdrPlugin1.cpg&quot; &quot;$(PROJECTDIR)\..\CPG安装程序\安装\64\cdrPlugin1.cpg&quot;</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
 </Project>

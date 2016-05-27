@@ -51,42 +51,11 @@ begin
     Exit;
   end;
 
-  img := TWICImage.Create;
-  img.LoadFromFile(flpndlg1.FileName);
-
-  bmp1 := TBitmap.Create;
-  bmp1.PixelFormat := pf8bit;
-  bmp1.Width := 16;
-  bmp1.Height := 16;
-  bmp1.Canvas.Brush.Color := TColor($c3c3c3);
-  bmp1.Canvas.FillRect(bmp1.Canvas.ClipRect);
-
-  SetStretchBltMode(bmp1.Canvas.Handle, HALFTONE);
-  bmp1.Canvas.StretchDraw(Rect(0, 0, bmp1.Width, bmp1.Height), img);
-
-  bmp1.SaveToFile(flpndlg1.FileName + '_16x16.bmp');
-
   redt1.Clear;
-  redt1.Lines.Add(TIcon2Base64.GetBase64(flpndlg1.FileName + '_16x16.bmp'));
-  DeleteFile(flpndlg1.FileName + '_16x16.bmp');
-
-  img := TWICImage.Create;
-  img.LoadFromFile(flpndlg1.FileName);
-
-  bmp1 := TBitmap.Create;
-  bmp1.PixelFormat := pf8bit;
-  bmp1.Width := 24;
-  bmp1.Height := 24;
-  bmp1.Canvas.Brush.Color := TColor($c3c3c3);
-  bmp1.Canvas.FillRect(bmp1.Canvas.ClipRect);
-
-  SetStretchBltMode(bmp1.Canvas.Handle, HALFTONE);
-  bmp1.Canvas.StretchDraw(Rect(0, 0, bmp1.Width, bmp1.Height), img);
-
-  bmp1.SaveToFile(flpndlg1.FileName + '_24x24.bmp');
+  redt1.Lines.Add(TIcon2Base64.GetBase64(flpndlg1.FileName));
 
   redt2.Clear;
-  redt2.Lines.Add(TIcon2Base64.GetBase64(flpndlg1.FileName + '_24x24.bmp'));
+  redt2.Lines.Add(TIcon2Base64.GetBase64(flpndlg1.FileName , 24, 24));
   DeleteFile(flpndlg1.FileName + '_24x24.bmp');
 end;
 

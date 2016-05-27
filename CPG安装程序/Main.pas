@@ -54,6 +54,7 @@ type
     ARegistry: TRegistry;
     procedure GetInstalledPath;
     procedure Install;
+    function CopyFileTA(src, dest: string): Boolean;
   end;
 
 var
@@ -475,7 +476,7 @@ begin
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -488,12 +489,12 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -506,12 +507,12 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -524,12 +525,12 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -542,12 +543,12 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -560,12 +561,12 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -578,12 +579,12 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
@@ -596,17 +597,34 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else
       begin
-        CopyFile(PWideChar(k), PWideChar(v), False);
+        CopyFileTA(k, v);
       end;
     end;
   end;
   MessageBox(Handle, '插件已安装', '提示', MB_OK + MB_ICONINFORMATION);
 
+end;
+
+function TForm1.CopyFileTA(src: string; dest: string): Boolean;
+var
+  d: string;
+begin
+  Result := False;
+  if not FileExists(src) then
+  begin
+    Exit;
+  end;
+  d := TPath.GetDirectoryName(dest);
+  if not FileExists(d) then
+  begin
+    ForceDirectories(d);
+  end;
+  Result := CopyFile(PWideChar(src), PWideChar(dest), False);
 end;
 
 end.

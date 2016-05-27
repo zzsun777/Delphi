@@ -570,7 +570,7 @@ inherited fConvertTo: TfConvertTo
     Top = 8
     Width = 273
     Height = 153
-    ActivePage = ts3
+    ActivePage = ts1
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #36716#26354
@@ -595,6 +595,10 @@ inherited fConvertTo: TfConvertTo
     object ts2: TTabSheet
       Caption = #39068#33394#27169#24335
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object btn_ToCMYK: TButton
         Left = 127
         Top = 20

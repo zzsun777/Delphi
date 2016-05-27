@@ -16,7 +16,6 @@ type
     bOptimization: WordBool;
     bEventsEnabled: WordBool;
   protected
-    { Private declarations }
     cmdName: string;
     mApp: IVGApplication;
     m_lCookie: Integer;

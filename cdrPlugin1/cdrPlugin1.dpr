@@ -6,8 +6,6 @@ library cdrPlugin1;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
-
-
 {$R *.dres}
 
 uses
@@ -31,19 +29,82 @@ uses
   ArrayEx in 'ArrayEx.pas',
   System.IOUtils,
   frmSelect in 'frmSelect.pas' {fSelect},
-  System.IniFiles;
+  System.IniFiles,
+  frmGroupSelection in 'frmGroupSelection.pas' {fGroupSelection},
+  DelphiZXIngQRCode in 'QRCode\Encode\DelphiZXIngQRCode.pas',
+  QR_URL in 'QRCode\Encode\QR_URL.pas',
+  QR_Win1251 in 'QRCode\Encode\QR_Win1251.pas',
+  QRGraphics in 'QRCode\Encode\QRGraphics.pas',
+  ScanManager in 'QRCode\Decode\ScanManager.pas',
+  Code93Reader in 'QRCode\Decode\1D Barcodes\Code93Reader.pas',
+  Code128Reader in 'QRCode\Decode\1D Barcodes\Code128Reader.pas',
+  ITFReader in 'QRCode\Decode\1D Barcodes\ITFReader.pas',
+  MultiFormatOneDReader in 'QRCode\Decode\1D Barcodes\MultiFormatOneDReader.pas',
+  OneDReader in 'QRCode\Decode\1D Barcodes\OneDReader.pas',
+  Reader in 'QRCode\Decode\1D Barcodes\Reader.pas',
+  QRCodeReader in 'QRCode\Decode\2D Barcodes\QRCodeReader.pas',
+  BitMatrixParser in 'QRCode\Decode\2D Barcodes\Decoder\BitMatrixParser.pas',
+  Datablock in 'QRCode\Decode\2D Barcodes\Decoder\Datablock.pas',
+  Datamask in 'QRCode\Decode\2D Barcodes\Decoder\Datamask.pas',
+  DecodedBitStreamParser in 'QRCode\Decode\2D Barcodes\Decoder\DecodedBitStreamParser.pas',
+  ErrorCorrectionLevel in 'QRCode\Decode\2D Barcodes\Decoder\ErrorCorrectionLevel.pas',
+  FormatInformation in 'QRCode\Decode\2D Barcodes\Decoder\FormatInformation.pas',
+  GenericGF in 'QRCode\Decode\2D Barcodes\Decoder\GenericGF.pas',
+  Mode in 'QRCode\Decode\2D Barcodes\Decoder\Mode.pas',
+  QRCodeDecoderMetadata in 'QRCode\Decode\2D Barcodes\Decoder\QRCodeDecoderMetadata.pas',
+  QRDecoder in 'QRCode\Decode\2D Barcodes\Decoder\QRDecoder.pas',
+  ReedSolomonDecoder in 'QRCode\Decode\2D Barcodes\Decoder\ReedSolomonDecoder.pas',
+  Version in 'QRCode\Decode\2D Barcodes\Decoder\Version.pas',
+  AlignmentPattern in 'QRCode\Decode\2D Barcodes\Detector\AlignmentPattern.pas',
+  AlignmentPatternFinder in 'QRCode\Decode\2D Barcodes\Detector\AlignmentPatternFinder.pas',
+  Detector in 'QRCode\Decode\2D Barcodes\Detector\Detector.pas',
+  FinderPattern in 'QRCode\Decode\2D Barcodes\Detector\FinderPattern.pas',
+  FinderPatternFinder in 'QRCode\Decode\2D Barcodes\Detector\FinderPatternFinder.pas',
+  FinderPatternInfo in 'QRCode\Decode\2D Barcodes\Detector\FinderPatternInfo.pas',
+  BarcodeFormat in 'QRCode\Decode\Common\BarcodeFormat.pas',
+  BitArray in 'QRCode\Decode\Common\BitArray.pas',
+  Bitmatrix in 'QRCode\Decode\Common\Bitmatrix.pas',
+  BitSource in 'QRCode\Decode\Common\BitSource.pas',
+  CharacterSetECI in 'QRCode\Decode\Common\CharacterSetECI.pas',
+  DecodeHintType in 'QRCode\Decode\Common\DecodeHintType.pas',
+  DecoderResult in 'QRCode\Decode\Common\DecoderResult.pas',
+  DefaultGridSampler in 'QRCode\Decode\Common\DefaultGridSampler.pas',
+  DetectorResult in 'QRCode\Decode\Common\DetectorResult.pas',
+  Helpers in 'QRCode\Decode\Common\Helpers.pas',
+  MathUtils in 'QRCode\Decode\Common\MathUtils.pas',
+  MultiFormatReader in 'QRCode\Decode\Common\MultiFormatReader.pas',
+  PerspectiveTransform in 'QRCode\Decode\Common\PerspectiveTransform.pas',
+  ReadResult in 'QRCode\Decode\Common\ReadResult.pas',
+  ResultMetadataType in 'QRCode\Decode\Common\ResultMetadataType.pas',
+  ResultPoint in 'QRCode\Decode\Common\ResultPoint.pas',
+  StringUtils in 'QRCode\Decode\Common\StringUtils.pas',
+  Binarizer in 'QRCode\Decode\Filtering\Binarizer.pas',
+  BinaryBitmap in 'QRCode\Decode\Filtering\BinaryBitmap.pas',
+  GlobalHistogramBinarizer in 'QRCode\Decode\Filtering\GlobalHistogramBinarizer.pas',
+  HybridBinarizer in 'QRCode\Decode\Filtering\HybridBinarizer.pas',
+  LuminanceSource in 'QRCode\Decode\Filtering\LuminanceSource.pas',
+  RGBLuminanceSource in 'QRCode\Decode\Filtering\RGBLuminanceSource.Pas',
+  SVGImage in 'QRCode\Encode\SVGImage.pas',
+  CaptureImageTool in 'CaptureImageTool\CaptureImageTool.pas' {Form1},
+  frmFontRecognition in 'frmFontRecognition.pas' {fFontRecognition};
 
 {$R *.res}
 
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
-      CVersion: Integer = 20160422;
+      CVersion: Integer = 2016052302;
       CommandBarName: WideString = 'tisn201600401';
       CommandID_All: WideString = 'cdrplugin1_全部';
       CommandID_ConvertTo: WideString = 'cdrplugin1_转换';
       CommandID_ToJPG: WideString = 'cdrplugin1_导出图片';
       CommandID_CropMark: WideString = 'cdrplugin1_裁切标记';
+      CommandID_OnkeyPS: WideString = 'cdrplugin1_一键PS';
+      CommandID_QRCode: WideString = 'cdrplugin1_二维码';
+      CommandID_Select: WideString = 'cdrplugin1_同类选择';
+      CommandID_FontRecognition: WideString = 'cdrplugin1_字体识别';
+      CommandID_SuperUndo: WideString = 'cdrplugin1_超级撤销';
+      CommandID_SuperRedo: WideString = 'cdrplugin1_超级重做';
   private
     mApp: IVGApplication;
     m_lCookie: longint;
@@ -53,8 +114,6 @@ type
     procedure OnAppStart; safecall;
     procedure AddPluginCommands;
     procedure RemovePluginCommands;
-    procedure AddButton(ID, Icon: WideString; guid: WideString = ''; ctn: ICUICommandBar = nil);
-    function AddButtonGroup(name: WideString): ICUICommandBar;
   public
     constructor Create;
   public
@@ -80,15 +139,20 @@ begin
   m_ulRefCount := 0;
   cmdList := TDictionary<WideString, WideString>.Create;
   cmdList.Add(CommandID_All, '所有');
-  cmdList.Add(CommandID_ToJPG, '导出图片');
+  cmdList.Add(CommandID_ToJPG, '导出图片|强大的导出图片工具');
   cmdList.Add(CommandID_ConvertTo, '转换');
   cmdList.Add(CommandID_CropMark, '裁切标记');
+  cmdList.Add(CommandID_OnkeyPS, '一键PS|一键调用PS修图');
+  cmdList.Add(CommandID_QRCode, '二维码');
+  cmdList.Add(CommandID_Select, '同类选择');
+  cmdList.Add(CommandID_FontRecognition, '字体识别');
+
+  cmdList.Add(CommandID_SuperUndo, '超级撤销|超级撤销，如果执行了大批量操作，请使用这个');
+  cmdList.Add(CommandID_SuperRedo, '超级重做|超级重做，如果执行了大批量操作，请使用这个');
 end;
 
 procedure TisnPlugin.OnAppStart;
 var
-  i: Integer;
-  b: ICUICommandBar;
   st: TResourceStream;
   tmpPath: string;
   inifile: TIniFile;
@@ -138,56 +202,28 @@ begin
     end;
     mApp.CommandBars.Item[CommandBarName].Visible := True;
   end;
+
   Exit;
-  if mApp.VersionMajor >= 18 then
-  begin
-    try
-      myCommandBar := mApp.CommandBars.Item[CommandBarName];
-    except
-      myCommandBar := self.mApp.CommandBars.Add(CommandBarName, cuiBarFloating, False);
-      myCommandBar.Visible := true;
-    end;
-    for I := 1 to myCommandBar.Controls.Count do
-    begin
-      myCommandBar.Controls.Remove(1);
-    end;
-
-    //myCommandBar.Controls.AddToggleButton('57e469be-c42a-41d4-9892-c7ac0b00cd78', 0, False);
-    AddButton(CommandID_ToJPG, '', '57e469be-c42a-41d4-9892-c7ac0b00cd79');
-    AddButton(CommandID_ConvertTo, '', 'b9bd86de-975c-4b2a-a3c3-2601dfb08bd0');
-    AddButton(CommandID_CropMark, '', '7013f31a-dc2e-41d8-bb73-f48ce435f3de');
-    AddButton(CommandID_All, '', 'bfe15904-fff6-4e4a-8c42-df09db08a046');
-  end
-  else
-  begin
-    try
-      myCommandBar := mApp.CommandBars.Item[CommandBarName];
-    except
-      myCommandBar := self.mApp.CommandBars.Add(CommandBarName, cuiBarFloating, False);
-      myCommandBar.Visible := true;
-      try
-        AddButton(CommandID_ToJPG, 'ToJPG');
-        AddButton(CommandID_ConvertTo, 'ConvertTo');
-        AddButton(CommandID_CropMark, 'CropMark');
-        AddButton(CommandID_All, 'All');
-      except
-        on o: Exception do
-        begin
-          MessageBox(0, PWideChar(o.Message), '0123', 0);
-        end;
-
-      end;
-    end;
-  end;
 end;
 
 procedure TisnPlugin.AddPluginCommands;
 var
   pair: TPair<WideString, WideString>;
+  ts: string;
+  tss: TArray<string>;
 begin
   for pair in cmdList do
   begin
-    mApp.AddPluginCommand(pair.Key, pair.Value, pair.Value);
+    ts := pair.Value;
+    tss := ts.Split(['|']);
+    if Length(tss) = 2 then
+    begin
+      mApp.AddPluginCommand(pair.Key, tss[0], tss[1]);
+    end
+    else
+    begin
+      mApp.AddPluginCommand(pair.Key, pair.Value, pair.Value);
+    end;
   end;
 end;
 
@@ -199,49 +235,6 @@ begin
   begin
     mApp.RemovePluginCommand(pair.Key);
   end;
-end;
-
-procedure TisnPlugin.AddButton(ID, Icon: WideString; guid: WideString = ''; ctn: ICUICommandBar = nil);
-var
-  btn: ICUIControl;
-  bmp: TBitmap;
-  fn: string;
-begin
-  if ctn = nil then
-  begin
-    btn := myCommandBar.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
-  end
-  else
-  begin
-    btn := ctn.Controls.AddCustomButton(cdrCmdCategoryPlugins, ID, 0, False);
-  end;
-  if mApp.VersionMajor >= 18 then
-  begin
-    btn.SetIcon2('guid://' + guid);
-  end
-  else
-  begin
-    bmp := TBitmap.Create;
-    bmp.LoadFromResourceName(HInstance, 'Bitmap_' + Icon);
-    fn := mApp.CorelScriptTools.GetTempFolder + '\tisntmp.bmp';
-    bmp.SaveToFile(fn);
-    bmp.Destroy;
-    {X8不支持此方法}
-    btn.SetCustomIcon(fn);
-    DeleteFile(fn);
-  end;
-end;
-
-function TisnPlugin.AddButtonGroup(name: WideString): ICUICommandBar;
-var
-  bg: ICUIControl;
-begin
-  bg := myCommandBar.Controls.Add(cdrControlIDNewmenu, 0, False);
-
-  bg.Caption := name;
-  bg.DescriptionText := name;
-  bg.Visible := True;
-  Result := mApp.CommandBars[name];
 end;
 
 procedure TisnPlugin.OnLoad(const Application: IVGApplication);
@@ -341,10 +334,26 @@ begin
           else if strCMD = CommandID_CropMark then
           begin
             f := TfCropMark.Create(nil, mApp);
+          end
+          else if strCMD = CommandID_OnkeyPS then
+          begin
+            f := TfOnekeyPS.Create(nil, mApp);
+          end
+          else if strCMD = CommandID_QRCode then
+          begin
+            f := TfQrcode.Create(nil, mApp);
+          end
+          else if strCMD = CommandID_Select then
+          begin
+            f := TfSelect.Create(nil, mApp);
+          end
+          else if strCMD = CommandID_FontRecognition then
+          begin
+            f := TfFontRecognition.Create(nil, mApp);
           end;
           if f <> nil then
           begin
-            f.Show;
+            f.ShowModal;
           end;
         end;
       end;

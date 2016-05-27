@@ -154,6 +154,8 @@ begin
   begin
     chk_MaintainLayers.Checked := False;
   end;
+
+  chk_OverPrintBlack.Enabled := (mApp.VersionMajor > 14);
 end;
 
 procedure TfToJPG.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -268,7 +270,7 @@ begin
   except
     on e: Exception do
     begin
-      DebugUtils.ShowMessage('TfToJPG.SetName错误：' + e.Message);
+      DebugUtils.ShowMessage('TfToJPG.SetName  错误：' + e.Message);
     end;
   end;
 end;
@@ -622,7 +624,6 @@ begin
         AddMessage(Format('  导出文档%s', [d.Name]));
         ExportDocument(d);
       end;
-
     end
     else if rb_CurPage.Checked then
     begin
@@ -636,7 +637,7 @@ begin
       GetPageNumers(ns);
       if ns.Len = 0 then
       begin
-        AddMessage('无效页面范围，请重新输入^');
+        AddMessage('^无效页面范围，请重新输入');
         goto done;
       end
       else
@@ -673,8 +674,8 @@ done:
     begin
       debugUtils.ShowMessage('Export_' + e.ToString);
     end;
-
   end;
+
 end;
 
 procedure TfToJPG.ExportDocument(doc: IVGDocument);
@@ -687,8 +688,9 @@ begin
   SetName;
   for I := 1 to doc.Pages.Count do
   begin
-    AddMessage(Format('  处理页面:%s', [doc.Pages.Item[I].Name]));
-    ExportPic(doc.Pages.Item[I]);
+    p := doc.Pages[I];
+    AddMessage(Format('  处理页面:%s', [p.Name]));
+    ExportPic(p);
   end;
   AddMessage('^文档处理结束:' + doc.Name);
 end;
@@ -710,12 +712,12 @@ var
   hz: WordBool;
 begin
   try
+    page.Activate;
     if page.Shapes.Count = 0 then
     begin
       AddMessage(Format('页面 %s 无对象，跳过!', [page.Name]));
       Exit;
     end;
-
     if rb_Document.Checked then
     begin
       namen := mApp.ActiveDocument.Name;
@@ -724,7 +726,7 @@ begin
     begin
       namen := outFileName;
     end;
-    mApp.ActiveDocument.Unit_ := cdrPixel;
+
     filter := GetFilter;
     ext := GetExt;
     seo := mApp.CreateStructExportOptions;
@@ -737,15 +739,19 @@ begin
     begin
       smooth := cdrNoAntiAliasing;
     end;
-
     seo.AntiAliasingType := smooth;
     seo.ImageType := cdrImageType(cbb_ColorMode.ItemIndex);
     seo.Compression := cdrCompressionType(cbb_CompressType.ItemIndex);
     seo.UseColorProfile := chk_UseColorProfile.Checked;
-   //特别注意，透明度在jpg等无透明的格式的时候不能为True，不然光滑处理将会失效
+    //特别注意，透明度在jpg等无透明的格式的时候不能为True，不然光滑处理将会失效
     seo.Transparent := chk_Transparent.Checked;
-    seo.Overwrite := chk_OverPrintBlack.Checked;
+    if mApp.VersionMajor > 14 then
+    begin
+      seo.AlwaysOverprintBlack := chk_OverPrintBlack.Checked;
+    end;
     seo.MaintainLayers := chk_MaintainLayers.Checked;
+
+    //AddMessage('测试111');
 
     s := 72;
     if cbb_Resolution.Text <> '' then
@@ -755,6 +761,7 @@ begin
     seo.ResolutionX := s;
     seo.ResolutionY := s;
 
+    mApp.ActiveDocument.Unit_ := cdrPixel;
     sc := 1;
     if cbb_Scale.Text <> '' then
     begin
@@ -775,13 +782,14 @@ begin
     DestDir := edt_Location.Text;
     if not FileExists(DestDir) then
     begin
-      //AddMessage(Format('保存文件夹 %s 不存在！，退出', [DestDir]));
+      //AddMessage(Format('保存文件夹 %s 不存在！退出', [DestDir]));
       //Exit;
     end;
     if not DestDir.EndsWith('\') then
     begin
       DestDir := DestDir + '\';
     end;
+    //page.Activate;
     if rb_Selection.Checked then
     begin
       FileName := DestDir + namen + GetPageName(page) + GetIndex + ext;
@@ -789,7 +797,7 @@ begin
       begin
         exit;
       end;
-      page.Activate;
+      //page.Activate;
       ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrSelection, seo, nil);
       ef.Finish;
       exit;
@@ -808,7 +816,7 @@ begin
       begin
         exit;
       end;
-      page.Activate;
+      //page.Activate;
       ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
       ef.Finish;
       exit;
@@ -855,7 +863,7 @@ begin
         begin
           Exit;
         end;
-        page.Activate;
+        //page.Activate;
         ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
         ef.Finish;
         Exit;
@@ -871,13 +879,13 @@ begin
     begin
       Exit;
     end;
-    page.Activate;
+    //page.Activate;
     ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
     ef.Finish;
   except
     on E: Exception do
     begin
-      debugUtils.ShowMessage('ExportPic' + e.ToString);
+      debugUtils.ShowMessage('ExportPic ++++ ' + e.Message);
     end;
   end;
 end;
