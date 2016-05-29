@@ -965,6 +965,7 @@ inherited fQrcode: TfQrcode
         Height = 25
         Caption = #25130#22270#35782#21035#25991#26412
         TabOrder = 0
+        OnClick = btn_CapClick
       end
       object mmo_Self: TMemo
         Left = 3

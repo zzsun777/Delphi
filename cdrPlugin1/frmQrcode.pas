@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, BaseForm, QRGraphics, Vcl.StdCtrls,
   Vcl.ComCtrls, Vcl.ExtCtrls, DelphiZXIngQRCode, QR_Win1251, QR_URL, System.IOUtils,
-  VGCore_TLB, SVGImage;
+  VGCore_TLB, SVGImage, CaptureImageTool, ScanManager, BarcodeFormat, ReadResult,
+  QRCodeReader, pCore2D, pBarcode2D, pQRCode;
 
 type
   TfQrcode = class(TTBaseForm)
@@ -45,6 +46,7 @@ type
     procedure btn_GenClick(Sender: TObject);
     procedure cbbDrawingModeChange(Sender: TObject);
     procedure edt_CardNameChange(Sender: TObject);
+    procedure btn_CapClick(Sender: TObject);
   private
     mQRCode: TDelphiZXingQRCode;
     procedure ReMakeQR;
@@ -59,6 +61,47 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfQrcode.btn_CapClick(Sender: TObject);
+var
+  cap: TTCaptureImageTool;
+  img: TBitmap;
+  stream: TStream;
+  scan: TScanManager;
+  rResult: TReadResult;
+  decoder: TQRCodeReader;
+begin
+  inherited;
+  cap := TTCaptureImageTool.Create(Self);
+  if cap.ShowModal = mrOk then
+  begin
+    img := cap.Image;
+    stream := TMemoryStream.Create;
+    img.SaveToStream(stream);
+    decoder := TQRCodeReader.Create;
+    stream.Seek(0, TSeekOrigin.soBeginning);
+    rResult := decoder.decode(stream);
+    if rResult.Text <> '' then
+    begin
+      with mQRCode do
+      try
+        BeginUpdate;
+        Data := rResult.Text;
+    //Encoding := cmbEncoding.ItemIndex;
+        ErrorCorrectionOrdinal := TErrorCorrectionOrdinal(cbbErrorCorrectionLevel.ItemIndex);
+    //QuietZone := StrToIntDef(edtQuietZone.Text, 4);
+        EndUpdate(True);
+    //lblQRMetrics.Caption := IntToStr(Columns) + 'x' + IntToStr(Rows) + ' (' + IntToStr(Columns - QuietZone * 2) + 'x' + IntToStr(Rows - QuietZone * 2) + ')';
+      finally
+        pbPreview.Repaint;
+      end;
+    end
+    else
+    begin
+
+    end;
+  end;
+end;
 
 procedure TfQrcode.btn_GenClick(Sender: TObject);
 var
@@ -116,7 +159,6 @@ begin
     //Brush.Color := clrbxBackground.Selected;
 
 
-
   end;
   DrawQR(pbPreview.Canvas, pbPreview.ClientRect, mQRCode, 0, TQRDrawingMode(cbbDrawingMode.ItemIndex div 2), Boolean(1 - cbbDrawingMode.ItemIndex mod 2));
 end;
@@ -143,46 +185,46 @@ var
   d: Boolean;
 begin
   qText := TStringList.Create;
-  qText.Append('BEGIN:VCARD \r\n');
+  qText.Append('BEGIN:VCARD');
   d := False;
   if edt_CardName.Text <> '' then
   begin
-    qText.Append(Format('FN:%s\r\n', [edt_CardName.Text]));
+    qText.Append(Format('FN:%s', [edt_CardName.Text]));
     d := True;
   end;
   if edt_CardPosition.Text <> '' then
   begin
-    qText.Append(Format('TITLE:%s\r\n', [edt_CardPosition.Text]));
+    qText.Append(Format('TITLE:%s', [edt_CardPosition.Text]));
     d := True;
   end;
   if edt_CardWeb.Text <> '' then
   begin
-    qText.Append(Format('URL:%s\r\n', [edt_CardWeb.Text]));
+    qText.Append(Format('URL:%s', [edt_CardWeb.Text]));
     d := True;
   end;
   if edt_CardNumber.Text <> '' then
   begin
-    qText.Append(Format('TEL;CELL:%s\r\n', [edt_CardWeb.Text]));
+    qText.Append(Format('TEL;CELL:%s', [edt_CardWeb.Text]));
     d := True;
   end;
   if edt_CardQQ.Text <> '' then
   begin
-    qText.Append(Format('X-QQ:%s\r\n', [edt_CardWeb.Text]));
+    qText.Append(Format('X-QQ:%s', [edt_CardWeb.Text]));
     d := True;
   end;
   if edt_CardEmail.Text <> '' then
   begin
-    qText.Append(Format('EMAIL:%s\r\n', [edt_CardWeb.Text]));
+    qText.Append(Format('EMAIL:%s', [edt_CardWeb.Text]));
     d := True;
   end;
   if edt_CardCompany.Text <> '' then
   begin
-    qText.Append(Format('ORG:%s\r\n', [edt_CardWeb.Text]));
+    qText.Append(Format('ORG:%s', [edt_CardWeb.Text]));
     d := True;
   end;
   if edt_CardAdd.Text <> '' then
   begin
-    qText.Append(Format('ADD;WORK:%s\r\n', [edt_CardWeb.Text]));
+    qText.Append(Format('ADD;WORK:%s', [edt_CardWeb.Text]));
     d := True;
   end;
   qText.Append('END:VCARD');

@@ -2,31 +2,29 @@ unit ScanManager;
 
 interface
 
-uses SysUtils, FMX.Graphics, generics.collections, RGBLuminanceSource,
-  HybridBinarizer, BinaryBitmap,
-  MultiFormatReader, ReadResult, BarcodeFormat, DecodeHintType;
+uses
+  SysUtils, FMX.Graphics, generics.collections, RGBLuminanceSource,
+  HybridBinarizer, BinaryBitmap, MultiFormatReader, ReadResult, BarcodeFormat,
+  DecodeHintType, System.Classes;
 
 type
   TScanManager = class
   private
     FMultiFormatReader: TMultiFormatReader;
+
     hints: TDictionary<TDecodeHintType, TObject>;
     listFormats: TList<TBarcodeFormat>;
-
-    function GetMultiFormatReader(format: TBarcodeFormat;
-      additionalHints: TDictionary<TDecodeHintType, TObject>)
-      : TMultiFormatReader;
+    function GetMultiFormatReader(format: TBarcodeFormat; additionalHints: TDictionary<TDecodeHintType, TObject>): TMultiFormatReader;
   public
-    function Scan(pBitmapForScan: TBitmap): TReadResult;
-    constructor Create(format: TBarcodeFormat;
-      additionalHints: TDictionary<TDecodeHintType, TObject>);
+    function Scan(pBitmapForScan: TBitmap): TReadResult; overload;
+    function Scan(stream: TStream): TReadResult; overload;
+    constructor Create(format: TBarcodeFormat; additionalHints: TDictionary<TDecodeHintType, TObject>);
     destructor Destroy; override;
   end;
 
 implementation
 
-constructor TScanManager.Create(format: TBarcodeFormat;
-  additionalHints: TDictionary<TDecodeHintType, TObject>);
+constructor TScanManager.Create(format: TBarcodeFormat; additionalHints: TDictionary<TDecodeHintType, TObject>);
 begin
   inherited Create;
   FMultiFormatReader := GetMultiFormatReader(format, additionalHints);
@@ -46,24 +44,20 @@ begin
     hints.Clear();
     FreeAndNil(hints);
   end;
-  
+
   FreeAndNil(FMultiFormatReader);
   inherited;
 end;
 
-function TScanManager.GetMultiFormatReader(format: TBarcodeFormat;
-  additionalHints: TDictionary<TDecodeHintType, TObject>): TMultiFormatReader;
-
+function TScanManager.GetMultiFormatReader(format: TBarcodeFormat; additionalHints: TDictionary<TDecodeHintType, TObject>): TMultiFormatReader;
 var
-
   ahKey: TDecodeHintType;
   ahValue: TObject;
-
 begin
   Result := TMultiFormatReader.Create;
   hints := TDictionary<TDecodeHintType, TObject>.Create;
-  listFormats:= nil;
-  
+  listFormats := nil;
+
   if ((format <> TBarcodeFormat.Auto)) then
   begin
     listFormats := TList<TBarcodeFormat>.Create();
@@ -90,8 +84,7 @@ var
   BinaryBitmap: TBinaryBitmap;
 begin
   try
-    RGBLuminanceSource := TRGBLuminanceSource.RGBLuminanceSource(pBitmapForScan,
-      pBitmapForScan.Width, pBitmapForScan.Height);
+    RGBLuminanceSource := TRGBLuminanceSource.RGBLuminanceSource(pBitmapForScan, pBitmapForScan.Width, pBitmapForScan.Height);
 
     HybridBinarizer := THybridBinarizer.Create(RGBLuminanceSource);
 
@@ -117,4 +110,10 @@ begin
   end;
 end;
 
+function TScanManager.Scan(stream: TStream): TReadResult;
+begin
+  Scan(TBitmap.CreateFromStream(stream));
+end;
+
 end.
+

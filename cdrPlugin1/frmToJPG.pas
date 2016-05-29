@@ -389,6 +389,12 @@ begin
       h := page.SizeHeight;
     end;
   end
+  else if rb_SelectionArea.Checked then
+  begin
+    sr := mApp.ActiveSelectionRange;
+    w := sr.SizeWidth;
+    h := sr.SizeHeight;
+  end
   else
   begin
     w := page.Shapes.All.SizeWidth;
@@ -802,7 +808,7 @@ begin
       ef.Finish;
       exit;
     end
-    else if rb_SelectionArea.Checked then
+    else if rb_SelectionArea.Checked then //
     begin
       rct := mApp.CreateRect(0, 0, 0, 0);
       sr := mApp.ActiveSelectionRange;

@@ -85,8 +85,11 @@ uses
   LuminanceSource in 'QRCode\Decode\Filtering\LuminanceSource.pas',
   RGBLuminanceSource in 'QRCode\Decode\Filtering\RGBLuminanceSource.Pas',
   SVGImage in 'QRCode\Encode\SVGImage.pas',
-  CaptureImageTool in 'CaptureImageTool\CaptureImageTool.pas' {Form1},
-  frmFontRecognition in 'frmFontRecognition.pas' {fFontRecognition};
+  frmFontRecognition in 'frmFontRecognition.pas' {fFontRecognition},
+  CaptureImageTool in '..\截图\CaptureImageTool.pas' {TCaptureImageTool},
+  Operate in '..\截图\Operate.pas',
+  GdiPlus in '..\图标Base64生成\GdiPlus\Lib\GdiPlus.pas',
+  GdiPlusHelpers in '..\图标Base64生成\GdiPlus\Lib\GdiPlusHelpers.pas';
 
 {$R *.res}
 

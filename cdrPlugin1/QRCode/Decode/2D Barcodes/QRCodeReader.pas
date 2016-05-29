@@ -21,33 +21,28 @@ interface
 
 uses
   SysUtils, Generics.Collections, Math, BitArray, ReadResult, Reader,
-  DecodeHintType, ResultPoint, BarcodeFormat, BinaryBitmap, QRDecoder,
-  Bitmatrix,
+  DecodeHintType, ResultPoint, BarcodeFormat, BinaryBitmap, QRDecoder, Bitmatrix,
   DecoderResult, ResultMetadataType, DetectorResult, QRCodeDecoderMetaData,
-  Detector, DecodedBitStreamParser;
+  Detector, DecodedBitStreamParser, FMX.Graphics, RGBLuminanceSource,
+  HybridBinarizer,System.Classes;
 
 type
-
   TQRCodeReader = class(TInterfacedObject, IReader)
   private
     // Fields
     Decoder: TQRDecoder;
     NO_POINTS: TArray<TResultPoint>;
-
     class function extractPureBits(image: TBitMatrix): TBitMatrix; static;
-    class function moduleSize(leftTopBlack: TArray<Integer>; image: TBitMatrix;
-      var msize: Single): boolean; static;
-
+    class function moduleSize(leftTopBlack: TArray<Integer>; image: TBitMatrix; var msize: Single): boolean; static;
   protected
     function getDecoder: TQRDecoder;
   public
     constructor Create();
     function decode(image: TBinaryBitmap): TReadResult; overload;
-    function decode(image: TBinaryBitmap;
-      hints: TDictionary<TDecodeHintType, TObject>): TReadResult; overload;
-
+    function decode(image: TBinaryBitmap; hints: TDictionary<TDecodeHintType, TObject>): TReadResult; overload;
+    function decode(pBitmapForScan: TBitmap): TReadResult; overload;
+    function decode(stream: TStream): TReadResult; overload;
     procedure reset;
-
   end;
 
 implementation
@@ -66,8 +61,7 @@ begin
   NO_POINTS := TArray<TResultPoint>.Create();
 end;
 
-function TQRCodeReader.decode(image: TBinaryBitmap;
-  hints: TDictionary<TDecodeHintType, TObject>): TReadResult;
+function TQRCodeReader.decode(image: TBinaryBitmap; hints: TDictionary<TDecodeHintType, TObject>): TReadResult;
 var
   DecoderResult: TDecoderResult;
   Detector: TDetector;
@@ -77,7 +71,6 @@ var
   data: TQRCodeDecoderMetaData;
   byteSegments: TList<TArray<Byte>>;
   ecLevel: string;
-
 begin
   Detector := nil;
 
@@ -141,8 +134,7 @@ begin
     if (data <> nil) then
       data.applyMirroredCorrection(points);
 
-    Result := TReadResult.Create(DecoderResult.Text, DecoderResult.RawBytes,
-      points, BarcodeFormat.QR_CODE);
+    Result := TReadResult.Create(DecoderResult.Text, DecoderResult.RawBytes, points, BarcodeFormat.QR_CODE);
 
     byteSegments := DecoderResult.byteSegments;
 
@@ -152,15 +144,12 @@ begin
     ecLevel := DecoderResult.ecLevel;
 
     if (length(ecLevel) = 0) then
-      Result.putMetadata(TResultMetadataType.ERROR_CORRECTION_LEVEL,
-        TObject(ecLevel));
+      Result.putMetadata(TResultMetadataType.ERROR_CORRECTION_LEVEL, TObject(ecLevel));
 
     if (DecoderResult.StructuredAppend) then
     begin
-      Result.putMetadata(TResultMetadataType.STRUCTURED_APPEND_SEQUENCE,
-        TObject(DecoderResult.StructuredAppendSequenceNumber));
-      Result.putMetadata(TResultMetadataType.STRUCTURED_APPEND_PARITY,
-        TObject(DecoderResult.StructuredAppendParity))
+      Result.putMetadata(TResultMetadataType.STRUCTURED_APPEND_SEQUENCE, TObject(DecoderResult.StructuredAppendSequenceNumber));
+      Result.putMetadata(TResultMetadataType.STRUCTURED_APPEND_PARITY, TObject(DecoderResult.StructuredAppendParity))
     end;
 
   finally
@@ -170,6 +159,42 @@ begin
       FreeAndNil(Detector);
   end;
 
+end;
+
+function TQRCodeReader.decode(pBitmapForScan: TBitmap): TReadResult;
+var
+  RGBLuminanceSource: TRGBLuminanceSource;
+  HybridBinarizer: THybridBinarizer;
+  BinaryBitmap: TBinaryBitmap;
+begin
+  try
+    RGBLuminanceSource := TRGBLuminanceSource.RGBLuminanceSource(pBitmapForScan, pBitmapForScan.Width, pBitmapForScan.Height);
+
+    HybridBinarizer := THybridBinarizer.Create(RGBLuminanceSource);
+
+    BinaryBitmap := TBinaryBitmap.BinaryBitmap(HybridBinarizer);
+    decode(BinaryBitmap);
+  finally
+    if (BinaryBitmap <> nil) then
+    begin
+      BinaryBitmap.Free;
+    end;
+
+    if (HybridBinarizer <> nil) then
+    begin
+      HybridBinarizer.Free;
+    end;
+
+    if (RGBLuminanceSource <> nil) then
+    begin
+      RGBLuminanceSource.Free;
+    end;
+  end;
+end;
+
+function TQRCodeReader.decode(stream: TStream): TReadResult;
+begin
+  decode(TBitmap.CreateFromStream(stream));
 end;
 
 class function TQRCodeReader.extractPureBits(image: TBitMatrix): TBitMatrix;
@@ -182,8 +207,7 @@ begin
   Result := self.Decoder
 end;
 
-class function TQRCodeReader.moduleSize(leftTopBlack: TArray<Integer>;
-  image: TBitMatrix; var msize: Single): boolean;
+class function TQRCodeReader.moduleSize(leftTopBlack: TArray<Integer>; image: TBitMatrix; var msize: Single): boolean;
 begin
   raise ENotImplemented.Create('not supported');
 end;
@@ -194,3 +218,4 @@ begin
 end;
 
 end.
+
