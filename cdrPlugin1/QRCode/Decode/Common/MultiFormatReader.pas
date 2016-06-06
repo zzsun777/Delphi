@@ -17,9 +17,10 @@ unit MultiFormatReader;
 }
 interface
 
-uses SysUtils, rtti, Generics.Collections,
-  ReadResult, Reader, DecodeHintType, BinaryBitmap, BarcodeFormat,
-  MultiFormatOneDReader, ResultPoint, OneDReader, QRCodeReader;
+uses
+  SysUtils, rtti, Generics.Collections, ReadResult, Reader, DecodeHintType,
+  BinaryBitmap, BarcodeFormat, MultiFormatOneDReader, ResultPoint, OneDReader,
+  QRCodeReader;
 
 /// <summary>
 /// MultiFormatReader is a convenience class and the main entry point into the library for most uses.
@@ -30,12 +31,10 @@ uses SysUtils, rtti, Generics.Collections,
 /// <author>dswitkin@google.com (Daniel Switkin)</author>
 /// <author>www.Redivivus.in (suraj.supekar@redivivus.in) - Ported from ZXING Java Source</author>
 type
-   TMultiFormatReader = class(TInterfacedObject, IReader)
+  TMultiFormatReader = class(TInterfacedObject, IReader)
   private
-
     FHints: TDictionary<TDecodeHintType, TObject>;
     readers: TList<IReader>;
-
     procedure Set_Hints(const Value: TDictionary<TDecodeHintType, TObject>);
     function Get_Hints: TDictionary<TDecodeHintType, TObject>;
 
@@ -51,7 +50,6 @@ type
     /// <throws>  ReaderException Any errors which occurred </throws>
   public
     function Decode(image: TBinaryBitmap): TReadResult; overload;
-    function Decode(image: TBinaryBitmap; WithHints: Boolean): TReadResult; overload;
     /// <summary> Decode an image using the hints provided. Does not honor existing state.
     ///
     /// </summary>
@@ -62,8 +60,7 @@ type
     /// <returns> The contents of the image
     /// </returns>
     /// <throws>  ReaderException Any errors which occurred </throws>
-    function Decode(image: TBinaryBitmap;
-      pHints: TDictionary<TDecodeHintType, TObject>): TReadResult; overload;
+    function Decode(image: TBinaryBitmap; pHints: TDictionary<TDecodeHintType, TObject>): TReadResult; overload;
 
     /// <summary> Decode an image using the state set up by calling setHints() previously. Continuous scan
     /// clients will get a <b>large</b> speed increase by using this instead of decode().
@@ -84,13 +81,9 @@ type
     /// </summary>
     /// <param name="hints">The set of hints to use for subsequent calls to decode(image)
     /// </param>
-    property hints: TDictionary<TDecodeHintType, TObject> read Get_Hints
-      write Set_Hints;
-
+    property hints: TDictionary<TDecodeHintType, TObject> read Get_Hints write Set_Hints;
     procedure Reset;
-
     procedure FreeReaders();
-
   private
     function DecodeInternal(image: TBinaryBitmap): TReadResult;
   end;
@@ -103,14 +96,7 @@ begin
   result := DecodeInternal(image)
 end;
 
-function TMultiFormatReader.Decode(image: TBinaryBitmap; WithHints: Boolean): TReadResult;
-begin
-  result := DecodeInternal(image)
-end;
-
-
-function TMultiFormatReader.Decode(image: TBinaryBitmap;
-  pHints: TDictionary<TDecodeHintType, TObject>): TReadResult;
+function TMultiFormatReader.Decode(image: TBinaryBitmap; pHints: TDictionary<TDecodeHintType, TObject>): TReadResult;
 begin
   hints := pHints;
   result := DecodeInternal(image)
@@ -163,19 +149,16 @@ begin
   result := FHints;
 end;
 
-procedure TMultiFormatReader.Set_Hints(const Value: TDictionary<TDecodeHintType,
-  TObject>);
+procedure TMultiFormatReader.Set_Hints(const Value: TDictionary<TDecodeHintType, TObject>);
 var
   tryHarder, addOneDReader: Boolean;
   formats: TList<TBarcodeFormat>;
 begin
   FHints := Value;
 
-  tryHarder := (Value <> nil) and
-    (Value.ContainsKey(DecodeHintType.TRY_HARDER));
+  tryHarder := (Value <> nil) and (Value.ContainsKey(DecodeHintType.TRY_HARDER));
 
-  if ((Value = nil) or (not Value.ContainsKey(DecodeHintType.POSSIBLE_FORMATS)))
-  then
+  if ((Value = nil) or (not Value.ContainsKey(DecodeHintType.POSSIBLE_FORMATS))) then
   begin
     formats := nil;
   end
@@ -187,19 +170,7 @@ begin
   if formats <> nil then
   begin
 
-    addOneDReader :=
-      (((((((((((formats.Contains(BarcodeFormat.All_1D)) or
-      (formats.Contains(BarcodeFormat.UPC_A))) or
-      (formats.Contains(BarcodeFormat.UPC_E))) or
-      (formats.Contains(BarcodeFormat.EAN_13))) or
-      (formats.Contains(BarcodeFormat.EAN_8))) or
-      (formats.Contains(BarcodeFormat.CODABAR))) or
-      (formats.Contains(BarcodeFormat.CODE_39))) or
-      (formats.Contains(BarcodeFormat.CODE_93))) or
-      (formats.Contains(BarcodeFormat.CODE_128))) or
-      (formats.Contains(BarcodeFormat.ITF))) or
-      (formats.Contains(BarcodeFormat.RSS_14))) or
-      (formats.Contains(BarcodeFormat.RSS_EXPANDED));
+    addOneDReader := (((((((((((formats.contains(BarcodeFormat.All_1D)) or (formats.contains(BarcodeFormat.UPC_A))) or (formats.contains(BarcodeFormat.UPC_E))) or (formats.contains(BarcodeFormat.EAN_13))) or (formats.contains(BarcodeFormat.EAN_8))) or (formats.contains(BarcodeFormat.CODABAR))) or (formats.contains(BarcodeFormat.CODE_39))) or (formats.contains(BarcodeFormat.CODE_93))) or (formats.contains(BarcodeFormat.CODE_128))) or (formats.contains(BarcodeFormat.ITF))) or (formats.contains(BarcodeFormat.RSS_14))) or (formats.contains(BarcodeFormat.RSS_EXPANDED));
 
     readers := TList<IReader>.Create;
 
@@ -210,23 +181,23 @@ begin
     begin
       readers.Add(TMultiFormatOneDReader.Create(Value))
     end;
-    if formats.Contains(BarcodeFormat.QR_CODE) then
+    if formats.contains(BarcodeFormat.QR_CODE) then
     begin
       readers.Add(TQRCodeReader.Create())
     end;
-    if formats.Contains(BarcodeFormat.DATA_MATRIX) then
+    if formats.contains(BarcodeFormat.DATA_MATRIX) then
     begin
       // readers.Add(new DataMatrixReader())
     end;
-    if formats.Contains(BarcodeFormat.AZTEC) then
+    if formats.contains(BarcodeFormat.AZTEC) then
     begin
       // readers.Add(new AztecReader())
     end;
-    if formats.Contains(BarcodeFormat.PDF_417) then
+    if formats.contains(BarcodeFormat.PDF_417) then
     begin
       // readers.Add(new PDF417Reader())
     end;
-    if formats.Contains(BarcodeFormat.MAXICODE) then
+    if formats.contains(BarcodeFormat.MAXICODE) then
     begin
       // readers.Add(new MaxiCodeReader())
     end;
@@ -278,7 +249,6 @@ var
   i: integer;
   Reader: IReader;
 begin
-
   result := nil;
   if (readers = nil) then
   begin
@@ -286,8 +256,7 @@ begin
   end;
 
   rpCallBack := nil;
-  if ((FHints <> nil) and
-    (FHints.ContainsKey(DecodeHintType.NEED_RESULT_POINT_CALLBACK))) then
+  if ((FHints <> nil) and (FHints.ContainsKey(DecodeHintType.NEED_RESULT_POINT_CALLBACK))) then
   begin
     // rpCallBack := FHints[DecodeHintType.NEED_RESULT_POINT_CALLBACK]
     // as TResultPointCallback(nil);
@@ -320,3 +289,4 @@ begin
 end;
 
 end.
+

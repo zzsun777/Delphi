@@ -25,7 +25,7 @@ type
   TBinaryBitmap = class
 
   private
-    Binarizer: TBinarizer;
+    FBinarizer: TBinarizer;
     Matrix: TBitMatrix;
     function GetWidth: Integer;
     function GetHeight: Integer;
@@ -64,7 +64,7 @@ begin
     raise EArgumentException.Create('Binarizer must be non-null.');
   end;
 
-  Self.Binarizer := Binarizer;
+  Self.FBinarizer := Binarizer;
 
 end;
 
@@ -81,7 +81,7 @@ function TBinaryBitmap.GetBlackMatrix: TBitMatrix;
 begin
   if (Matrix = nil) then
   begin
-    Matrix := Binarizer.BlackMatrix();
+    Matrix := FBinarizer.BlackMatrix();
   end;
 
   result := Matrix;
@@ -90,30 +90,30 @@ end;
 
 function TBinaryBitmap.getBlackRow(y: Integer; row: TBitArray): TBitArray;
 begin
-  result := Binarizer.getBlackRow(y, row);
+  result := FBinarizer.getBlackRow(y, row);
 end;
 
 function TBinaryBitmap.GetHeight: Integer;
 begin
-  result := Binarizer.Height;
+  result := FBinarizer.Height;
 end;
 
 function TBinaryBitmap.GetWidth: Integer;
 begin
-  result := Binarizer.Width;
+  result := FBinarizer.Width;
 end;
 
 function TBinaryBitmap.rotateCounterClockwise: TBinaryBitmap;
 var
-  newSource: TLuminanceSource;
+  newSource: ILuminanceSource;
 begin
-  newSource := Binarizer.LuminanceSource.rotateCounterClockwise();
-  result := TBinaryBitmap.BinaryBitmap(Binarizer.createBinarizer(newSource));
+  newSource := FBinarizer.LuminanceSource.rotateCounterClockwise();
+  result := TBinaryBitmap.BinaryBitmap(FBinarizer.createBinarizer(newSource));
 end;
 
 function TBinaryBitmap.RotateSupported: Boolean;
 begin
-  result := Binarizer.LuminanceSource.RotateSupported();
+  result := FBinarizer.LuminanceSource.RotateSupported();
 end;
 
 end.

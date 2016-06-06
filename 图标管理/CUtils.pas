@@ -25,7 +25,7 @@ type
     ToolTip: WideString;
     Parent: SCommandButton;
   public
-    constructor Create(sGuid: WideString = '53175317-5317-5317-5317-900000000001'; sCmd: WideString = 'cdrplugin1_'; sIconPath:WideString = ''; sCaption: WideString = '新按钮'; sToolTip: WideString = '新按钮'; sIconGuid:WideString = '');
+    constructor Create(sGuid: WideString = '53175317-5317-5317-5317-900000000001'; sCmd: WideString = 'cdrplugin1_'; sIconPath: WideString = ''; sCaption: WideString = '新按钮'; sToolTip: WideString = '新按钮'; sIconGuid: WideString = '');
   end;
 
 type
@@ -456,7 +456,7 @@ begin
   tmpNode2.Attributes['type'] := 'toolbar';
   tmpNode2.Attributes['nonLocalizableName'] := Name;
   tmpNode2.Attributes['userCaption'] := Self.Caption;
-  tmpNode2.Attributes['userCreate'] := 'true';
+  tmpNode2.Attributes['userCreated'] := 'true';
   tmpNode2 := tmpNode2.AddChild('toolbar');
   for cmdButton in Buttons do
   begin
@@ -475,11 +475,10 @@ begin
       tmpNode2 := tmpNode1.AddChild('commandBarData');
       tmpNode2.Attributes['guid'] := subBar.FlyoutBarRef;
       tmpNode2.Attributes['type'] := 'toolbar';
-      //tmpNode2.Attributes['nonLocalizableName'] := subBar.NonLocalizableName;
       tmpNode2.Attributes['userCaption'] := subBar.Caption;
       tmpNode2.Attributes['userToopTip'] := subBar.ToolTip;
-      tmpNode2.Attributes['userCreate'] := 'true';
-      tmpNode2 := tmpNode2.AddChild('container');
+      tmpNode2.Attributes['userCreated'] := 'true';
+      tmpNode2 := tmpNode2.AddChild('toolbar');
       for cmdButton1 in subBar.Buttons do
       begin
         tmpNode3 := tmpNode2.AddChild('item');
@@ -579,6 +578,7 @@ begin
   DeleteFile(PWideChar(TPath.GetTempPath + '\x7workspace.xml'));
   DeleteFile(PWideChar(TPath.GetTempPath + '\x7exportsettins.xml'));
 
+  DeleteFile(PChar(fileName));
   RenameFile(TPath.GetTempPath + '\x7z.zip', fileName);
 end;
 

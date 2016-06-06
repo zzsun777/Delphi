@@ -3,8 +3,8 @@ inherited fScreen: TfScreen
   ClientHeight = 265
   ClientWidth = 335
   OnCreate = FormCreate
-  ExplicitWidth = 351
-  ExplicitHeight = 304
+  ExplicitWidth = 341
+  ExplicitHeight = 293
   PixelsPerInch = 96
   TextHeight = 13
   object lbl1: TLabel

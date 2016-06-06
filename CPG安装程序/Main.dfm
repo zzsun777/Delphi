@@ -105,6 +105,7 @@ object Form1: TForm1
     Width = 75
     Height = 25
     Caption = #21368#36733
+    Enabled = False
     TabOrder = 2
   end
 end

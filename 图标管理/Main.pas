@@ -180,7 +180,7 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   cmdButton, cmdButton1: SCommandButton;
 begin
-  xmlPath := 'D:\save.xml';
+  xmlPath := '\\TT3\d\save.xml';
   mCommandBar := SCommandBar.Create(Self, xmlPath);
 
   pnl1.Visible := True;
@@ -271,9 +271,9 @@ end;
 
 procedure TForm1.btn1Click(Sender: TObject);
 begin
-  mCommandBar.ToX4('\\Tt3\d\360data\重要数据\Documents\百度云同步盘\vspro\Delphi工程\cdrPlugin1\UI\x4.xslt');
-  mCommandBar.ToX7('\\Tt3\d\360data\重要数据\Documents\百度云同步盘\vspro\Delphi工程\cdrPlugin1\UI\x7\x7.cdws');
-  mCommandBar.ToX8('\\Tt3\d\360data\重要数据\Documents\百度云同步盘\vspro\Delphi工程\cdrPlugin1\UI\x8\x8.cdws');
+  mCommandBar.ToX4('\\Tt3\d\360data\Data\文档\百度云同步盘\vspro\Delphi工程\cdrPlugin1\UI\x4.xslt');
+  mCommandBar.ToX7('\\Tt3\d\360data\Data\文档\百度云同步盘\vspro\Delphi工程\cdrPlugin1\UI\x7\x7.cdws');
+  mCommandBar.ToX8('\\Tt3\d\360data\Data\文档\百度云同步盘\vspro\Delphi工程\cdrPlugin1\UI\x8\x8.cdws');
 end;
 
 procedure TForm1.btn_AddButtonClick(Sender: TObject);

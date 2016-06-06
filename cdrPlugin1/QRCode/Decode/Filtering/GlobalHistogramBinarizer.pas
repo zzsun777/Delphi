@@ -36,7 +36,7 @@ type
     class procedure ClassInit; static;
 
   public
-    constructor Create(source: TLuminanceSource);
+    constructor Create(source: ILuminanceSource);
 
     // constructor GlobalHistogramBinarizer(source: TLuminanceSource);
     function GetBlackRow(y: Integer; row: TBitArray): TBitArray; override;
@@ -55,7 +55,7 @@ begin
   SetLength(EMPTY, 0);
 end;
 
-constructor TGlobalHistogramBinarizer.Create(source: TLuminanceSource);
+constructor TGlobalHistogramBinarizer.Create(source: ILuminanceSource);
 begin
   inherited Create(source);
   luminances := EMPTY;

@@ -80,13 +80,13 @@ procedure TfScreen.btn3Click(Sender: TObject);
 begin
   inherited;
   ShellExecute(Self.Handle, 'open', PChar(Application.ExeName), nil, nil, SW_SHOWNORMAL);
-  if mApp.VersionMajor > 15 then
+  if FApp.VersionMajor > 15 then
   begin
-    mApp.Quit;
+    FApp.Quit;
   end
   else
   begin
-    TerminateProcess(mApp.ActiveWindow.Handle, 0);
+    TerminateProcess(FApp.ActiveWindow.Handle, 0);
   end;
 end;
 
@@ -115,7 +115,7 @@ begin
   py := GetDeviceCaps(dc, VERTRES);
   lbl2.Caption := Format('ÆÁÄ»·Ö±æÂÊÎª:%d¡Á%d', [px, py]);
 
-  regString := Format('SOFTWARE\Corel\CorelDRAW\%d.0\Draw\Application Preferences\', [mapp.VersionMajor]);
+  regString := Format('SOFTWARE\Corel\CorelDRAW\%d.0\Draw\Application Preferences\', [FApp.VersionMajor]);
   ARegistry := TRegistry.Create;
   ARegistry.RootKey := HKEY_CURRENT_USER;
 
@@ -133,11 +133,11 @@ var
   X: Double;
 begin
   X := 0;
-  if mApp.VersionMajor > 16 then
+  if FApp.VersionMajor > 16 then
   begin
-    Result := Double(mApp.GetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterX'));
+    Result := Double(FApp.GetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterX'));
   end
-  else if (mApp.VersionMajor > 14) and (mApp.VersionMajor < 17) then
+  else if (FApp.VersionMajor > 14) and (FApp.VersionMajor < 17) then
   begin
     if ARegistry.OpenKey(regString + 'Zoom Tool', False) then
     begin
@@ -156,11 +156,11 @@ function TfScreen.GetY;
 var
   Y: Double;
 begin
-  if mApp.VersionMajor > 16 then
+  if FApp.VersionMajor > 16 then
   begin
-    Result := Double(mApp.GetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterY'));
+    Result := Double(FApp.GetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterY'));
   end
-  else if (mApp.VersionMajor > 14) and (mApp.VersionMajor < 17) then
+  else if (FApp.VersionMajor > 14) and (FApp.VersionMajor < 17) then
   begin
     if ARegistry.OpenKey(regString + 'Zoom Tool', False) then
     begin
@@ -177,12 +177,12 @@ end;
 
 procedure TfScreen.SetXY(X, Y: Double);
 begin
-  if mApp.VersionMajor > 16 then
+  if FApp.VersionMajor > 16 then
   begin
-    mApp.SetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterX', X);
-    mApp.SetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterY', Y);
+    FApp.SetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterX', X);
+    FApp.SetApplicationPreferenceValue('Zoom Tool', 'DisplayPixelsPerMeterY', Y);
   end
-  else if (mApp.VersionMajor > 14) and (mApp.VersionMajor < 17) then
+  else if (FApp.VersionMajor > 14) and (FApp.VersionMajor < 17) then
   begin
     if ARegistry.OpenKey(regString + 'Zoom Tool', False) then
     begin

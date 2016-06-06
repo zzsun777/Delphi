@@ -18,41 +18,32 @@ unit RGBLuminanceSource;
 }
 
 interface
+
 uses
-  System.SysUtils, System.UITypes, FMX.Graphics,  LuminanceSource;
+  System.SysUtils, System.UITypes, FMX.Graphics, LuminanceSource;
 
 type
-
-  TRGBLuminanceSource = class(TLuminanceSource)
+  TRGBLuminanceSource = class(ILuminanceSource)
   private
-    luminances: TArray<Byte>;
     isRotated: boolean;
-
-  protected
-
+    luminances: TArray<Byte>;
   public
-    constructor RGBLuminanceSource(sourceBitmap: TBitmap; w: Integer;
-      h: Integer);
+    constructor RGBLuminanceSource(sourceBitmap: TBitmap; w: Integer; h: Integer);
     function GetRow(y: Integer; row: TArray<Byte>): TArray<Byte>; override;
     function Matrix: TArray<Byte>; override;
-    function Crop(left: Integer; top: Integer; width: Integer; height: Integer)
-      : TLuminanceSource; override;
-    function RotateCounterClockwise(): TLuminanceSource; override;
+    function Crop(left: Integer; top: Integer; width: Integer; height: Integer): ILuminanceSource; override;
+    function RotateCounterClockwise(): ILuminanceSource; override;
     function RotateSupported: boolean; override;
-
   end;
 
 implementation
 
-constructor TRGBLuminanceSource.RGBLuminanceSource(sourceBitmap: TBitmap;
-  w: Integer; h: Integer);
-
+constructor TRGBLuminanceSource.RGBLuminanceSource(sourceBitmap: TBitmap; w: Integer; h: Integer);
 var
   x, y, offset: Integer;
   color: TAlphaColor;
   red, green, blue: Byte;
   currentData: TBitmapData;
-
 begin
   inherited LuminanceSource(w, h);
 
@@ -88,8 +79,7 @@ begin
 
 end;
 
-function TRGBLuminanceSource.GetRow(y: Integer; row: TArray<Byte>)
-  : TArray<Byte>;
+function TRGBLuminanceSource.GetRow(y: Integer; row: TArray<Byte>): TArray<Byte>;
 var
   i, rowSize: Integer;
 begin
@@ -128,19 +118,17 @@ begin
   result := row;
 end;
 
-
 function TRGBLuminanceSource.Matrix: TArray<Byte>;
 begin
   result := luminances;
 end;
 
-function TRGBLuminanceSource.Crop(left: Integer; top: Integer; width: Integer;
-  height: Integer): TLuminanceSource;
+function TRGBLuminanceSource.Crop(left: Integer; top: Integer; width: Integer; height: Integer): ILuminanceSource;
 begin
-  result := Inherited Crop(left, top, width, height);
+  result := inherited Crop(left, top, width, height);
 end;
 
-function TRGBLuminanceSource.RotateCounterClockwise(): TLuminanceSource;
+function TRGBLuminanceSource.RotateCounterClockwise(): ILuminanceSource;
 begin
   isRotated := true;
   result := Self;
@@ -152,3 +140,4 @@ begin
 end;
 
 end.
+

@@ -12,7 +12,7 @@ type
   TDocuments = array of IVGDocument;
 
 type
-  TfToJPG = class(TTBaseForm, IDispatch)
+  TfToJPG = class(TTBaseForm)
     grp1: TGroupBox;
     lbl1: TLabel;
     edt_fileName: TEdit;
@@ -55,24 +55,26 @@ type
     chklst_Documents: TCheckListBox;
     lst1: TListBox;
     btn_Exit: TButton;
-    chk_TopMost: TCheckBox;
+    btn1: TButton;
     procedure btn_BrowserClick(Sender: TObject);
     procedure btn_ExportClick(Sender: TObject);
     procedure rb_CurDocumentClick(Sender: TObject);
     procedure btn_ResetClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormCreate(Sender: TObject);
     procedure chk_PageAreaClick(Sender: TObject);
     procedure chk_PageHalfClick(Sender: TObject);
     procedure cbb_FiletypeChange(Sender: TObject);
     procedure btn_ExitClick(Sender: TObject);
     procedure lst1DrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
-    procedure chk_TopMostClick(Sender: TObject);
     procedure chk_InculdePagenameClick(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure btn1Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     outFileName: string;
     ind: Integer;
-    settingsIniFile: TIniFile;
+    firstKTime, secondKTime: TDateTime;
   private
     procedure AddMessage(msg: string);
     procedure SetName;
@@ -89,12 +91,11 @@ type
     function GetFilter: cdrFilter;
     procedure GetSelctionDocuments(var docs: TDocuments);
     procedure GetPageNumers(var ns: TArrayEx<Integer>);
+    procedure GetDocList;
   public
     procedure OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray); override;
     procedure DocumentOpen(const Doc: IVGDocument; const FileName: WideString); override;
     procedure DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); override;
-    procedure QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool); override;
-    procedure DocumentClose(const Doc: IVGDocument); override;
     procedure SelectionChange; override;
   end;
 
@@ -104,6 +105,13 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfToJPG.btn1Click(Sender: TObject);
+begin
+  inherited;
+  Close;
+  Destroy;
+end;
 
 procedure TfToJPG.btn_BrowserClick(Sender: TObject);
 var
@@ -155,29 +163,18 @@ begin
     chk_MaintainLayers.Checked := False;
   end;
 
-  chk_OverPrintBlack.Enabled := (mApp.VersionMajor > 14);
+  chk_OverPrintBlack.Enabled := (FApp.VersionMajor > 14);
 end;
 
 procedure TfToJPG.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   inherited;
   SaveSettings;
-  if settingsIniFile <> nil then
-  begin
-    settingsIniFile.Destroy;
-  end;
 end;
 
 procedure TfToJPG.FormCreate(Sender: TObject);
-var
-  I: Integer;
 begin
   inherited;
-  if not StartCheck then
-  begin
-    Free;
-    exit;
-  end;
   settingsSection := '导出图片';
   AddEventListen;
   settingsIniFile := GetSettingsInifile;
@@ -185,14 +182,54 @@ begin
   SetName;
   Self.SelectionChange;
 
-  chklst_Documents.Items.Clear;
-  for I := 1 to mApp.Documents.Count do
-  begin
-    chklst_Documents.Items.Add(mApp.Documents[I].Name);
-  end;
+  GetDocList;
+
   rb_CurDocumentClick(nil);
   chk_PageAreaClick(nil);
   cbb_FiletypeChange(nil);
+end;
+
+procedure TfToJPG.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  inherited;
+  if (Key = #$1B) and (not btn1.Visible) then
+  begin
+    if firstKTime = 0 then
+    begin
+      firstKTime := Now;
+      Exit;
+    end
+    else
+    begin
+      if secondKTime = 0 then
+      begin
+        secondKTime := Now;
+        if (secondKTime - firstKTime) * 24 * 60 * 60 > 0.5 then
+        begin
+          firstKTime := 0;
+          secondKTime := 0;
+        end;
+        Exit;
+      end
+      else
+      begin
+        if (Now - secondKTime) * 24 * 60 * 60 > 0.5 then
+        begin
+          firstKTime := 0;
+          secondKTime := 0;
+          Exit;
+        end;
+      end;
+    end;
+    btn1.Visible := True;
+  end;
+end;
+
+procedure TfToJPG.FormShow(Sender: TObject);
+var
+  I: Integer;
+begin
+  inherited;
 end;
 
 procedure TfToJPG.OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray);
@@ -202,39 +239,19 @@ end;
 
 procedure TfToJPG.DocumentOpen(const Doc: IVGDocument; const FileName: WideString);
 begin
+  GetDocList;
   SetName;
 end;
 
 procedure TfToJPG.DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool);
 begin
+  GetDocList;
   SetName;
-end;
-
-procedure TfToJPG.QueryDocumentClose(const Doc: IVGDocument; var Cancel: WordBool);
-begin
-end;
-
-procedure TfToJPG.DocumentClose(const Doc: IVGDocument);
-var
-  N: Integer;
-begin
-  N := 1;
-  if mApp.VersionMajor > 14 then
-  begin
-    N := 1;
-  end;
-  if mApp.Documents.Count = N then
-  begin
-    AddMessage('^文档已全部关闭，退出。。');
-    Close;
-    Exit;
-  end;
-  //SetName;
 end;
 
 procedure TfToJPG.SelectionChange;
 begin
-  if mApp.ActiveDocument.Selection.Shapes.Count > 0 then
+  if FApp.ActiveDocument.Selection.Shapes.Count > 0 then
   begin
     rb_Selection.Enabled := true;
     rb_SelectionArea.Enabled := True;
@@ -246,7 +263,6 @@ begin
     if rb_Selection.Checked or rb_SelectionArea.Checked then
       rb_CurDocument.Checked := True;
   end;
-  SetName;
   rb_CurDocumentClick(nil);
 end;
 
@@ -261,7 +277,7 @@ var
   n: string;
 begin
   try
-    n := mApp.ActiveDocument.Name;
+    n := FApp.ActiveDocument.Name;
     if n.ToLower.EndsWith('.cdr') then
     begin
       n := n.Replace('.cdr', '');
@@ -290,8 +306,6 @@ begin
   chk_Transparent.Checked := settingsIniFile.ReadBool(settingsSection, '透明处理', False);
   chk_MaintainLayers.Checked := settingsIniFile.ReadBool(settingsSection, '保持图层', False);
   {================}
-  chk_TopMost.Checked := settingsIniFile.ReadBool(settingsSection, '窗口置顶', True);
-  chk_TopMostClick(nil);
 end;
 
 procedure TfToJPG.lst1DrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
@@ -327,7 +341,6 @@ begin
   settingsIniFile.WriteBool(settingsSection, '透明处理', chk_Transparent.Checked);
   settingsIniFile.WriteBool(settingsSection, '保持图层', chk_MaintainLayers.Checked);
   {================}
-  settingsIniFile.WriteBool(settingsSection, '窗口置顶', chk_TopMost.Checked);
 end;
 
 procedure TfToJPG.rb_CurDocumentClick(Sender: TObject);
@@ -338,9 +351,9 @@ begin
   chklst_Documents.Visible := rb_Document.Checked;
   if rb_CurDocument.Checked then
   begin
-    if mApp.ActiveDocument.Pages.Count > 1 then
+    if FApp.ActiveDocument.Pages.Count > 1 then
     begin
-      edt_PagezNum.Text := Format('1-%d', [mApp.ActiveDocument.Pages.Count]);
+      edt_PagezNum.Text := Format('1-%d', [FApp.ActiveDocument.Pages.Count]);
     end
     else
     begin
@@ -349,7 +362,7 @@ begin
   end;
   if rb_CurPage.Checked then
   begin
-    edt_PagezNum.Text := Format('%d', [mApp.ActiveDocument.ActivePage.Index]);
+    edt_PagezNum.Text := Format('%d', [FApp.ActiveDocument.ActivePage.Index]);
   end;
   grp3.Enabled := (not rb_Selection.Checked);
   edt_fileName.Enabled := (not rb_Document.Checked);
@@ -391,7 +404,7 @@ begin
   end
   else if rb_SelectionArea.Checked then
   begin
-    sr := mApp.ActiveSelectionRange;
+    sr := FApp.ActiveSelectionRange;
     w := sr.SizeWidth;
     h := sr.SizeHeight;
   end
@@ -433,19 +446,6 @@ procedure TfToJPG.chk_PageHalfClick(Sender: TObject);
 begin
   inherited;
   cbb_PageHalf.Enabled := chk_PageHalf.Checked;
-end;
-
-procedure TfToJPG.chk_TopMostClick(Sender: TObject);
-begin
-  inherited;
-  if chk_TopMost.Checked then
-  begin
-    FormStyle := fsStayOnTop;
-  end
-  else
-  begin
-    FormStyle := fsNormal;
-  end;
 end;
 
 function TfToJPG.GetPageName(page: IVGPage): string;
@@ -528,12 +528,12 @@ begin
     if chklst_Documents.Checked[i] then
     begin
       n := chklst_Documents.Items.Strings[I];
-      for j := 0 to mApp.Documents.Count do
+      for j := 0 to FApp.Documents.Count do
       begin
-        if n = mApp.Documents[j].Name then
+        if n = FApp.Documents[j].Name then
         begin
           SetLength(ds, Length(ds) + 1);
-          ds[Length(ds) - 1] := mApp.Documents[j];
+          ds[Length(ds) - 1] := FApp.Documents[j];
         end;
       end;
     end;
@@ -557,7 +557,7 @@ begin
     if nu.IndexOf('-') = -1 then
     begin
       TryStrToInt(nu, p);
-      if p > mApp.ActiveDocument.Pages.Count then
+      if p > FApp.ActiveDocument.Pages.Count then
       begin
         AddMessage('^页码超过了文档的最大页，请重新设置！');
         edt_PagezNum.Text := '';
@@ -601,6 +601,17 @@ begin
   end;
 end;
 
+procedure TfToJPG.GetDocList;
+var
+  I: Integer;
+begin
+  chklst_Documents.Items.Clear;
+  for I := 1 to FApp.Documents.Count do
+  begin
+    chklst_Documents.Items.Add(FApp.Documents[I].Name);
+  end;
+end;
+
 procedure TfToJPG.Export_;
 var
   d: IVGDocument;
@@ -619,7 +630,7 @@ begin
     if rb_CurDocument.Checked then
     begin
       AddMessage('导出当前文档');
-      ExportDocument(mApp.ActiveDocument);
+      ExportDocument(FApp.ActiveDocument);
     end
     else if rb_Document.Checked then
     begin
@@ -634,7 +645,7 @@ begin
     else if rb_CurPage.Checked then
     begin
       AddMessage('导出当前页面');
-      ExportPic(mApp.ActiveDocument.ActivePage);
+      ExportPic(FApp.ActiveDocument.ActivePage);
     end
     else if rb_Page.Checked then
     begin
@@ -651,24 +662,24 @@ begin
         for I := 0 to ns.Len - 1 do
         begin
           AddMessage(Format('处理页：%d', [ns[I]]));
-          if ns[I] > mApp.ActiveDocument.Pages.Count then
+          if ns[I] > FApp.ActiveDocument.Pages.Count then
           begin
             AddMessage('^页码超出范围跳过');
             Continue;
           end;
-          ExportPic(mApp.ActiveDocument.Pages.Item[ns[I]]);
+          ExportPic(FApp.ActiveDocument.Pages.Item[ns[I]]);
         end;
       end;
     end
     else if rb_Selection.Checked then
     begin
       AddMessage('导出选中对象');
-      ExportPic(mApp.ActiveDocument.ActivePage);
+      ExportPic(FApp.ActiveDocument.ActivePage);
     end
     else if rb_SelectionArea.Checked then
     begin
       AddMessage('导出选中范围');
-      ExportPic(mApp.ActiveDocument.ActivePage);
+      ExportPic(FApp.ActiveDocument.ActivePage);
     end;
 done:
     //Application.ProcessMessages;
@@ -726,7 +737,7 @@ begin
     end;
     if rb_Document.Checked then
     begin
-      namen := mApp.ActiveDocument.Name;
+      namen := FApp.ActiveDocument.Name;
     end
     else
     begin
@@ -735,7 +746,7 @@ begin
 
     filter := GetFilter;
     ext := GetExt;
-    seo := mApp.CreateStructExportOptions;
+    seo := FApp.CreateStructExportOptions;
 
     if chk_Smooth.Checked then
     begin
@@ -751,7 +762,7 @@ begin
     seo.UseColorProfile := chk_UseColorProfile.Checked;
     //特别注意，透明度在jpg等无透明的格式的时候不能为True，不然光滑处理将会失效
     seo.Transparent := chk_Transparent.Checked;
-    if mApp.VersionMajor > 14 then
+    if FApp.VersionMajor > 14 then
     begin
       seo.AlwaysOverprintBlack := chk_OverPrintBlack.Checked;
     end;
@@ -767,7 +778,7 @@ begin
     seo.ResolutionX := s;
     seo.ResolutionY := s;
 
-    mApp.ActiveDocument.Unit_ := cdrPixel;
+    FApp.ActiveDocument.Unit_ := cdrPixel;
     sc := 1;
     if cbb_Scale.Text <> '' then
     begin
@@ -804,14 +815,14 @@ begin
         exit;
       end;
       //page.Activate;
-      ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrSelection, seo, nil);
+      ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrSelection, seo, nil);
       ef.Finish;
       exit;
     end
     else if rb_SelectionArea.Checked then //
     begin
-      rct := mApp.CreateRect(0, 0, 0, 0);
-      sr := mApp.ActiveSelectionRange;
+      rct := FApp.CreateRect(0, 0, 0, 0);
+      sr := FApp.ActiveSelectionRange;
       rct.x := sr.LeftX;
       rct.y := sr.BottomY;
       rct.Width := sr.SizeWidth;
@@ -823,13 +834,13 @@ begin
         exit;
       end;
       //page.Activate;
-      ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+      ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
       ef.Finish;
       exit;
     end
     else if chk_PageArea.Checked then
     begin
-      rct := mApp.CreateRect(0, 0, 0, 0);
+      rct := FApp.CreateRect(0, 0, 0, 0);
       if chk_PageHalf.Checked then
       begin
         hz := (cbb_PageHalf.ItemIndex = 1);
@@ -853,7 +864,7 @@ begin
           exit;
         end;
         page.Activate;
-        ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+        ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
         ef.Finish;
         if hz then
         begin
@@ -870,13 +881,13 @@ begin
           Exit;
         end;
         //page.Activate;
-        ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+        ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
         ef.Finish;
         Exit;
       end
       else
       begin
-        rct := mApp.CreateRect(page.LeftX, page.BottomY, page.SizeWidth, page.SizeHeight);
+        rct := FApp.CreateRect(page.LeftX, page.BottomY, page.SizeWidth, page.SizeHeight);
         seo._Set_ExportArea(rct);
       end;
     end;
@@ -886,7 +897,7 @@ begin
       Exit;
     end;
     //page.Activate;
-    ef := mApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+    ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
     ef.Finish;
   except
     on E: Exception do

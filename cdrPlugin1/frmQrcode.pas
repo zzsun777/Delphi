@@ -7,7 +7,7 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, BaseForm, QRGraphics, Vcl.StdCtrls,
   Vcl.ComCtrls, Vcl.ExtCtrls, DelphiZXIngQRCode, QR_Win1251, QR_URL, System.IOUtils,
   VGCore_TLB, SVGImage, CaptureImageTool, ScanManager, BarcodeFormat, ReadResult,
-  QRCodeReader, pCore2D, pBarcode2D, pQRCode;
+  QRCodeReader, ResultMetadataType, ErrorCorrectionLevel;
 
 type
   TfQrcode = class(TTBaseForm)
@@ -19,7 +19,7 @@ type
     btn_Gen: TButton;
     mmo_Self: TMemo;
     pbPreview: TPaintBox;
-    cbbDrawingMode: TComboBox;
+    cbbVersion: TComboBox;
     cbbErrorCorrectionLevel: TComboBox;
     lbl1: TLabel;
     edt_CardName: TEdit;
@@ -39,18 +39,29 @@ type
     edt_CardAdd: TEdit;
     lbl9: TLabel;
     mmo_RealText: TMemo;
-    procedure FormCreate(Sender: TObject);
+    lbl10: TLabel;
+    lbl11: TLabel;
+    edtWIFIName: TEdit;
+    lbl12: TLabel;
+    edtWIFIPwd: TEdit;
+    cbb_WIFIType: TComboBox;
+    lbl13: TLabel;
     procedure pbPreviewPaint(Sender: TObject);
     procedure mmo_SelfChange(Sender: TObject);
     procedure cbbErrorCorrectionLevelChange(Sender: TObject);
     procedure btn_GenClick(Sender: TObject);
-    procedure cbbDrawingModeChange(Sender: TObject);
+    procedure cbbVersionChange(Sender: TObject);
     procedure edt_CardNameChange(Sender: TObject);
     procedure btn_CapClick(Sender: TObject);
+    procedure edtWIFINameChange(Sender: TObject);
+    procedure cbb_WIFITypeChange(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     mQRCode: TDelphiZXingQRCode;
+    FCodeText: string;
     procedure ReMakeQR;
     procedure refreshIDCard;
+    procedure refreshWIFI;
   public
     { Public declarations }
   end;
@@ -81,14 +92,19 @@ begin
     decoder := TQRCodeReader.Create;
     stream.Seek(0, TSeekOrigin.soBeginning);
     rResult := decoder.decode(stream);
-    if rResult.Text <> '' then
+    if rResult <> nil then
     begin
+      mmo_Self.Lines.Text := rResult.Text;
       with mQRCode do
       try
         BeginUpdate;
         Data := rResult.Text;
     //Encoding := cmbEncoding.ItemIndex;
-        ErrorCorrectionOrdinal := TErrorCorrectionOrdinal(cbbErrorCorrectionLevel.ItemIndex);
+        if rResult.ResultMetaData.ContainsKey(TResultMetadataType.ERROR_CORRECTION_LEVEL) then
+        begin
+          ErrorCorrectionOrdinal := TErrorCorrectionOrdinal(TErrorCorrectionLevel(rResult.ResultMetaData[TResultMetadataType.ERROR_CORRECTION_LEVEL]).ordinal);
+          cbbErrorCorrectionLevel.ItemIndex := Integer(ErrorCorrectionOrdinal);
+        end;
     //QuietZone := StrToIntDef(edtQuietZone.Text, 4);
         EndUpdate(True);
     //lblQRMetrics.Caption := IntToStr(Columns) + 'x' + IntToStr(Rows) + ' (' + IntToStr(Columns - QuietZone * 2) + 'x' + IntToStr(Rows - QuietZone * 2) + ')';
@@ -98,7 +114,7 @@ begin
     end
     else
     begin
-
+      MessageBox(self.Handle, '不能识别的二维码！', '错误', MB_OK + MB_ICONSTOP);
     end;
   end;
 end;
@@ -109,18 +125,32 @@ var
   tp: string;
 begin
   inherited;
-  svg := MakeSvgImagefile(0, mQRCode, clBlack, clWhite, TQRDrawingMode(cbbDrawingMode.ItemIndex div 2), 0);
-  tp := mApp.CorelScriptTools.GetTempFolder + '\tiiiii.eps';
+  svg := MakeSvgImagefile(0, mQRCode, clBlack, clWhite, TQRDrawingMode(0), 0);
+  tp := FApp.CorelScriptTools.GetTempFolder + 'tiiiii.svg';
   svg.SaveToFile(tp);
-  mApp.ActiveLayer.Import(tp, cdrAutoSense, nil);
-  //mApp.ActiveShape.Rotate(90);
-  //DeleteFile(tp);
+  FApp.ActiveDocument.ActiveLayer.Import(tp, cdrSVG, nil);
+  DeleteFile(tp);
 end;
 
-procedure TfQrcode.cbbDrawingModeChange(Sender: TObject);
+procedure TfQrcode.cbbVersionChange(Sender: TObject);
 begin
   inherited;
   ReMakeQR;
+end;
+
+procedure TfQrcode.cbb_WIFITypeChange(Sender: TObject);
+begin
+  inherited;
+  if cbb_WIFIType.ItemIndex < 2 then
+  begin
+    edtWIFIPwd.Enabled := True;
+  end
+  else
+  begin
+    edtWIFIPwd.Enabled := False;
+    edtWIFIPwd.Text := '';
+  end;
+  refreshWIFI;
 end;
 
 procedure TfQrcode.cbbErrorCorrectionLevelChange(Sender: TObject);
@@ -129,24 +159,34 @@ begin
   ReMakeQR;
 end;
 
+procedure TfQrcode.edtWIFINameChange(Sender: TObject);
+begin
+  inherited;
+  refreshWIFI;
+end;
+
 procedure TfQrcode.edt_CardNameChange(Sender: TObject);
 begin
   inherited;
   refreshIDCard;
 end;
 
-procedure TfQrcode.FormCreate(Sender: TObject);
+procedure TfQrcode.FormShow(Sender: TObject);
 begin
   inherited;
-  mQRCode := TDelphiZXingQRCode.Create;
+  if not Assigned(mQRCode) then
+    mQRCode := TDelphiZXingQRCode.Create;
   mQRCode.RegisterEncoder(ENCODING_WIN1251, TWin1251Encoder);
   mQRCode.RegisterEncoder(ENCODING_URL, TURLEncoder);
-
+  pgc1.TabIndex := 0;
+  FCodeText := 'by tisn';
+  ReMakeQR;
 end;
 
 procedure TfQrcode.mmo_SelfChange(Sender: TObject);
 begin
   inherited;
+  FCodeText := mmo_Self.Lines.Text;
   ReMakeQR;
 end;
 
@@ -157,10 +197,8 @@ begin
   begin
     //Pen.Color := clrbxForeground.Selected;
     //Brush.Color := clrbxBackground.Selected;
-
-
   end;
-  DrawQR(pbPreview.Canvas, pbPreview.ClientRect, mQRCode, 0, TQRDrawingMode(cbbDrawingMode.ItemIndex div 2), Boolean(1 - cbbDrawingMode.ItemIndex mod 2));
+  DrawQR(pbPreview.Canvas, pbPreview.ClientRect, mQRCode, 0, TQRDrawingMode(0), Boolean(0));
 end;
 
 procedure TfQrcode.ReMakeQR;
@@ -168,8 +206,16 @@ begin
   with mQRCode do
   try
     BeginUpdate;
-    Data := mmo_Self.Lines.Text;
+    Data := FCodeText;
     //Encoding := cmbEncoding.ItemIndex;
+    if cbbVersion.ItemIndex = 0 then
+    begin
+      Version := nil;
+    end
+    else
+    begin
+      Version := TVersion.GetVersionForNumber(cbbVersion.ItemIndex);
+    end;
     ErrorCorrectionOrdinal := TErrorCorrectionOrdinal(cbbErrorCorrectionLevel.ItemIndex);
     //QuietZone := StrToIntDef(edtQuietZone.Text, 4);
     EndUpdate(True);
@@ -233,18 +279,37 @@ begin
     qText.Clear;
   end;
   mmo_RealText.Lines := qText;
-  with mQRCode do
-  try
-    BeginUpdate;
-    Data := qText.Text;
-    //Encoding := cmbEncoding.ItemIndex;
-    ErrorCorrectionOrdinal := TErrorCorrectionOrdinal(cbbErrorCorrectionLevel.ItemIndex);
-    //QuietZone := StrToIntDef(edtQuietZone.Text, 4);
-    EndUpdate(True);
-    //lblQRMetrics.Caption := IntToStr(Columns) + 'x' + IntToStr(Rows) + ' (' + IntToStr(Columns - QuietZone * 2) + 'x' + IntToStr(Rows - QuietZone * 2) + ')';
-  finally
-    pbPreview.Repaint;
+  FCodeText := qText.Text;
+  ReMakeQR;
+  qText.Free;
+end;
+
+procedure TfQrcode.refreshWIFI;
+var
+  ot: TStrings;
+begin
+  ot := TStringList.Create;
+  ot.Add('WIFI:');
+  ot.Add(Format('S:%s;', [edtWIFIName.Text]));
+  case cbb_WIFIType.ItemIndex of
+    0:
+      begin
+        ot.Add('T:WPA;');
+        ot.Add(Format('P:%s;', [edtWIFIPwd.Text]));
+      end;
+    1:
+      begin
+        ot.Add('T:WEB;');
+        ot.Add(Format('P:%s;', [edtWIFIPwd.Text]));
+      end;
+    2:
+      begin
+        ot.Add('T:nopass;');
+      end;
   end;
+  FCodeText := ot.Text;
+  ReMakeQR;
+  ot.Free;
 end;
 
 end.

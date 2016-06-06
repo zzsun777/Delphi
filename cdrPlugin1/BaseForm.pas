@@ -4,28 +4,29 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, VGCore_TLB, ActiveX, Utils;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, VGCore_TLB, ActiveX, Utils,
+  System.IniFiles;
 
 type
   TTBaseForm = class(TForm, IDispatch)
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
   private
-    EventHide: WordBool;
-    mWithCMD: WordBool;
-    bSettingSaved: WordBool;
-    bOptimization: WordBool;
-    bEventsEnabled: WordBool;
+    FEventHide: WordBool;
+    FWithCMD: WordBool;
+    FSettingSaved: WordBool;
+    FOptimization: WordBool;
+    FEventsEnabled: WordBool;
   protected
     cmdName: string;
-    mApp: IVGApplication;
-    m_lCookie: Integer;
+    FApp: IVGApplication;
+    FLCookie: Integer;
     {INI 文件设置}
     settingsSection: string;
     settingsIniFilename: string;
+    settingsIniFile: TIniFile;
     function StartCheck(needDocument: WordBool = True; needShape: WordBool = True): WordBool;
     procedure AddEventListen;
   public
-    { Public declarations }
     constructor Create(AOwner: TComponent; App: IVGApplication); reintroduce; overload;
   public
     procedure StartEvent(hide: WordBool = False; withCMD: WordBool = True);
@@ -72,62 +73,53 @@ constructor TTBaseForm.Create(AOwner: TComponent; App: IVGApplication);
 var
   ModuleFileName: array[0..255] of char;
   dllPath: string;
+  LStyle: Cardinal;
 begin
-  self.mApp := App;
-  m_lCookie := 0;
+  self.FApp := App;
+  FLCookie := 0;
   inherited Create(AOwner);
 end;
 
-procedure TTBaseForm.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TTBaseForm.FormDestroy(Sender: TObject);
 begin
-  Action := caFree;
-  if m_lCookie <> 0 then
+  if FLCookie <> 0 then
   begin
-    mApp.UnadviseEvents(m_lCookie);
+    FApp.UnadviseEvents(FLCookie);
   end;
 end;
 
 procedure TTBaseForm.StartEvent(hide: WordBool; withCMD: WordBool);
 begin
-  EventHide := hide;
-  mWithCMD := withCMD;
-  if withCMD then
-    mApp.ActiveDocument.BeginCommandGroup(cmdName);
-  bSettingSaved := False;
-  bOptimization := False;
-  bEventsEnabled := true;
-  //mApp.ActiveDocument.SaveSettings('');
-  bSettingSaved := true;
-  if EventHide then
+  FEventHide := hide;
+  FWithCMD := withCMD;
+  if FWithCMD then
+    FApp.ActiveDocument.BeginCommandGroup(cmdName);
+  if FEventHide then
   begin
-    bOptimization := mApp.Optimization;
-    bEventsEnabled := mApp.EventsEnabled;
-    mApp.Optimization := true;
-    mApp.EventsEnabled := False;
+    FOptimization := FApp.Optimization;
+    //FEventsEnabled := FApp.EventsEnabled;
+    FApp.Optimization := true;
+    //FApp.EventsEnabled := False;
   end;
 end;
 
 procedure TTBaseForm.EndEvent;
 begin
-  if bSettingSaved then
+  if FWithCMD then
+    FApp.ActiveDocument.EndCommandGroup;
+  if FEventHide then
   begin
-    if mWithCMD then
-      mApp.ActiveDocument.EndCommandGroup;
-    //mApp.ActiveDocument.ResetSettings;
+    FApp.Optimization := False;
+    //FApp.EventsEnabled := FEventsEnabled;
   end;
-  if EventHide then
-  begin
-    mApp.Optimization := False;
-    mApp.EventsEnabled := bEventsEnabled;
-  end;
-  mApp.Refresh;
+  FApp.Refresh;
 end;
 
 function TTBaseForm.StartCheck(needDocument: WordBool; needShape: WordBool): WordBool;
 begin
   if needDocument then
   begin
-    if mApp.Documents.Count = 0 then
+    if FApp.Documents.Count = 0 then
     begin
       MessageBox(self.Handle, '没有文档被打开！', '错误', MB_OK + MB_ICONSTOP);
       Result := False;
@@ -136,13 +128,13 @@ begin
   end;
   if needShape then
   begin
-    if mApp.Documents.Count = 0 then
+    if FApp.Documents.Count = 0 then
     begin
       MessageBox(self.Handle, '没有文档被打开！', '错误', MB_OK + MB_ICONSTOP);
       Result := False;
       Exit;
     end;
-    if mApp.ActiveDocument.ActivePage.Shapes.Count = 0 then
+    if FApp.ActiveDocument.ActivePage.Shapes.Count = 0 then
     begin
       MessageBox(self.Handle, '到少需要一个对象！', '错误', MB_OK + MB_ICONSTOP);
       Result := False;
@@ -154,7 +146,7 @@ end;
 
 procedure TTBaseForm.AddEventListen;
 begin
-  m_lCookie := mApp.AdviseEvents(Self);
+  FLCookie := FApp.AdviseEvents(Self);
 end;
 
 function TTBaseForm.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer; ArgErr: Pointer): HRESULT;
@@ -164,6 +156,8 @@ var
 begin
   Cancel := False;
   DispParams := TDispParams(Params);
+  if dispid <> 21 then
+    OutputDebugString(PChar(Format('dispid:%d', [dispid])));
   try
     case dispid of
       DISPID_APP_QUERYDOCUMENTCLOSE:
@@ -281,11 +275,11 @@ var
   N: Integer;
 begin
   N := 1;
-  if mApp.VersionMajor > 14 then
+  if FApp.VersionMajor > 14 then
   begin
     N := 0;
   end;
-  if mApp.Documents.Count = N then
+  if FApp.Documents.Count = N then
   begin
     Close;
     Exit;

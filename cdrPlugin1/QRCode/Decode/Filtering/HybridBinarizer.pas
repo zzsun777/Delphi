@@ -64,9 +64,9 @@ type
   protected
 
   public
-    function createBinarizer(source: TLuminanceSource): TBinarizer; override;
+    function createBinarizer(source: ILuminanceSource): TBinarizer; override;
 
-    constructor Create(source: TLuminanceSource);
+    constructor Create(source: ILuminanceSource);
     function BlackMatrix: TBitMatrix; override;
 
   end;
@@ -81,14 +81,14 @@ begin
   result := matrix;
 end;
 
-function THybridBinarizer.createBinarizer(source: TLuminanceSource): TBinarizer;
+function THybridBinarizer.createBinarizer(source: ILuminanceSource): TBinarizer;
 begin
   result := THybridBinarizer.Create(source)
 end;
 
 procedure THybridBinarizer.BinarizeEntireImage;
 var
-  source: TLuminanceSource;
+  source: ILuminanceSource;
   luminances: TArray<Byte>;
   subWidth, subHeight, width, height: Integer;
   blackPoints: TArrayIntOfInt;
@@ -282,7 +282,7 @@ begin
   end
 end;
 
-constructor THybridBinarizer.Create(source: TLuminanceSource);
+constructor THybridBinarizer.Create(source: ILuminanceSource);
 begin
   inherited Create(source);
 end;

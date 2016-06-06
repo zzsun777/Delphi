@@ -19,29 +19,33 @@ unit ErrorCorrectionLevel;
 }
 interface
 
-uses SysUtils;
+uses
+  SysUtils;
 
 type
-
   TErrorCorrectionLevel = class
   private
     Fbits: Integer;
     Fname: string;
     Fordinal_Renamed_Field: Integer;
-    class var FOR_BITS: TArray<TErrorCorrectionLevel>;
-    class procedure InitClass; Static;
-    class procedure FinalClass; Static;
-  public
+    class var
+      FOR_BITS: TArray<TErrorCorrectionLevel>;
+    class procedure InitClass; static;
+    class procedure FinalClass; static;
     constructor Create(ordinal: Integer; bits: Integer; name: string);
+  public
     class function forBits(bits: Integer): TErrorCorrectionLevel; static;
-    class var H: TErrorCorrectionLevel;
-    class var L: TErrorCorrectionLevel;
-    class var M: TErrorCorrectionLevel;
-    class var Q: TErrorCorrectionLevel;
-
+    class function forName(name: string): TErrorCorrectionLevel; static;
+    class var
+      H: TErrorCorrectionLevel;
+    class var
+      L: TErrorCorrectionLevel;
+    class var
+      M: TErrorCorrectionLevel;
+    class var
+      Q: TErrorCorrectionLevel;
     function ordinal: Integer;
     function ToString: string; override;
-
     property bits: Integer read Fbits;
     property Name: string read Fname;
   end;
@@ -79,8 +83,7 @@ begin
   Fname := name
 end;
 
-class function TErrorCorrectionLevel.forBits(bits: Integer)
-  : TErrorCorrectionLevel;
+class function TErrorCorrectionLevel.forBits(bits: Integer): TErrorCorrectionLevel;
 begin
   if ((bits < 0) or (bits >= Length(TErrorCorrectionLevel.FOR_BITS))) then
     raise EArgumentException.Create('');
@@ -88,6 +91,27 @@ begin
     Result := TErrorCorrectionLevel.FOR_BITS[bits];
     exit
   end
+end;
+
+class function TErrorCorrectionLevel.forName(name: string): TErrorCorrectionLevel;
+begin
+  Result := nil;
+  if name = 'H' then
+  begin
+    Result := H;
+  end
+  else if name = 'L' then
+  begin
+    Result := L;
+  end
+  else if name = 'M' then
+  begin
+    Result := M;
+  end
+  else if name = 'Q' then
+  begin
+    Result := Q;
+  end;
 end;
 
 function TErrorCorrectionLevel.ordinal: Integer;
@@ -100,12 +124,11 @@ begin
   Result := Fname
 end;
 
-Initialization
+initialization
+  TErrorCorrectionLevel.InitClass;
 
-TErrorCorrectionLevel.InitClass;
-
-Finalization
-
-TErrorCorrectionLevel.FinalClass;
+finalization
+  TErrorCorrectionLevel.FinalClass;
 
 end.
+

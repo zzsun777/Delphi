@@ -19,60 +19,47 @@ unit Detector;
 }
 interface
 
-uses SysUtils, Generics.Collections, Bitmatrix, Resultpoint,
-  DetectorResult, DecodeHintType, AlignmentPattern, perspectiveTransform,
-  finderpatternInfo, math, FinderPatternFinder, FinderPattern,
-  AlignmentPatternFinder, Version, DefaultGridSampler, MathUtils;
+uses
+  SysUtils, Generics.Collections, Bitmatrix, Resultpoint, DetectorResult,
+  DecodeHintType, AlignmentPattern, perspectiveTransform, finderpatternInfo,
+  math, FinderPatternFinder, FinderPattern, AlignmentPatternFinder, Version,
+  DefaultGridSampler, MathUtils;
 
 type
-
   TDetector = class
   private
-
     FImage: TBitMatrix;
     FResultPointCallback: TResultPointCallback;
     function Get_Image(): TBitMatrix;
     function get_ResultPointCallback: TResultPointCallback;
-
-    function calculateModuleSizeOneWay(pattern: TResultpoint;
-      otherPattern: TResultpoint): Single;
-
-    class function computeDimension(topLeft: TResultpoint;
-      topRight: TResultpoint; bottomLeft: TResultpoint; moduleSize: Single;
-      var dimension: Integer): boolean; static;
-
-    class function createTransform(topLeft: TResultpoint;
-      topRight: TResultpoint; bottomLeft: TResultpoint;
-      AlignmentPattern: TResultpoint; dimension: Integer)
-      : TPerspectiveTransform; static;
-
-    class function sampleGrid(image: TBitMatrix;
-      transform: TPerspectiveTransform; dimension: Integer): TBitMatrix; static;
-    function sizeOfBlackWhiteBlackRun(fromX: Integer; fromY: Integer;
-      toX: Integer; toY: Integer): Single;
+    function calculateModuleSizeOneWay(pattern: TResultpoint; otherPattern:
+      TResultpoint): Single;
+    class function computeDimension(topLeft: TResultpoint; topRight:
+      TResultpoint; bottomLeft: TResultpoint; moduleSize: Single; var dimension:
+      Integer): boolean; static;
+    class function createTransform(topLeft: TResultpoint; topRight: TResultpoint;
+      bottomLeft: TResultpoint; AlignmentPattern: TResultpoint; dimension:
+      Integer): TPerspectiveTransform; static;
+    class function sampleGrid(image: TBitMatrix; transform:
+      TPerspectiveTransform; dimension: Integer): TBitMatrix; static;
+    function sizeOfBlackWhiteBlackRun(fromX: Integer; fromY: Integer; toX:
+      Integer; toY: Integer): Single;
     function sizeOfBlackWhiteBlackRunBothWays(fromX: Integer; fromY: Integer;
       toX: Integer; toY: Integer): Single;
-
   protected
-
-  var
-    ResultPointCallback: TResultPointCallback;
-
+    var
+      ResultPointCallback: TResultPointCallback;
     function calculateModuleSize(topLeft: TResultpoint; topRight: TResultpoint;
       bottomLeft: TResultpoint): Single; virtual;
-    function findAlignmentInRegion(overallEstModuleSize: Single;
-      estAlignmentX: Integer; estAlignmentY: Integer; allowanceFactor: Single)
-      : TAlignmentPattern;
-    function processFinderPatternInfo(info: TFinderPatternInfo)
-      : TDetectorResult; virtual;
-
+    function findAlignmentInRegion(overallEstModuleSize: Single; estAlignmentX:
+      Integer; estAlignmentY: Integer; allowanceFactor: Single): TAlignmentPattern;
+    function processFinderPatternInfo(info: TFinderPatternInfo): TDetectorResult; virtual;
   public
     constructor Create(image: TBitMatrix);
     destructor Destroy(); override;
-    function detect(): TDetectorResult; overload;
-    function detect(hints: TDictionary<TDecodeHintType, TObject>)
-      : TDetectorResult; overload;
-
+    function detect: TDetectorResult; overload;
+    function detect(hints: TDictionary<TDecodeHintType, TObject>):
+      TDetectorResult; overload;
   end;
 
 implementation
@@ -100,18 +87,17 @@ begin
   Result := FResultPointCallback;
 end;
 
-function TDetector.calculateModuleSize(topLeft: TResultpoint;
-  topRight: TResultpoint; bottomLeft: TResultpoint): Single;
+function TDetector.calculateModuleSize(topLeft: TResultpoint; topRight:
+  TResultpoint; bottomLeft: TResultpoint): Single;
 begin
-  Result := ((self.calculateModuleSizeOneWay(topLeft, topRight) +
-    self.calculateModuleSizeOneWay(topLeft, bottomLeft)) / 2)
+  Result := ((self.calculateModuleSizeOneWay(topLeft, topRight) + self.calculateModuleSizeOneWay
+    (topLeft, bottomLeft)) / 2)
 end;
 
-function TDetector.calculateModuleSizeOneWay(pattern: TResultpoint;
-  otherPattern: TResultpoint): Single;
+function TDetector.calculateModuleSizeOneWay(pattern: TResultpoint; otherPattern:
+  TResultpoint): Single;
 var
   moduleSizeEst1, moduleSizeEst2: Single;
-
 begin
   moduleSizeEst1 := self.sizeOfBlackWhiteBlackRunBothWays(Floor(pattern.X),
     Floor(pattern.Y), Floor(otherPattern.X), Floor(otherPattern.Y));
@@ -133,19 +119,16 @@ begin
   Result := ((moduleSizeEst1 + moduleSizeEst2) / 14);
 end;
 
-class function TDetector.computeDimension(topLeft: TResultpoint;
-  topRight: TResultpoint; bottomLeft: TResultpoint; moduleSize: Single;
-  var dimension: Integer): boolean;
-
+class function TDetector.computeDimension(topLeft: TResultpoint; topRight:
+  TResultpoint; bottomLeft: TResultpoint; moduleSize: Single; var dimension:
+  Integer): boolean;
 var
   tltrCentersDimension, tlblCentersDimension: Integer;
 begin
-  tltrCentersDimension :=
-    round((TResultpoint.distance(topLeft, topRight) / moduleSize));
-  tlblCentersDimension :=
-    round((TResultpoint.distance(topLeft, bottomLeft) / moduleSize));
-  dimension := TMathUtils.Asr
-    ((tltrCentersDimension + tlblCentersDimension), 1) + 7;
+  tltrCentersDimension := round((TResultpoint.distance(topLeft, topRight) / moduleSize));
+  tlblCentersDimension := round((TResultpoint.distance(topLeft, bottomLeft) /
+    moduleSize));
+  dimension := TMathUtils.Asr((tltrCentersDimension + tlblCentersDimension), 1) + 7;
 
   case (dimension and 3) of
     0:
@@ -168,9 +151,9 @@ begin
   Result := true;
 end;
 
-class function TDetector.createTransform(topLeft: TResultpoint;
-  topRight: TResultpoint; bottomLeft: TResultpoint;
-  AlignmentPattern: TResultpoint; dimension: Integer): TPerspectiveTransform;
+class function TDetector.createTransform(topLeft: TResultpoint; topRight:
+  TResultpoint; bottomLeft: TResultpoint; AlignmentPattern: TResultpoint;
+  dimension: Integer): TPerspectiveTransform;
 var
   bottomRightX, bottomRightY, sourceBottomRightX, sourceBottomRightY,
     dimMinusThree: Single;
@@ -199,25 +182,23 @@ end;
 
 function TDetector.detect: TDetectorResult;
 begin
-  Result := self.detect(nil)
+  Result := self.detect(nil);
 end;
 
-function TDetector.detect(hints: TDictionary<TDecodeHintType, TObject>)
-  : TDetectorResult;
+function TDetector.detect(hints: TDictionary<TDecodeHintType, TObject>): TDetectorResult;
 var
   info: TFinderPatternInfo;
   finder: TFinderPatternFinder;
 begin
-
-  if ((hints = nil) or not hints.ContainsKey
-    (DecodeHintType.NEED_RESULT_POINT_CALLBACK)) then
+  if ((hints = nil) or not hints.ContainsKey(DecodeHintType.NEED_RESULT_POINT_CALLBACK))
+    then
   begin
     self.ResultPointCallback := nil;
   end
   else
   begin
     // todo: Edward 2015-10-16, does not work
-    // self.resultPointCallback :=  hints[DecodeHintType.NEED_RESULT_POINT_CALLBACK] as TResultPointCallback;
+    //self.ResultPointCallback :=  hints[DecodeHintType.NEED_RESULT_POINT_CALLBACK] as TResultPointCallback;
   end;
 
   finder := TFinderPatternFinder.Create(FImage, ResultPointCallback);
@@ -238,8 +219,8 @@ begin
 end;
 
 function TDetector.findAlignmentInRegion(overallEstModuleSize: Single;
-  estAlignmentX: Integer; estAlignmentY: Integer; allowanceFactor: Single)
-  : TAlignmentPattern;
+  estAlignmentX: Integer; estAlignmentY: Integer; allowanceFactor: Single):
+  TAlignmentPattern;
 var
   allowance, alignmentAreaRightX, alignmentAreaLeftX, alignmentAreaTopY,
     alignmentAreaBottomY: Integer;
@@ -248,10 +229,8 @@ begin
 
   allowance := Floor(allowanceFactor * overallEstModuleSize);
   alignmentAreaLeftX := math.Max(0, (estAlignmentX - allowance));
-  alignmentAreaRightX := math.Min((FImage.Width - 1),
-    (estAlignmentX + allowance));
-  if ((alignmentAreaRightX - alignmentAreaLeftX) < (overallEstModuleSize * 3))
-  then
+  alignmentAreaRightX := math.Min((FImage.Width - 1), (estAlignmentX + allowance));
+  if ((alignmentAreaRightX - alignmentAreaLeftX) < (overallEstModuleSize * 3)) then
   begin
     Result := nil;
     exit
@@ -259,21 +238,18 @@ begin
 
   alignmentAreaTopY := math.Max(0, (estAlignmentY - allowance));
 
-  alignmentAreaBottomY := math.Min((FImage.Height - 1),
-    (estAlignmentY + allowance));
+  alignmentAreaBottomY := math.Min((FImage.Height - 1), (estAlignmentY + allowance));
 
   alignmentFinder := TAlignmentPatternFinder.Create(FImage, alignmentAreaLeftX,
-    alignmentAreaTopY, (alignmentAreaRightX - alignmentAreaLeftX),
-    (alignmentAreaBottomY - alignmentAreaTopY), overallEstModuleSize,
-    self.ResultPointCallback);
+    alignmentAreaTopY, (alignmentAreaRightX - alignmentAreaLeftX), (alignmentAreaBottomY
+    - alignmentAreaTopY), overallEstModuleSize, self.ResultPointCallback);
 
   Result := alignmentFinder.find;
   FreeAndNil(alignmentFinder);
 
 end;
 
-function TDetector.processFinderPatternInfo(info: TFinderPatternInfo)
-  : TDetectorResult;
+function TDetector.processFinderPatternInfo(info: TFinderPatternInfo): TDetectorResult;
 var
   moduleSize, bottomRightX, bottomRightY, correctionToTopLeft: Single;
   dimension, modulesBetweenFPCenters, i, estAlignmentX, estAlignmentY: Integer;
@@ -283,7 +259,6 @@ var
   transform: TPerspectiveTransform;
   bits: TBitMatrix;
   AlignmentPattern: TAlignmentPattern;
-
 begin
   topLeft := info.topLeft;
   topRight := info.topRight;
@@ -319,15 +294,15 @@ begin
       bottomRightX := ((topRight.X - topLeft.X) + bottomLeft.X);
       bottomRightY := ((topRight.Y - topLeft.Y) + bottomLeft.Y);
       correctionToTopLeft := (1 - (3 / modulesBetweenFPCenters));
-      estAlignmentX :=
-        Floor(topLeft.X + (correctionToTopLeft * (bottomRightX - topLeft.X)));
-      estAlignmentY :=
-        Floor(topLeft.Y + (correctionToTopLeft * (bottomRightY - topLeft.Y)));
+      estAlignmentX := Floor(topLeft.X + (correctionToTopLeft * (bottomRightX -
+        topLeft.X)));
+      estAlignmentY := Floor(topLeft.Y + (correctionToTopLeft * (bottomRightY -
+        topLeft.Y)));
       i := 4;
       while ((i <= $10)) do
       begin
-        AlignmentPattern := self.findAlignmentInRegion(moduleSize,
-          estAlignmentX, estAlignmentY, i);
+        AlignmentPattern := self.findAlignmentInRegion(moduleSize, estAlignmentX,
+          estAlignmentY, i);
         if (AlignmentPattern <> nil) then
           break;
         i := (i shl 1);
@@ -364,19 +339,17 @@ begin
 
 end;
 
-class function TDetector.sampleGrid(image: TBitMatrix;
-  transform: TPerspectiveTransform; dimension: Integer): TBitMatrix;
+class function TDetector.sampleGrid(image: TBitMatrix; transform:
+  TPerspectiveTransform; dimension: Integer): TBitMatrix;
 begin
-  Result := TDefaultGridSampler.sampleGrid(image, dimension, dimension,
-    transform)
+  Result := TDefaultGridSampler.sampleGrid(image, dimension, dimension, transform)
 end;
 
-function TDetector.sizeOfBlackWhiteBlackRun(fromX: Integer; fromY: Integer;
-  toX: Integer; toY: Integer): Single;
+function TDetector.sizeOfBlackWhiteBlackRun(fromX: Integer; fromY: Integer; toX:
+  Integer; toY: Integer): Single;
 var
   steep: boolean;
   temp, dx, dy, xstep, ystep, X, Y, state, xlimit, realx, realy, error: Integer;
-
 begin
   steep := Abs(toY - fromY) > Abs(toX - fromX);
   if (steep) then
@@ -431,7 +404,8 @@ begin
     if (error > 0) then
     begin
       if (Y = toY) then
-        break;;
+        break;
+      ;
       inc(Y, ystep);
       dec(error, dx)
     end;
@@ -447,8 +421,8 @@ begin
   Result := Single.NaN;
 end;
 
-function TDetector.sizeOfBlackWhiteBlackRunBothWays(fromX: Integer;
-  fromY: Integer; toX: Integer; toY: Integer): Single;
+function TDetector.sizeOfBlackWhiteBlackRunBothWays(fromX: Integer; fromY:
+  Integer; toX: Integer; toY: Integer): Single;
 var
   scale, otherToX, otherToY: Integer;
 begin
@@ -478,10 +452,10 @@ begin
     otherToY := (FImage.Height - 1)
   end;
   otherToX := (fromX + (otherToX - fromX) * scale);
-  Result := Result + self.sizeOfBlackWhiteBlackRun(fromX, fromY, otherToX,
-    otherToY);
+  Result := Result + self.sizeOfBlackWhiteBlackRun(fromX, fromY, otherToX, otherToY);
 
   Result := (Result - 1);
 end;
 
 end.
+

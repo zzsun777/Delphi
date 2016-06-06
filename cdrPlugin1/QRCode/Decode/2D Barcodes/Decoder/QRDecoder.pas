@@ -19,25 +19,21 @@ unit QRDecoder;
 }
 interface
 
-uses SysUtils, Generics.Collections, DecodeHintType, BitMatrix,
-  BitmatrixParser, DecoderResult, ReedSolomonDecoder, GenericGF,
-  QRCodeDecoderMetaData, version, FormatInformation, ErrorCorrectionLevel,
-  Datablock, DecodedBitStreamParser;
+uses
+  SysUtils, Generics.Collections, DecodeHintType, BitMatrix, BitmatrixParser,
+  DecoderResult, ReedSolomonDecoder, GenericGF, QRCodeDecoderMetaData, version,
+  FormatInformation, ErrorCorrectionLevel, Datablock, DecodedBitStreamParser;
 
 type
-
   TQRDecoder = class
   private
     rsDecoder: TReedSolomonDecoder;
-    function correctErrors(codewordBytes: TArray<Byte>;
-      numDataCodewords: Integer): boolean;
-    function decode(parser: TBitMatrixParser;
-      hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult; overload;
+    function correctErrors(codewordBytes: TArray<Byte>; numDataCodewords: Integer): boolean;
+    function decode(parser: TBitMatrixParser; hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult; overload;
   public
     constructor Create;
-    destructor Destroy;override;
-    function decode(bits: TBitMatrix;
-      hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult; overload;
+    destructor Destroy; override;
+    function decode(bits: TBitMatrix; hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult; overload;
   end;
 
 implementation
@@ -54,13 +50,10 @@ begin
   inherited;
 end;
 
-
-function TQRDecoder.correctErrors(codewordBytes: TArray<Byte>;
-  numDataCodewords: Integer): boolean;
+function TQRDecoder.correctErrors(codewordBytes: TArray<Byte>; numDataCodewords: Integer): boolean;
 var
   i, numCodewords, numECCodewords: Integer;
   codewordsInts: TArray<Integer>;
-
 begin
 
   numCodewords := Length(codewordBytes);
@@ -91,13 +84,10 @@ begin
   Result := true;
 end;
 
-function TQRDecoder.decode(bits: TBitMatrix;
-  hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult;
+function TQRDecoder.decode(bits: TBitMatrix; hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult;
 var
   parser: TBitMatrixParser;
-
 begin
-
   parser := TBitMatrixParser.createBitMatrixParser(bits);
   try
 
@@ -136,8 +126,7 @@ begin
   end;
 end;
 
-function TQRDecoder.decode(parser: TBitMatrixParser;
-  hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult;
+function TQRDecoder.decode(parser: TBitMatrixParser; hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult;
 var
   Datablock: TDataBlock;
   dataBlocks: TArray<TDataBlock>;
@@ -146,9 +135,7 @@ var
   ecLevel: TErrorCorrectionLevel;
   codeWords, resultBytes, codewordBytes: TArray<Byte>;
   totalBytes, resultOffset, i, numDataCodewords: Integer;
-
 begin
-
   version := parser.readVersion;
   if (version = nil) then
   begin
@@ -167,7 +154,7 @@ begin
   codeWords := parser.readCodewords;
   if (codeWords = nil) then
   begin
-     FreeAndNil(formatInfo);
+    FreeAndNil(formatInfo);
     exit(nil);
   end;
 
@@ -207,11 +194,11 @@ begin
 
   dataBlocks := nil;
 
-  Result := TDecodedBitStreamParser.decode(resultBytes, version,
-    ecLevel, hints);
+  Result := TDecodedBitStreamParser.decode(resultBytes, version, ecLevel, hints);
 
   FreeAndNil(formatInfo);
   resultBytes := nil;
 end;
 
 end.
+

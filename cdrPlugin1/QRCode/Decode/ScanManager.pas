@@ -90,7 +90,7 @@ begin
 
     BinaryBitmap := TBinaryBitmap.BinaryBitmap(HybridBinarizer);
 
-    Result := FMultiFormatReader.Decode(BinaryBitmap, true);
+    Result := FMultiFormatReader.Decode(BinaryBitmap);
   finally
 
     if (BinaryBitmap <> nil) then
@@ -112,7 +112,7 @@ end;
 
 function TScanManager.Scan(stream: TStream): TReadResult;
 begin
-  Scan(TBitmap.CreateFromStream(stream));
+  Result := Scan(TBitmap.CreateFromStream(stream));
 end;
 
 end.

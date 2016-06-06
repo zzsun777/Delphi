@@ -14,6 +14,7 @@ uses
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
+  Vcl.Forms,
   VGCore_TLB in 'X8\VGCore_TLB.pas',
   frmMain in 'frmMain.pas' {fMain},
   BaseForm in 'BaseForm.pas' {TBaseForm},
@@ -89,14 +90,21 @@ uses
   CaptureImageTool in '..\截图\CaptureImageTool.pas' {TCaptureImageTool},
   Operate in '..\截图\Operate.pas',
   GdiPlus in '..\图标Base64生成\GdiPlus\Lib\GdiPlus.pas',
-  GdiPlusHelpers in '..\图标Base64生成\GdiPlus\Lib\GdiPlusHelpers.pas';
+  GdiPlusHelpers in '..\图标Base64生成\GdiPlus\Lib\GdiPlusHelpers.pas',
+  QRTool in 'QRTool.pas',
+  frmAlign in 'frmAlign.pas' {fAlign},
+  frmAllCommand in 'frmAllCommand.pas' {fAllCommand},
+  frmFindText in 'frmFindText.pas' {fFindText},
+  DragControl in '..\控件包\DragControl.pas',
+  SpeedButtonEx in '..\控件包\SpeedButtonEx.pas',
+  frmCheck in 'frmCheck.pas' {fCheck};
 
 {$R *.res}
 
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
-      CVersion: Integer = 2016052302;
+      CVersion: Integer = 2016060402;
       CommandBarName: WideString = 'tisn201600401';
       CommandID_All: WideString = 'cdrplugin1_全部';
       CommandID_ConvertTo: WideString = 'cdrplugin1_转换';
@@ -106,15 +114,19 @@ type
       CommandID_QRCode: WideString = 'cdrplugin1_二维码';
       CommandID_Select: WideString = 'cdrplugin1_同类选择';
       CommandID_FontRecognition: WideString = 'cdrplugin1_字体识别';
+      //
+      CommandID_PageAdaptation: WideString = 'cdrplugin1_页面适配';
+      //
       CommandID_SuperUndo: WideString = 'cdrplugin1_超级撤销';
       CommandID_SuperRedo: WideString = 'cdrplugin1_超级重做';
   private
-    mApp: IVGApplication;
+    FApp: IVGApplication;
     m_lCookie: longint;
     m_ulRefCount: ULONG;
     myCommandBar: ICUICommandBar;
     cmdList: TDictionary<WideString, WideString>;
     procedure OnAppStart; safecall;
+    procedure OnPluginCMD(strCMD: string); safecall;
     procedure AddPluginCommands;
     procedure RemovePluginCommands;
   public
@@ -150,6 +162,8 @@ begin
   cmdList.Add(CommandID_Select, '同类选择');
   cmdList.Add(CommandID_FontRecognition, '字体识别');
 
+  cmdList.Add(CommandID_PageAdaptation, '页面适配|设置页面大小为选中对象大小');
+
   cmdList.Add(CommandID_SuperUndo, '超级撤销|超级撤销，如果执行了大批量操作，请使用这个');
   cmdList.Add(CommandID_SuperRedo, '超级重做|超级重做，如果执行了大批量操作，请使用这个');
 end;
@@ -168,45 +182,116 @@ begin
   if rVersion <> CVersion then
   begin
     try
-      mApp.CommandBars.Item[CommandBarName].Delete;
+      FApp.CommandBars.Item[CommandBarName].Delete;
     finally
       inifile.WriteInteger('插件配置', '版本号', CVersion);
     end;
   end;
   inifile.Destroy;
   try
-    myCommandBar := mApp.CommandBars.Item[CommandBarName];
+    myCommandBar := FApp.CommandBars.Item[CommandBarName];
   except
 
     tmpPath := TPath.GetTempPath + '\';
-    if mApp.VersionMajor < 17 then
+    if FApp.VersionMajor < 17 then
     begin
-      st := TResourceStream.Create(HInstance, 'toolbar_X4', RT_RCDATA);
+      st := TResourceStream.Create(HInstance, 'toolbar_x4', RT_RCDATA);
       st.SaveToFile(tmpPath + 'TTx4.xslt');
       st.Free;
-      mApp.ImportWorkspace(tmpPath + 'TTx4.xslt');
+      FApp.ImportWorkspace(tmpPath + 'TTx4.xslt');
       DeleteFile(tmpPath + 'TTx4.xslt')
     end
-    else if mApp.VersionMajor = 17 then
+    else if FApp.VersionMajor = 17 then
     begin
-      st := TResourceStream.Create(HInstance, 'toolbar_X7', RT_RCDATA);
+      st := TResourceStream.Create(HInstance, 'toolbar_x7', RT_RCDATA);
       st.SaveToFile(tmpPath + 'TTx7.cdws');
       st.Free;
-      mApp.ImportWorkspace(tmpPath + 'TTx7.cdws');
-      DeleteFile(tmpPath + 'TTx7.cdws')
+      FApp.ImportWorkspace(tmpPath + 'TTx7.cdws');
+      //DeleteFile(tmpPath + 'TTx7.cdws')
     end
-    else if mApp.VersionMajor >= 18 then
+    else if FApp.VersionMajor >= 18 then
     begin
-      st := TResourceStream.Create(HInstance, 'toolbar_X8', RT_RCDATA);
+      st := TResourceStream.Create(HInstance, 'toolbar_x8', RT_RCDATA);
       st.SaveToFile(tmpPath + 'TTx8.cdws');
       st.Free;
-      mApp.ImportWorkspace(tmpPath + 'TTx8.cdws');
+      FApp.ImportWorkspace(tmpPath + 'TTx8.cdws');
       DeleteFile(tmpPath + 'TTx8.cdws')
     end;
-    mApp.CommandBars.Item[CommandBarName].Visible := True;
+    FApp.CommandBars.Item[CommandBarName].Visible := True;
   end;
 
   Exit;
+end;
+
+procedure TisnPlugin.OnPluginCMD(strCMD: string);
+var
+  MainApp: TComponent;
+begin
+  MainApp := Vcl.Forms.Application;
+  TApplication(MainApp).Handle := FApp.AppWindow.Handle;
+  if not Assigned(fAllCommand) then
+    fAllCommand := TfAllCommand.Create(MainApp, FApp);
+  fAllCommand := TfAllCommand.Create(MainApp, FApp);
+  if strCMD = CommandID_All then
+  begin
+    if not Assigned(fMain) then
+      fMain := TfMain.Create(MainApp, FApp);
+    fMain.Show;
+  end
+  else if strCMD = CommandID_ToJPG then
+  begin
+    if not Assigned(fToJPG) then
+      fToJPG := TfToJPG.Create(MainApp, FApp);
+    fToJPG.Show;
+  end
+  else if strCMD = CommandID_ConvertTo then
+  begin
+    if not Assigned(fConvertTo) then
+      fConvertTo := TfConvertTo.Create(MainApp, FApp);
+    fConvertTo.Show;
+  end
+  else if strCMD = CommandID_CropMark then
+  begin
+    if not Assigned(fCropMark) then
+      fCropMark := TfCropMark.Create(MainApp, FApp);
+    fCropMark.Show;
+  end
+  else if strCMD = CommandID_OnkeyPS then
+  begin
+    if not Assigned(fOnekeyPS) then
+      fOnekeyPS := TfOnekeyPS.Create(MainApp, FApp);
+    fOnekeyPS.Show;
+  end
+  else if strCMD = CommandID_QRCode then
+  begin
+    if not Assigned(fQrcode) then
+      fQrcode := TfQrcode.Create(MainApp, FApp);
+    fQrcode.Show;
+  end
+  else if strCMD = CommandID_Select then
+  begin
+    if not Assigned(fSelect) then
+      fSelect := TfSelect.Create(MainApp, FApp);
+    fSelect.Show;
+  end
+  else if strCMD = CommandID_FontRecognition then
+  begin
+    if not Assigned(fMain) then
+      fMain := TfMain.Create(MainApp, FApp);
+    fMain.Show;
+  end
+  else if strCMD = CommandID_PageAdaptation then
+  begin
+    fAllCommand.PageAdaptation;
+  end
+  else if strCMD = CommandID_SuperUndo then
+  begin
+    fAllCommand.SuperUndo;
+  end
+  else if strCMD = CommandID_SuperRedo then
+  begin
+    fAllCommand.SuperRedo;
+  end;
 end;
 
 procedure TisnPlugin.AddPluginCommands;
@@ -221,11 +306,11 @@ begin
     tss := ts.Split(['|']);
     if Length(tss) = 2 then
     begin
-      mApp.AddPluginCommand(pair.Key, tss[0], tss[1]);
+      FApp.AddPluginCommand(pair.Key, tss[0], tss[1]);
     end
     else
     begin
-      mApp.AddPluginCommand(pair.Key, pair.Value, pair.Value);
+      FApp.AddPluginCommand(pair.Key, pair.Value, pair.Value);
     end;
   end;
 end;
@@ -236,23 +321,24 @@ var
 begin
   for pair in cmdList do
   begin
-    mApp.RemovePluginCommand(pair.Key);
+    FApp.RemovePluginCommand(pair.Key);
   end;
 end;
+{$REGION 'IVGAppPlugin'}
 
 procedure TisnPlugin.OnLoad(const Application: IVGApplication);
 begin
-  self.mApp := Application;
-  if self.mApp <> nil then
+  self.FApp := Application;
+  if self.FApp <> nil then
   begin
-    self.mApp._AddRef;
+    self.FApp._AddRef;
   end;
 end;
 
 procedure TisnPlugin.StartSession;
 begin
   try
-    self.m_lCookie := self.mApp.AdviseEvents(self);
+    self.m_lCookie := self.FApp.AdviseEvents(self);
   except
     on E: Exception do
       MessageBox(0, PWideChar(E.Message + e.StackTrace), 'StartSession', 0);
@@ -262,11 +348,11 @@ end;
 procedure TisnPlugin.StopSession;
 begin
   try
-    self.mApp.UnadviseEvents(self.m_lCookie);
+    self.FApp.UnadviseEvents(self.m_lCookie);
     RemovePluginCommands;
 
     //X4中不会自动释放，导致关闭CorelDraw程序后进程不会退出，所以在这手动释放一下
-    self.mApp._Release;
+    self.FApp._Release;
     self.Destroy;
   except
     on E: Exception do
@@ -277,12 +363,13 @@ end;
 procedure TisnPlugin.OnUnload;
 begin
 
-  if self.mApp <> nil then
+  if self.FApp <> nil then
   begin
-    self.mApp._Release;
+    self.FApp._Release;
     self.Destroy;
   end;
 end;
+{$ENDREGION}
 
 function TisnPlugin.GetTypeInfoCount(out Count: Integer): HResult;
 begin
@@ -302,10 +389,8 @@ end;
 function TisnPlugin.Invoke(dispid: Integer; const IID: TGUID; LocaleID: Integer; Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer): HResult; stdcall;
 var
   strCMD: WideString;
-  f: TTBaseForm;
   DispParams: TDispParams;
 begin
-  f := nil;
   DispParams := TDispParams(Params);
   case dispid of
     $0011:
@@ -314,7 +399,7 @@ begin
       end;
     $0012:
       begin // DISPID_APP_START
-        self.OnAppStart;
+        OnAppStart;
       end;
     $0014:
       begin // DISPID_APP_ONPLUGINCMD
@@ -322,42 +407,7 @@ begin
         if Variant(DispParams.cArgs = 1) then
         begin
           strCMD := DispParams.rgvarg^[0].bstrVal;
-          if strCMD = CommandID_All then
-          begin
-            f := TfMain.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_ToJPG then
-          begin
-            f := TfToJPG.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_ConvertTo then
-          begin
-            f := TfConvertTo.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_CropMark then
-          begin
-            f := TfCropMark.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_OnkeyPS then
-          begin
-            f := TfOnekeyPS.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_QRCode then
-          begin
-            f := TfQrcode.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_Select then
-          begin
-            f := TfSelect.Create(nil, mApp);
-          end
-          else if strCMD = CommandID_FontRecognition then
-          begin
-            f := TfFontRecognition.Create(nil, mApp);
-          end;
-          if f <> nil then
-          begin
-            f.ShowModal;
-          end;
+          OnPluginCMD(strCmd);
         end;
       end;
     $0015:
@@ -367,7 +417,7 @@ begin
           strCMD := DispParams.rgvarg^[2].bstrVal;
           if cmdList.ContainsKey(strCMD) then
           begin
-            DispParams.rgvarg^[1].pbool^ := mApp.Documents.Count > 0;
+            DispParams.rgvarg^[1].pbool^ := FApp.Documents.Count > 0;
           end;
         end;
       end;
@@ -414,7 +464,7 @@ begin
   dec(self.m_ulRefCount);
   if (self.m_ulRefCount = 0) then
   begin
-    Destroy;
+    //Destroy;
   end;
   Result := self.m_ulRefCount;
 end;

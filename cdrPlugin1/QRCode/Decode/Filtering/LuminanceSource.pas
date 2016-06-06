@@ -33,7 +33,7 @@ uses
 
 Type
 
-  TLuminanceSource = class
+  ILuminanceSource = class
   protected
     FWidth: Integer;
     FHeight: Integer;
@@ -45,12 +45,12 @@ Type
 
     function CropSupported(): Boolean; virtual;
     function Crop(left: Integer; top: Integer; width: Integer; height: Integer)
-      : TLuminanceSource; virtual;
-    function RotateCounterClockwise(): TLuminanceSource; virtual;
+      : ILuminanceSource; virtual;
+    function RotateCounterClockwise(): ILuminanceSource; virtual;
     function RotateSupported: Boolean; virtual;
     function InversionSupported: Boolean; virtual;
-    function rotateCounterClockwise45(): TLuminanceSource; virtual;
-    function Invert(): TLuminanceSource; virtual;
+    function rotateCounterClockwise45(): ILuminanceSource; virtual;
+    function Invert(): ILuminanceSource; virtual;
     function ToString(): String; override;
     function Height(): Integer;
     function Width(): Integer;
@@ -58,35 +58,35 @@ Type
 
 implementation
 
-constructor TLuminanceSource.LuminanceSource(width: Integer; height: Integer);
+constructor ILuminanceSource.LuminanceSource(width: Integer; height: Integer);
 begin
   FWidth := width;
   FHeight := height;
 end;
 
-function TLuminanceSource.CropSupported: Boolean;
+function ILuminanceSource.CropSupported: Boolean;
 begin
   Result := False;
 end;
 
-function TLuminanceSource.Height: Integer;
+function ILuminanceSource.Height: Integer;
 begin
   Result:=FHeight;
 end;
 
-function TLuminanceSource.Width: Integer;
+function ILuminanceSource.Width: Integer;
 begin
   Result:=FWidth;
 end;
 
 // <returns> Whether this subclass supports counter-clockwise rotation.</returns>
-function TLuminanceSource.RotateSupported: Boolean;
+function ILuminanceSource.RotateSupported: Boolean;
 begin
   Result := False;
 end;
 
 /// <returns>Whether this subclass supports invertion.</returns>
-function TLuminanceSource.InversionSupported: Boolean;
+function ILuminanceSource.InversionSupported: Boolean;
 begin
   Result := False;
 end;
@@ -100,8 +100,8 @@ end;
 /// <param name="width">The width of the rectangle to crop.</param>
 /// <param name="height">The height of the rectangle to crop.</param>
 /// <returns> A cropped version of this object.</returns>
-function TLuminanceSource.Crop(left: Integer; top: Integer; width: Integer;
-  height: Integer): TLuminanceSource;
+function ILuminanceSource.Crop(left: Integer; top: Integer; width: Integer;
+  height: Integer): ILuminanceSource;
 begin
   raise ENotImplemented.Create
     ('This luminance source does not support cropping.');
@@ -113,7 +113,7 @@ end;
 /// </summary>
 /// <returns>A rotated version of this object.</returns>
 
-function TLuminanceSource.RotateCounterClockwise(): TLuminanceSource;
+function ILuminanceSource.RotateCounterClockwise(): ILuminanceSource;
 begin
   raise ENotImplemented.Create
     ('This luminance source does not support rotation.');
@@ -124,19 +124,19 @@ end;
 /// Only callable if <see cref="RotateSupported"/> is true.
 /// </summary>
 /// <returns>A rotated version of this object.</returns>
-function TLuminanceSource.rotateCounterClockwise45(): TLuminanceSource;
+function ILuminanceSource.rotateCounterClockwise45(): ILuminanceSource;
 begin
   raise ENotImplemented.Create
     ('This luminance source does not support rotation by 45 degrees.');
 end;
 
-function TLuminanceSource.Invert(): TLuminanceSource;
+function ILuminanceSource.Invert(): ILuminanceSource;
 begin
   raise ENotImplemented.Create
     ('This luminance source does not support inversion.');
 end;
 
-function TLuminanceSource.ToString(): String;
+function ILuminanceSource.ToString(): String;
 var
   row: TArray<byte>;
   x, y, luminance: Integer;

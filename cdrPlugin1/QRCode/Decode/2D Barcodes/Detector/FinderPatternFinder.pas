@@ -19,62 +19,53 @@ unit FinderPatternFinder;
 }
 interface
 
-uses System.Generics.Defaults, SysUtils, Generics.collections,
-  BitMatrix, resultPoint, // NullableType,
+uses
+  System.Generics.Defaults, SysUtils, Generics.collections, BitMatrix,
+  resultPoint, // NullableType,
   DecodeHinttype, FinderPatternInfo, finderPattern, math;
 
 type
-
   TFinderPatternFinder = class
   private
-
     const
-    CENTER_QUORUM: Integer = 2;
-    INTEGER_MATH_SHIFT: Integer = 8;
-    MIN_SKIP: Integer = 3;
-    MAX_MODULES: Integer = $39;
-
-  var
-    FCrossCheckStateCount: TArray<Integer>;
-    hasSkipped: boolean;
-    FImage: TBitMatrix;
-    resultPointCallback: TresultPointCallback;
-
-    class function centerFromEnd(stateCount: TArray<Integer>; pEnd: Integer)
-      : Single; static;
-    function crossCheckDiagonal(startI: Integer; centerJ: Integer;
-      maxCount: Integer; originalStateCountTotal: Integer): boolean;
-    function crossCheckHorizontal(startJ: Integer; centerI: Integer;
-      maxCount: Integer; originalStateCountTotal: Integer): Single;
-    function crossCheckVertical(startI: Integer; centerJ: Integer;
-      maxCount: Integer; originalStateCountTotal: Integer): Single;
+      CENTER_QUORUM: Integer = 2;
+      MIN_SKIP: Integer = 3;
+      MAX_MODULES: Integer = 57;
+      INTEGER_MATH_SHIFT: Integer = 8;
+    var
+      FCrossCheckStateCount: TArray<Integer>;
+      hasSkipped: boolean;
+      FImage: TBitMatrix;
+      resultPointCallback: TresultPointCallback;
+    class function centerFromEnd(stateCount: TArray<Integer>; pEnd: Integer):
+      Single; static;
+    function crossCheckDiagonal(startI: Integer; centerJ: Integer; maxCount:
+      Integer; originalStateCountTotal: Integer): boolean;
+    function crossCheckHorizontal(startJ: Integer; centerI: Integer; maxCount:
+      Integer; originalStateCountTotal: Integer): Single;
+    function crossCheckVertical(startI: Integer; centerJ: Integer; maxCount:
+      Integer; originalStateCountTotal: Integer): Single;
     function findRowSkip: Integer;
     function haveMultiplyConfirmedCenters: boolean;
     function selectBestPatterns: TArray<TFinderPattern>;
-
     function CrossCheckStateCount: TArray<Integer>;
   public
     PossibleCenters: TList<TFinderPattern>;
 
     // constructor Create(image: TBitMatrix); overload;
-    constructor Create(image: TBitMatrix;
-      resultPointCallback: TresultPointCallback);
+    constructor Create(image: TBitMatrix; resultPointCallback: TresultPointCallback);
     destructor Destroy(); override;
-
-    function find(hints: TDictionary<TDecodeHintType, TObject>)
-      : TFinderPatternInfo; virtual;
-
+    function find(hints: TDictionary<TDecodeHintType, TObject>):
+      TFinderPatternInfo; virtual;
   protected
-    class function foundPatternCross(stateCount: TArray<Integer>)
-      : boolean; static;
-    function handlePossibleCenter(stateCount: TArray<Integer>; i: Integer;
-      j: Integer; pureBarcode: boolean): boolean;
+    class function foundPatternCross(stateCount: TArray<Integer>): boolean; static;
+    function handlePossibleCenter(stateCount: TArray<Integer>; i: Integer; j:
+      Integer; pureBarcode: boolean): boolean;
     property image: TBitMatrix read FImage;
-
   end;
 
-  TFurthestFromAverageComparator = class sealed(TInterfacedObject,
-    IComparer<TFinderPattern>)
+  TFurthestFromAverageComparator = class sealed(TInterfacedObject, IComparer<
+    TFinderPattern>)
   private
     average: Single;
   public
@@ -119,8 +110,8 @@ end;
   end;
 }
 
-constructor TFinderPatternFinder.Create(image: TBitMatrix;
-  resultPointCallback: TresultPointCallback);
+constructor TFinderPatternFinder.Create(image: TBitMatrix; resultPointCallback:
+  TresultPointCallback);
 begin
   FImage := image;
   self.PossibleCenters := TList<TFinderPattern>.Create;
@@ -130,7 +121,8 @@ begin
 end;
 
 destructor TFinderPatternFinder.Destroy;
-var finderPattern: TFinderPattern;
+var
+  finderPattern: TFinderPattern;
 begin
   FImage := nil;
 
@@ -155,8 +147,8 @@ begin
   try
 
     i := 0;
-    while ((((startI >= i) and (centerJ >= i)) and self.image[(centerJ - i),
-      (startI - i)])) do
+    while ((((startI >= i) and (centerJ >= i)) and self.image[(centerJ - i), (startI
+      - i)])) do
     begin
       inc(stateCount[2]);
       inc(i)
@@ -166,9 +158,8 @@ begin
       result := false;
       exit
     end;
-    while (((((startI >= i) and (centerJ >= i)) and
-      not self.image[(centerJ - i), (startI - i)]) and
-      (stateCount[1] <= maxCount))) do
+    while (((((startI >= i) and (centerJ >= i)) and not self.image[(centerJ - i),
+      (startI - i)]) and (stateCount[1] <= maxCount))) do
     begin
       inc(stateCount[1]);
       inc(i)
@@ -178,8 +169,8 @@ begin
       result := false;
       exit
     end;
-    while (((((startI >= i) and (centerJ >= i)) and self.image[(centerJ - i),
-      (startI - i)]) and (stateCount[0] <= maxCount))) do
+    while (((((startI >= i) and (centerJ >= i)) and self.image[(centerJ - i), (startI
+      - i)]) and (stateCount[0] <= maxCount))) do
     begin
       inc(stateCount[0]);
       inc(i)
@@ -192,8 +183,8 @@ begin
     maxI := self.image.Height;
     maxJ := self.image.Width;
     i := 1;
-    while (((((startI + i) < maxI) and ((centerJ + i) < maxJ)) and
-      self.image[(centerJ + i), (startI + i)])) do
+    while (((((startI + i) < maxI) and ((centerJ + i) < maxJ)) and self.image[(centerJ
+      + i), (startI + i)])) do
     begin
       inc(stateCount[2]);
       inc(i)
@@ -203,22 +194,20 @@ begin
       result := false;
       exit
     end;
-    while ((((((startI + i) < maxI) and ((centerJ + i) < maxJ)) and
-      not self.image[(centerJ + i), (startI + i)]) and
-      (stateCount[3] < maxCount))) do
+    while ((((((startI + i) < maxI) and ((centerJ + i) < maxJ)) and not self.image
+      [(centerJ + i), (startI + i)]) and (stateCount[3] < maxCount))) do
     begin
       inc(stateCount[3]);
       inc(i)
     end;
-    if ((((startI + i) >= maxI) or ((centerJ + i) >= maxJ)) or
-      (stateCount[3] >= maxCount)) then
+    if ((((startI + i) >= maxI) or ((centerJ + i) >= maxJ)) or (stateCount[3] >=
+      maxCount)) then
     begin
       result := false;
       exit
     end;
-    while ((((((startI + i) < maxI) and ((centerJ + i) < maxJ)) and
-      self.image[(centerJ + i), (startI + i)]) and
-      (stateCount[4] < maxCount))) do
+    while ((((((startI + i) < maxI) and ((centerJ + i) < maxJ)) and self.image[(centerJ
+      + i), (startI + i)]) and (stateCount[4] < maxCount))) do
     begin
       inc(stateCount[4]);
       inc(i)
@@ -229,26 +218,22 @@ begin
       exit
     end;
 
-    stateCountTotal :=
-      ((((stateCount[0] + stateCount[1]) + stateCount[2]) + stateCount[3]) +
-      stateCount[4]);
+    stateCountTotal := ((((stateCount[0] + stateCount[1]) + stateCount[2]) +
+      stateCount[3]) + stateCount[4]);
 
-    result := (Abs(stateCountTotal - originalStateCountTotal) <
-      (2 * originalStateCountTotal)) and TFinderPatternFinder.foundPatternCross
-      (stateCount);
+    result := (Abs(stateCountTotal - originalStateCountTotal) < (2 *
+      originalStateCountTotal)) and TFinderPatternFinder.foundPatternCross(stateCount);
 
   finally
     stateCount := nil;
   end;
 end;
 
-function TFinderPatternFinder.crossCheckHorizontal(startJ: Integer;
-  centerI: Integer; maxCount: Integer;
-  originalStateCountTotal: Integer): Single;
+function TFinderPatternFinder.crossCheckHorizontal(startJ: Integer; centerI:
+  Integer; maxCount: Integer; originalStateCountTotal: Integer): Single;
 var
   stateCount: TArray<Integer>;
   maxJ, j, stateCountTotal: Integer;
-
 begin
   maxJ := FImage.Width;
   stateCount := CrossCheckStateCount;
@@ -268,8 +253,7 @@ begin
       exit
     end;
 
-    while ((((j >= 0) and not FImage[j, centerI]) and
-      (stateCount[1] <= maxCount))) do
+    while ((((j >= 0) and not FImage[j, centerI]) and (stateCount[1] <= maxCount))) do
     begin
       inc(stateCount[1]);
       dec(j)
@@ -281,8 +265,7 @@ begin
       exit
     end;
 
-    while ((((j >= 0) and FImage[j, centerI]) and
-      (stateCount[0] <= maxCount))) do
+    while ((((j >= 0) and FImage[j, centerI]) and (stateCount[0] <= maxCount))) do
     begin
       inc(stateCount[0]);
       dec(j)
@@ -307,8 +290,7 @@ begin
       exit
     end;
 
-    while ((((j < maxJ) and not FImage[j, centerI]) and
-      (stateCount[3] < maxCount))) do
+    while ((((j < maxJ) and not FImage[j, centerI]) and (stateCount[3] < maxCount))) do
     begin
       inc(stateCount[3]);
       inc(j)
@@ -320,8 +302,7 @@ begin
       exit
     end;
 
-    while (((j < maxJ) and FImage[j, centerI]) and
-      (stateCount[4] < maxCount)) do
+    while (((j < maxJ) and FImage[j, centerI]) and (stateCount[4] < maxCount)) do
     begin
       inc(stateCount[4]);
       inc(j)
@@ -333,9 +314,8 @@ begin
       exit
     end;
 
-    stateCountTotal :=
-      ((((stateCount[0] + stateCount[1]) + stateCount[2]) + stateCount[3]) +
-      stateCount[4]);
+    stateCountTotal := ((((stateCount[0] + stateCount[1]) + stateCount[2]) +
+      stateCount[3]) + stateCount[4]);
 
     if (5 * Abs(stateCountTotal - originalStateCountTotal) >=
       originalStateCountTotal) then
@@ -368,9 +348,8 @@ begin
   result := FCrossCheckStateCount;
 end;
 
-function TFinderPatternFinder.crossCheckVertical(startI: Integer;
-  centerJ: Integer; maxCount: Integer;
-  originalStateCountTotal: Integer): Single;
+function TFinderPatternFinder.crossCheckVertical(startI: Integer; centerJ:
+  Integer; maxCount: Integer; originalStateCountTotal: Integer): Single;
 var
   stateCount: TArray<Integer>;
   maxI, i, stateCountTotal: Integer;
@@ -392,8 +371,7 @@ begin
       exit
     end;
 
-    while ((((i >= 0) and not FImage[centerJ, i]) and
-      (stateCount[1] <= maxCount))) do
+    while ((((i >= 0) and not FImage[centerJ, i]) and (stateCount[1] <= maxCount))) do
     begin
       inc(stateCount[1]);
       dec(i)
@@ -405,8 +383,7 @@ begin
       exit
     end;
 
-    while ((((i >= 0) and FImage[centerJ, i]) and
-      (stateCount[0] <= maxCount))) do
+    while ((((i >= 0) and FImage[centerJ, i]) and (stateCount[0] <= maxCount))) do
     begin
       inc(stateCount[0]);
       dec(i)
@@ -431,8 +408,7 @@ begin
       exit
     end;
 
-    while ((((i < maxI) and not FImage[centerJ, i]) and
-      (stateCount[3] < maxCount))) do
+    while ((((i < maxI) and not FImage[centerJ, i]) and (stateCount[3] < maxCount))) do
     begin
       inc(stateCount[3]);
       inc(i)
@@ -444,8 +420,7 @@ begin
       exit
     end;
 
-    while ((((i < maxI) and FImage[centerJ, i]) and
-      (stateCount[4] < maxCount))) do
+    while ((((i < maxI) and FImage[centerJ, i]) and (stateCount[4] < maxCount))) do
     begin
       inc(stateCount[4]);
       inc(i)
@@ -457,12 +432,11 @@ begin
       exit
     end;
 
-    stateCountTotal :=
-      ((((stateCount[0] + stateCount[1]) + stateCount[2]) + stateCount[3]) +
-      stateCount[4]);
+    stateCountTotal := ((((stateCount[0] + stateCount[1]) + stateCount[2]) +
+      stateCount[3]) + stateCount[4]);
 
-    if ((5 * Abs(stateCountTotal - originalStateCountTotal)) >=
-      (2 * originalStateCountTotal)) then
+    if ((5 * Abs(stateCountTotal - originalStateCountTotal)) >= (2 *
+      originalStateCountTotal)) then
     begin
       result := -1;
       exit
@@ -482,8 +456,8 @@ begin
 
 end;
 
-function TFinderPatternFinder.find(hints: TDictionary<TDecodeHintType, TObject>)
-  : TFinderPatternInfo;
+function TFinderPatternFinder.find(hints: TDictionary<TDecodeHintType, TObject>):
+  TFinderPatternInfo;
 var
   tryHarder, pureBarcode, done, confirmed: boolean;
   maxI, maxJ, iSkip, i, currentState, j, rowSkip: Integer;
@@ -491,10 +465,8 @@ var
   patternInfo: TArray<TFinderPattern>;
   resultInfo: TArray<TResultPoint>;
 begin
-  tryHarder := ((hints <> nil) and
-    hints.ContainsKey(DecodeHinttype.TRY_HARDER));
-  pureBarcode := ((hints <> nil) and
-    hints.ContainsKey(DecodeHinttype.PURE_BARCODE));
+  tryHarder := ((hints <> nil) and hints.ContainsKey(DecodeHinttype.TRY_HARDER));
+  pureBarcode := ((hints <> nil) and hints.ContainsKey(DecodeHinttype.PURE_BARCODE));
   maxI := self.image.Height;
   maxJ := self.image.Width;
   iSkip := ((3 * maxI) div $E4);
@@ -582,8 +554,7 @@ begin
 
       if (TFinderPatternFinder.foundPatternCross(stateCount)) then
       begin
-        confirmed := self.handlePossibleCenter(stateCount, i, maxJ,
-          pureBarcode);
+        confirmed := self.handlePossibleCenter(stateCount, i, maxJ, pureBarcode);
         if confirmed then
         begin
           iSkip := stateCount[0];
@@ -641,8 +612,8 @@ begin
         if (firstConfirmedCenter <> nil) then
         begin
           self.hasSkipped := true;
-          result := Floor(Abs(firstConfirmedCenter.X - center.X) -
-            Abs(firstConfirmedCenter.Y - center.Y)) div 2;
+          result := Floor(Abs(firstConfirmedCenter.X - center.X) - Abs(firstConfirmedCenter.Y
+            - center.Y)) div 2;
           exit
         end;
         firstConfirmedCenter := center
@@ -653,8 +624,8 @@ begin
   result := 0;
 end;
 
-class function TFinderPatternFinder.foundPatternCross
-  (stateCount: TArray<Integer>): boolean;
+class function TFinderPatternFinder.foundPatternCross(stateCount: TArray<Integer
+  >): boolean;
 var
   i, totalModuleSize, Count, moduleSize, maxVariance: Integer;
 begin
@@ -682,11 +653,11 @@ begin
   moduleSize := ((totalModuleSize shl 8) div 7);
   maxVariance := (moduleSize div 2);
 
-  result := ((((Abs(((moduleSize - (stateCount[0] shl 8)))) < maxVariance) and
-    (Abs(((moduleSize - (stateCount[1] shl 8)))) < maxVariance)) and
-    ((Abs((((3 * moduleSize) - (stateCount[2] shl 8)))) < (3 * maxVariance)) and
-    (Abs(((moduleSize - (stateCount[3] shl 8)))) < maxVariance))) and
-    (Abs(((moduleSize - (stateCount[4] shl 8)))) < maxVariance));
+  result := ((((Abs(((moduleSize - (stateCount[0] shl 8)))) < maxVariance) and (Abs
+    (((moduleSize - (stateCount[1] shl 8)))) < maxVariance)) and ((Abs((((3 *
+    moduleSize) - (stateCount[2] shl 8)))) < (3 * maxVariance)) and (Abs(((moduleSize
+    - (stateCount[3] shl 8)))) < maxVariance))) and (Abs(((moduleSize - (stateCount
+    [4] shl 8)))) < maxVariance));
   exit
 
 end;
@@ -712,8 +683,7 @@ begin
     exit
   end;
 
-  centerI := self.crossCheckVertical(i, Floor(centerJ), stateCount[2],
-    stateCountTotal);
+  centerI := self.crossCheckVertical(i, Floor(centerJ), stateCount[2], stateCountTotal);
 
   if (centerI = -1) then
   begin
@@ -724,9 +694,8 @@ begin
   centerJ := crossCheckHorizontal(Floor(centerJ), Floor(centerI), stateCount[2],
     stateCountTotal);
 
-  if ((centerJ <> -1) and (not pureBarcode or
-    self.crossCheckDiagonal(Floor(centerI), Floor(centerJ), stateCount[2],
-    stateCountTotal))) then
+  if ((centerJ <> -1) and (not pureBarcode or self.crossCheckDiagonal(Floor(centerI),
+    Floor(centerJ), stateCount[2], stateCountTotal))) then
   begin
     estimatedModuleSize := stateCountTotal / 7;
     found := false;
@@ -797,8 +766,7 @@ begin
   while ((i < max)) do
   begin
     pattern := self.PossibleCenters[i];
-    totalDeviation := totalDeviation +
-      Abs(pattern.estimatedModuleSize - average);
+    totalDeviation := totalDeviation + Abs(pattern.estimatedModuleSize - average);
     inc(i)
   end;
 
@@ -836,8 +804,7 @@ begin
     self.PossibleCenters.Sort(TFurthestFromAverageComparator.Create(average));
     limit := math.max((0.2 * average), stdDev);
     i := 0;
-    while (((i < self.PossibleCenters.Count) and
-      (self.PossibleCenters.Count > 3))) do
+    while (((i < self.PossibleCenters.Count) and (self.PossibleCenters.Count > 3))) do
     begin
       pattern := self.PossibleCenters[i];
       if (Abs(pattern.estimatedModuleSize - average) > limit) then
@@ -868,15 +835,15 @@ begin
 
   end;
 
-  result := TArray<TFinderPattern>.Create(self.PossibleCenters[0],
-    self.PossibleCenters[1], self.PossibleCenters[2]);
+  result := TArray<TFinderPattern>.Create(self.PossibleCenters[0], self.PossibleCenters
+    [1], self.PossibleCenters[2]);
 
 end;
 
 { TFurthestFromAverageComparator }
 
-function TFurthestFromAverageComparator.Compare(const Left,
-  Right: TFinderPattern): Integer;
+function TFurthestFromAverageComparator.Compare(const Left, Right:
+  TFinderPattern): Integer;
 var
   dA, dB: Single;
 begin
@@ -936,3 +903,4 @@ begin
 end;
 
 end.
+

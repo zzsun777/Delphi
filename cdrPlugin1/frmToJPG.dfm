@@ -1,8 +1,6 @@
 object fToJPG: TfToJPG
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSingle
   Caption = #22270#29255#23548#20986
   ClientHeight = 554
   ClientWidth = 578
@@ -569,11 +567,14 @@ object fToJPG: TfToJPG
     FFFFFFF000000FFFFFFFFFF000000FFFFFFFFFF000000FFFFFFFFFF000000FFF
     FFFFFFF000000000000000000000000000000000000000000000000000000000
     000000000000FFFFFFFFFFFF0000}
-  OldCreateOrder = False
-  Position = poDesktopCenter
+  KeyPreview = True
+  OldCreateOrder = True
   OnClick = rb_CurDocumentClick
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object grp1: TGroupBox
@@ -883,6 +884,7 @@ object fToJPG: TfToJPG
       Width = 75
       Height = 25
       Caption = #23548#20986
+      Default = True
       TabOrder = 10
       OnClick = btn_ExportClick
     end
@@ -965,18 +967,20 @@ object fToJPG: TfToJPG
       Top = 320
       Width = 75
       Height = 25
+      Cancel = True
       Caption = #36864#20986
       TabOrder = 14
       OnClick = btn_exitClick
     end
-    object chk_TopMost: TCheckBox
-      Left = 461
-      Top = 3
+    object btn1: TButton
+      Left = 16
+      Top = 320
       Width = 97
-      Height = 17
-      Caption = #31383#21475#32622#39030
+      Height = 25
+      Caption = #32039#24613#36864#20986#25353#38062
       TabOrder = 15
-      OnClick = chk_TopMostClick
+      Visible = False
+      OnClick = btn1Click
     end
   end
   object lst1: TListBox

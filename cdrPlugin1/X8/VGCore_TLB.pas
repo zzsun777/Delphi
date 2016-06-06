@@ -11451,7 +11451,7 @@ type
     procedure Sort(const CompareExpression: WideString; StartIndex: Integer; EndIndex: Integer; Data: OleVariant); safecall;
     procedure SetPixelAlignedRendering(PixelAligned: WordBool); safecall;
     function CreateDocumentFrom(TemporaryDocument: WordBool): IVGDocument; safecall;
-    procedure AlignAndDistribute(MethodH: cdrAlignDistributeH; MethodV: cdrAlignDistributeV; AlignTo: cdrAlignShapesTo; DistributeArea: cdrDistributeArea; UseOutline: WordBool; TextAlignOrigin: cdrTextAlignOrigin; PointX: Double; PointY: Double; const DistributeRect: IVGRect); safecall;
+    procedure AlignAndDistribute(MethodH: cdrAlignDistributeH; MethodV: cdrAlignDistributeV; AlignTo: cdrAlignShapesTo; DistributeArea: cdrDistributeArea; UseOutline: WordBool = False; TextAlignOrigin : cdrTextAlignOrigin = cdrTextAlignBoundingBox; PointX: Double = 0; PointY: Double = 0; const DistributeRect: IVGRect = nil); safecall;
     procedure SetOutlinePropertiesEx(Width: Double; const Style: IVGOutlineStyle; const Color: IVGColor; const StartArrow: IVGArrowHead; const EndArrow: IVGArrowHead; BehindFill: cdrTriState; ScaleWithShape: cdrTriState; LineCaps: cdrOutlineLineCaps; LineJoin: cdrOutlineLineJoin; NibAngle: Double; NibStretch: Integer; DashDotLength: Double; PenWidth: Double; MiterLimit: Double; Justification: cdrOutlineJustification); safecall;
     function CreateBoundary(x: Double; y: Double; PlaceOnTop: WordBool; DeleteSource: WordBool): IVGShape; safecall;
     function EqualDivide(Divisions: Integer; Gap: Double; Group: WordBool; Combine: WordBool; DeleteSource: WordBool): IVGShapeRange; safecall;

@@ -77,7 +77,7 @@ end;
 procedure TfCropMark.btn_OKClick(Sender: TObject);
 begin
   inherited;
-  if mApp.ActiveDocument.SelectableShapes.Count = 0 then
+  if FApp.ActiveDocument.SelectableShapes.Count = 0 then
   begin
     MessageBox(self.Handle, '请选中至少一个对象', '错误', MB_OK + MB_ICONSTOP);
     Exit;
@@ -124,10 +124,10 @@ const
   dash: array[0..2] of Integer = (2, 2, 5);
 begin
   self.StartEvent(True);
-  sr := mApp.CreateShapeRange;
-  AllShapes := mApp.CreateShapeRange;
+  sr := FApp.CreateShapeRange;
+  AllShapes := FApp.CreateShapeRange;
   Cu := nudCu.Value;
-  with mApp.ActiveDocument do
+  with FApp.ActiveDocument do
   begin
     Unit_ := cdrMillimeter;
     PreserveSelection := False;
@@ -158,9 +158,9 @@ begin
     sr.Add(DrawLine(X + cx - Cu, y + Off + l + cy, X + cx - Cu, y + Off + cy));
     AllShapes.Add(sr.Group);
   end;
-  clr := mApp.CreateCMYKColor(0, 100, 100, 0);
+  clr := FApp.CreateCMYKColor(0, 100, 100, 0);
   v := VarArrayCreate([2, 2], varInteger);
-  otl := mApp.CreateOutlineStyle(4, PSafeArray(TVarData(v).VArray));
+  otl := FApp.CreateOutlineStyle(4, PSafeArray(TVarData(v).VArray));
   if chkZxSP.Checked then
   begin
     sr.RemoveAll;
@@ -205,7 +205,7 @@ begin
     sy := 5;
     dx := 1;
     sr.RemoveAll;
-    s := mApp.ActiveLayer.CreateRectangle2(X + cx - sx - dx - Cu, y - Off - sy, sx, sy, 0, 0, 0, 0);
+    s := FApp.ActiveLayer.CreateRectangle2(X + cx - sx - dx - Cu, y - Off - sy, sx, sy, 0, 0, 0, 0);
     s.Fill.UniformColor.CMYKAssign(0, 0, 0, 100);
     with s.Outline do
     begin
@@ -229,7 +229,7 @@ begin
     dx := 1;
     ty := 1.5;
     sr.RemoveAll;
-    s := mApp.ActiveLayer.CreateRectangle2(X + cx - sx - dx - Cu, y + cy + Off, sx, sy, 0, 0, 0, 0);
+    s := FApp.ActiveLayer.CreateRectangle2(X + cx - sx - dx - Cu, y + cy + Off, sx, sy, 0, 0, 0, 0);
     s.Fill.UniformColor.CMYKAssign(100, 0, 0, 0);
     with s.Outline do
     begin
@@ -255,7 +255,7 @@ begin
     s := s.Duplicate(-sx, 0);
     sr.Add(s);
     s.Fill.UniformColor.CMYKAssign(100, 100, 0, 0);
-    s := mApp.ActiveLayer.CreateArtisticText(Cu + X + dx, y + Off + cy + ty - 2, 'C', cdrLanguageNone, cdrCharSetMixed, '', -1, cdrUndefined, cdrUndefined, cdrMixedFontLine, cdrMixedAlignment);
+    s := FApp.ActiveLayer.CreateArtisticText(Cu + X + dx, y + Off + cy + ty - 2, 'C', cdrLanguageNone, cdrCharSetMixed, '', -1, cdrUndefined, cdrUndefined, cdrMixedFontLine, cdrMixedAlignment);
     s.Fill.UniformColor.CMYKAssign(100, 0, 0, 0);
     with s.Text.FontProperties[cdrAllFrames] do
     begin
@@ -327,11 +327,11 @@ var
   sr: IVGShapeRange;
   s: IVGShape;
 begin
-  sr := mApp.CreateShapeRange;
+  sr := FApp.CreateShapeRange;
   case t of
     1:
       begin
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
         s.Fill.ApplyNoFill;
         SetRegistrationOutline(s);
         sr.Add(s);
@@ -340,7 +340,7 @@ begin
       end;
     2:
       begin
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
         s.Fill.ApplyNoFill;
         SetRegistrationOutline(s);
         sr.Add(s);
@@ -349,15 +349,15 @@ begin
       end;
     3:
       begin
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 180, True);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 180, True);
         s.Fill.UniformColor.RegistrationAssign;
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 270, 0, True);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 270, 0, True);
         s.Fill.UniformColor.RegistrationAssign;
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
         s.Fill.ApplyNoFill;
         SetRegistrationOutline(s);
         sr.Add(s);
@@ -366,23 +366,23 @@ begin
       end;
     4:
       begin
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 0, 90, True);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 0, 90, True);
         s.Fill.UniformColor.CMYKAssign(0, 0, 0, 100);
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 180, True);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 180, True);
         s.Fill.UniformColor.CMYKAssign(100, 0, 0, 0);
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 180, 270, True);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 180, 270, True);
         s.Fill.UniformColor.CMYKAssign(0, 100, 0, 0);
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 270, 0, True);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 270, 0, True);
         s.Fill.UniformColor.CMYKAssign(0, 0, 100, 0);
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
         s.Fill.ApplyNoFill;
         SetRegistrationOutline(s);
         sr.Add(s);
@@ -391,14 +391,14 @@ begin
       end;
     5:
       begin
-        s := mApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
+        s := FApp.ActiveLayer.CreateEllipse2(X, Y, r, 0, 90, 90, False);
         s.Fill.UniformColor.RegistrationAssign;
         s.Outline.type_ := cdrNoOutline;
         sr.Add(s);
         sr.Add(DrawLine(x, y + dash, x, y - dash));
         sr.Add(DrawLine(X - dash, y, X + dash, y));
-        sr.Add(DrawLine(X, y + r, X, y - r, mApp.CreateCMYKColor(0, 0, 0, 0)));
-        sr.Add(DrawLine(X - r, y, X + r, y, mApp.CreateCMYKColor(0, 0, 0, 0)));
+        sr.Add(DrawLine(X, y + r, X, y - r, FApp.CreateCMYKColor(0, 0, 0, 0)));
+        sr.Add(DrawLine(X - r, y, X + r, y, FApp.CreateCMYKColor(0, 0, 0, 0)));
       end;
   end;
   Result := sr.Group;
@@ -417,7 +417,7 @@ function TfCropMark.DrawLine(x1: Double; y1: Double; x2: Double; y2: Double; col
 var
   s: IVGShape;
 begin
-  s := mApp.ActiveLayer.CreateLineSegment(x1, y1, x2, y2);
+  s := FApp.ActiveLayer.CreateLineSegment(x1, y1, x2, y2);
   s.Outline.Width := 0.1;
   if colr <> nil then
   begin

@@ -939,8 +939,8 @@ inherited fSelect: TfSelect
     000000000000FFFF0000C0070000000700000007000000070000000700000007
     000000070000000700000007000000030000000100000000000000000000FFF3
     0000FFFF0000}
-  ExplicitWidth = 286
-  ExplicitHeight = 171
+  ExplicitWidth = 276
+  ExplicitHeight = 160
   PixelsPerInch = 96
   TextHeight = 13
   object chk_Size: TCheckBox

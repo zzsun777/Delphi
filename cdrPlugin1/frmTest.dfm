@@ -1,9 +1,11 @@
 object fTest: TfTest
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
   Caption = 'fTest'
-  ClientHeight = 299
-  ClientWidth = 635
+  ClientHeight = 309
+  ClientWidth = 645
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,5 +22,13 @@ object fTest: TfTest
     Height = 25
     Caption = 'btn1'
     TabOrder = 0
+  end
+  object edt1: TEdit
+    Left = 56
+    Top = 144
+    Width = 121
+    Height = 21
+    TabOrder = 1
+    Text = 'edt1'
   end
 end

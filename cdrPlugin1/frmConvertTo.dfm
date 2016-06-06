@@ -1,5 +1,4 @@
 inherited fConvertTo: TfConvertTo
-  BorderStyle = bsSingle
   Caption = #36716#25442
   ClientHeight = 197
   ClientWidth = 291
@@ -560,9 +559,9 @@ inherited fConvertTo: TfConvertTo
     43C20FFF0000FFF807E01FFF0000FFFC0FF03FFF0000FFFF0FF0FFFF0000FFFF
     8FF1FFFF0000FFFF87E1FFFF0000FFFFC3C3FFFF0000FFFFC003FFFF0000FFFF
     E007FFFF0000FFFFF00FFFFF0000}
-  Position = poDesktopCenter
+  OnCreate = FormCreate
   ExplicitWidth = 297
-  ExplicitHeight = 226
+  ExplicitHeight = 225
   PixelsPerInch = 96
   TextHeight = 13
   object pgc1: TPageControl
@@ -632,6 +631,10 @@ inherited fConvertTo: TfConvertTo
     object ts3: TTabSheet
       Caption = #22270#29255
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object btn_CompressPic: TButton
         Left = 3
         Top = 3

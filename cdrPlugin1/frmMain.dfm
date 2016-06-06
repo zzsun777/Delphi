@@ -1,19 +1,19 @@
 object fMain: TfMain
   Left = 0
   Top = 0
-  BorderStyle = bsToolWindow
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
   Caption = #20027#31383#21475
-  ClientHeight = 351
-  ClientWidth = 268
+  ClientHeight = 198
+  ClientWidth = 278
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
-  Position = poDesktopCenter
-  Visible = True
+  OldCreateOrder = True
+  Position = poOwnerFormCenter
   PixelsPerInch = 96
   TextHeight = 13
   object btn_ToJPG: TButton
@@ -48,8 +48,26 @@ object fMain: TfMain
     Top = 39
     Width = 75
     Height = 25
-    Caption = 'btn3'
+    Caption = #22686#24378#23545#40784
     TabOrder = 3
     OnClick = btn3Click
+  end
+  object btn4: TButton
+    Left = 89
+    Top = 39
+    Width = 75
+    Height = 25
+    Caption = #39029#38754#36866#37197
+    TabOrder = 4
+    OnClick = btn4Click
+  end
+  object btn5: TButton
+    Left = 170
+    Top = 39
+    Width = 75
+    Height = 25
+    Caption = #23383#20307#35782#21035
+    TabOrder = 5
+    OnClick = btn5Click
   end
 end

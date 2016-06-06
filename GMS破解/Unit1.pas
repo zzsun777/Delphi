@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, MyUtils,
-  Winapi.ShellAPI;
+  Winapi.ShellAPI, DragControl;
 
 type
   TForm1 = class(TForm)
@@ -15,12 +15,13 @@ type
     btn_RemovePWD: TButton;
     btn_Exit: TButton;
     dlgOpen1: TOpenDialog;
+    tsdrgcntrl1: TTSDragControl;
     procedure btn1Click(Sender: TObject);
     procedure btn_ExitClick(Sender: TObject);
     procedure btn_CRKClick(Sender: TObject);
     procedure btn_RemovePWDClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-    private
+    procedure tsdrgcntrl1DropFiles(const files: TArray<System.string>);
+  private
     // 当文件拖放至窗体中后，系统将向窗体发送WM_DRAPFILES事件，
     // 因此我们可以在WMDROPFILES过程中获取文件总数及文件名。
     procedure WMDROPFILES(var Msg: TMessage); message WM_DROPFILES;
@@ -90,7 +91,7 @@ begin
           end;
           tw.Close;
           fs.Free;
-          if MessageBox(Self.Handle, '文件已破解,是否移除密码？', '提示', MB_OKCANCEL + MB_ICONINFORMATION) = MB_OK then
+          if MessageBox(Self.Handle, '文件已破解,是否移除密码？', '提示', MB_OKCANCEL + MB_ICONINFORMATION) = idOk then
           begin
             btn_RemovePWDClick(nil);
           end;
@@ -99,13 +100,13 @@ begin
       end
       else
       begin
-        if MessageBox(Self.Handle, '文件未加密,是否尝试移除密码？', '提示', MB_OKCANCEL + MB_ICONINFORMATION) = MB_OK then
+        if MessageBox(Self.Handle, '文件未加密,是否尝试移除密码？', '提示', MB_OKCANCEL + MB_ICONINFORMATION) = idOk then
         begin
           btn_RemovePWDClick(nil);
         end;
       end;
     finally
-     // fs.Free;
+      fs.Free;
     end;
   end;
 end;
@@ -143,9 +144,9 @@ begin
   MessageBox(Self.Handle, '文件已破解', '提示', MB_OK + MB_ICONINFORMATION);
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TForm1.tsdrgcntrl1DropFiles(const files: TArray<System.string>);
 begin
-  DragAcceptFiles(Self.Handle, True);
+  edt1.Text := files[0];
 end;
 
 procedure TForm1.WMDROPFILES(var Msg: TMessage);
@@ -166,7 +167,6 @@ begin
   DragFinish(Msg.WParam);
 
 end;
-
 
 end.
 

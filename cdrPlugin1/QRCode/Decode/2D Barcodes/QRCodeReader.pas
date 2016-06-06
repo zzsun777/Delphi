@@ -24,7 +24,7 @@ uses
   DecodeHintType, ResultPoint, BarcodeFormat, BinaryBitmap, QRDecoder, Bitmatrix,
   DecoderResult, ResultMetadataType, DetectorResult, QRCodeDecoderMetaData,
   Detector, DecodedBitStreamParser, FMX.Graphics, RGBLuminanceSource,
-  HybridBinarizer,System.Classes;
+  HybridBinarizer, System.Classes, ErrorCorrectionLevel;
 
 type
   TQRCodeReader = class(TInterfacedObject, IReader)
@@ -143,8 +143,8 @@ begin
 
     ecLevel := DecoderResult.ecLevel;
 
-    if (length(ecLevel) = 0) then
-      Result.putMetadata(TResultMetadataType.ERROR_CORRECTION_LEVEL, TObject(ecLevel));
+    if (length(ecLevel) <> 0) then
+      Result.putMetadata(TResultMetadataType.ERROR_CORRECTION_LEVEL, TErrorCorrectionLevel.forName(ecLevel));
 
     if (DecoderResult.StructuredAppend) then
     begin
@@ -167,13 +167,15 @@ var
   HybridBinarizer: THybridBinarizer;
   BinaryBitmap: TBinaryBitmap;
 begin
+  Result := nil;
   try
     RGBLuminanceSource := TRGBLuminanceSource.RGBLuminanceSource(pBitmapForScan, pBitmapForScan.Width, pBitmapForScan.Height);
 
     HybridBinarizer := THybridBinarizer.Create(RGBLuminanceSource);
 
     BinaryBitmap := TBinaryBitmap.BinaryBitmap(HybridBinarizer);
-    decode(BinaryBitmap);
+
+    Result := decode(BinaryBitmap);
   finally
     if (BinaryBitmap <> nil) then
     begin
@@ -194,7 +196,7 @@ end;
 
 function TQRCodeReader.decode(stream: TStream): TReadResult;
 begin
-  decode(TBitmap.CreateFromStream(stream));
+  Result := decode(TBitmap.CreateFromStream(stream));
 end;
 
 class function TQRCodeReader.extractPureBits(image: TBitMatrix): TBitMatrix;

@@ -19,39 +19,42 @@ unit Mode;
 }
 interface
 
-uses SysUtils, Version;
+uses
+  SysUtils, Version;
 
 type
-
   TMode = class
   private
     characterCountBitsForVersions: TArray<Integer>;
-
     class procedure ClassInit; static;
     class procedure ClassFinalizing; static;
-
   public
     name: string;
     bits: Integer;
-
-    class var ALPHANUMERIC: TMode;
-    class var BYTE: TMode;
-    class var ECI: TMode;
-    class var FNC1_FIRST_POSITION: TMode;
-    class var FNC1_SECOND_POSITION: TMode;
-    class var HANZI: TMode;
-    class var KANJI: TMode;
-    class var NUMERIC: TMode;
-    class var STRUCTURED_APPEND: TMode;
-    class var TERMINATOR: TMode;
-
+    class var
+      ALPHANUMERIC: TMode;
+    class var
+      BYTE: TMode;
+    class var
+      ECI: TMode;
+    class var
+      FNC1_FIRST_POSITION: TMode;
+    class var
+      FNC1_SECOND_POSITION: TMode;
+    class var
+      HANZI: TMode;
+    class var
+      KANJI: TMode;
+    class var
+      NUMERIC: TMode;
+    class var
+      STRUCTURED_APPEND: TMode;
+    class var
+      TERMINATOR: TMode;
     class function forBits(bits: Integer): TMode; static;
     function getCharacterCountBits(Version: TVersion): Integer;
     function ToString: string; override;
-
-    constructor Create(characterCountBitsForVersions: TArray<Integer>;
-      bits: Integer; const name: string); overload;
-
+    constructor Create(characterCountBitsForVersions: TArray<Integer>; bits: Integer; const name: string); overload;
   end;
 
 implementation
@@ -61,19 +64,16 @@ implementation
 class procedure TMode.ClassInit;
 begin
 
-  TMode.TERMINATOR := TMode.Create(TArray<Integer>.Create(0, 0, 0), 0, 'TERMINATOR');
-  TMode.NUMERIC := TMode.Create(TArray<Integer>.Create(10, 12, 14), 1,
-    'NUMERIC');
-  TMode.ALPHANUMERIC := TMode.Create(TArray<Integer>.Create(9, 11, 13), 2,
-    'ALPHANUMERIC');
-  TMode.STRUCTURED_APPEND := TMode.Create(TArray<Integer>.Create(0, 0, 0), 3,
-    'STRUCTURED_APPEND');
-  TMode.BYTE := TMode.Create(TArray<Integer>.Create(8, $10, $10), 4, 'BYTE');
-  TMode.ECI := TMode.Create(nil, 7, 'ECI');
-  TMode.KANJI := TMode.Create(TArray<Integer>.Create(8, 10, 12), 8, 'KANJI');
-  TMode.FNC1_FIRST_POSITION := TMode.Create(nil, 5, 'FNC1_FIRST_POSITION');
-  TMode.FNC1_SECOND_POSITION := TMode.Create(nil, 9, 'FNC1_SECOND_POSITION');
-  TMode.HANZI := TMode.Create(TArray<Integer>.Create(8, 10, 12), 13, 'HANZI')
+  TMode.TERMINATOR := TMode.Create(TArray<Integer>.Create(0, 0, 0), $0, 'TERMINATOR');
+  TMode.NUMERIC := TMode.Create(TArray<Integer>.Create(10, 12, 14), $1, 'NUMERIC');
+  TMode.ALPHANUMERIC := TMode.Create(TArray<Integer>.Create(9, 11, 13), $2, 'ALPHANUMERIC');
+  TMode.STRUCTURED_APPEND := TMode.Create(TArray<Integer>.Create(0, 0, 0), $3, 'STRUCTURED_APPEND');
+  TMode.BYTE := TMode.Create(TArray<Integer>.Create(8, 16, 16), $4, 'BYTE');
+  TMode.ECI := TMode.Create(TArray<Integer>.Create(0, 0, 0), $7, 'ECI');
+  TMode.KANJI := TMode.Create(TArray<Integer>.Create(8, 10, 12), $8, 'KANJI');
+  TMode.FNC1_FIRST_POSITION := TMode.Create(TArray<Integer>.Create(0, 0, 0), $5, 'FNC1_FIRST_POSITION');
+  TMode.FNC1_SECOND_POSITION := TMode.Create(TArray<Integer>.Create(0, 0, 0), $9, 'FNC1_SECOND_POSITION');
+  TMode.HANZI := TMode.Create(TArray<Integer>.Create(8, 10, 12), $D, 'HANZI')
 end;
 
 class procedure TMode.ClassFinalizing;
@@ -113,8 +113,7 @@ begin
 
 end;
 
-constructor TMode.Create(characterCountBitsForVersions: TArray<Integer>;
-  bits: Integer; const name: string);
+constructor TMode.Create(characterCountBitsForVersions: TArray<Integer>; bits: Integer; const name: string);
 begin
   self.characterCountBitsForVersions := characterCountBitsForVersions;
   self.bits := bits;
@@ -124,79 +123,82 @@ end;
 class function TMode.forBits(bits: Integer): TMode;
 begin
   case bits of
-    0:
+    $0:
       begin
         begin
           Result := TMode.TERMINATOR;
           exit
         end
       end;
-    1:
+    $1:
       begin
         begin
           Result := TMode.NUMERIC;
           exit
         end
       end;
-    2:
+    $2:
       begin
         begin
           Result := TMode.ALPHANUMERIC;
           exit
         end
       end;
-    3:
+    $3:
       begin
         begin
           Result := TMode.STRUCTURED_APPEND;
           exit
         end
       end;
-    4:
+    $4:
       begin
         begin
           Result := TMode.BYTE;
           exit
         end
       end;
-    5:
+    $5:
       begin
         begin
           Result := TMode.FNC1_FIRST_POSITION;
           exit
         end
       end;
-    7:
+    $7:
       begin
         begin
           Result := TMode.ECI;
           exit
         end
       end;
-    8:
+    $8:
       begin
         begin
           Result := TMode.KANJI;
           exit
         end
       end;
-    9:
+    $9:
       begin
         begin
           Result := TMode.FNC1_SECOND_POSITION;
           exit
         end
       end;
-    13:
+    $D:
       begin
         begin
           Result := TMode.HANZI;
           exit
         end
       end;
+  else
+    begin
+      raise EArgumentException.Create('Argument exception');
+    end;
   end;
 
-  raise EArgumentException.Create('Argument exception');
 end;
 
 function TMode.getCharacterCountBits(Version: TVersion): Integer;
@@ -205,13 +207,12 @@ var
 begin
 
   if (self.characterCountBitsForVersions = nil) then
-    raise EArgumentException.Create
-      ('Character count doesn''t apply to this mode');
+    raise EArgumentException.Create('Character count doesn''t apply to this mode');
 
   number := Version.VersionNumber;
   if (number <= 9) then
     offset := 0
-  else if (number <= $1A) then
+  else if (number <= 26) then
     offset := 1
   else
     offset := 2;
@@ -224,12 +225,11 @@ begin
   Result := self.name
 end;
 
-Initialization
+initialization
+  TMode.ClassInit();
 
-TMode.ClassInit();
-
-Finalization
-
-TMode.ClassFinalizing();
+finalization
+  TMode.ClassFinalizing();
 
 end.
+

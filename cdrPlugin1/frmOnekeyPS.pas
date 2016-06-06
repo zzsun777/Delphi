@@ -10,8 +10,8 @@ uses
 type
   TfOnekeyPS = class(TTBaseForm)
     btn1: TButton;
-    procedure FormCreate(Sender: TObject);
     procedure btn1Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     savei: TIniFile;
     d11, d12, d21, d22, tx, ty: Double;
@@ -40,22 +40,19 @@ label
   enda;
 begin
   inherited;
-  if mApp.ActiveDocument.Selection.Shapes.Count = 0 then
+  if FApp.ActiveDocument.Selection.Shapes.Count = 0 then
   begin
     MessageBox(self.Handle, '请选择一个对象！', '错误', MB_OK + MB_ICONSTOP);
-
     Exit;
   end;
-  if mApp.ActiveDocument.Selection.Shapes.Count > 1 then
+  if FApp.ActiveDocument.Selection.Shapes.Count > 1 then
   begin
     MessageBox(self.Handle, '只能选择一个对象！', '错误', MB_OK + MB_ICONSTOP);
-
     Exit;
   end;
-  if mApp.ActiveShape.type_ <> cdrBitmapShape then
+  if FApp.ActiveShape.type_ <> cdrBitmapShape then
   begin
     MessageBox(self.Handle, '请选择一个位图！', '错误', MB_OK + MB_ICONSTOP);
-
     Exit;
   end;
 
@@ -63,17 +60,17 @@ begin
 
   Self.cmdName := '一键PS';
   StartEvent(True);
-  BitmapA := mApp.ActiveDocument.SelectionRange;
-  mApp.ActiveShape.GetMatrix(d11, d12, d21, d22, tx, ty);
-  mApp.ActiveShape.ClearTransformations;
+  BitmapA := FApp.ActiveDocument.SelectionRange;
+  FApp.ActiveShape.GetMatrix(d11, d12, d21, d22, tx, ty);
+  FApp.ActiveShape.ClearTransformations;
 
-  b := mApp.ActiveShape.Bitmap;
+  b := FApp.ActiveShape.Bitmap;
   CPtemp := TPath.GetTempPath + 'tisn2016' + getRandomString + '.psd';
   try
     begin
-      efl := mApp.ActiveDocument.ExportBitmap(CPtemp, cdrPSD, cdrSelection, b.Mode, b.SizeWidth, b.SizeHeight, b.ResolutionX, b.ResolutionY, cdrNormalAntiAliasing, False, True, True, False, cdrCompressionNone, nil, nil);
+      efl := FApp.ActiveDocument.ExportBitmap(CPtemp, cdrPSD, cdrSelection, b.Mode, b.SizeWidth, b.SizeHeight, b.ResolutionX, b.ResolutionY, cdrNormalAntiAliasing, False, True, True, False, cdrCompressionNone, nil, nil);
       efl.Finish;
-      mApp.ActiveShape.SetMatrix(d11, d12, d21, d22, tx, ty);
+      FApp.ActiveShape.SetMatrix(d11, d12, d21, d22, tx, ty);
       dtA := TFile.GetLastWriteTime(CPtemp);
       Self.Hide;
       ShellExecute(0, 'open', PWideChar(PSPath), PWideChar(CPtemp), '', SW_SHOWNORMAL);
@@ -96,18 +93,12 @@ begin
 
 enda:
   Self.EndEvent;
-  SetForegroundWindow(mApp.AppWindow.Handle);
-
+  SetForegroundWindow(FApp.AppWindow.Handle);
 end;
 
-procedure TfOnekeyPS.FormCreate(Sender: TObject);
+procedure TfOnekeyPS.FormShow(Sender: TObject);
 begin
   inherited;
-  if not StartCheck() then
-  begin
-    Free;
-    Exit;
-  end;
   savei := GetSettingsInifile;
   self.Left := Screen.WorkAreaWidth - self.Width;
   Self.Top := Screen.WorkAreaHeight - self.Height;
@@ -130,13 +121,13 @@ var
   impflt: ImportFilter;
   impopt: IVGStructImportOptions;
 begin
-  impopt := mApp.CreateStructImportOptions;
+  impopt := FApp.CreateStructImportOptions;
   impopt.Mode := cdrImportFull;
   impopt.MaintainLayers := true;
-  impflt := mApp.ActiveLayer.ImportEx(CPtemp, cdrPSD, impopt);
+  impflt := FApp.ActiveLayer.ImportEx(CPtemp, cdrPSD, impopt);
   impflt.Finish;
-  mApp.ActiveShape.SetMatrix(d11, d12, d21, d22, tx, ty);
-  mApp.ActiveShape.OrderToFront;
+  FApp.ActiveShape.SetMatrix(d11, d12, d21, d22, tx, ty);
+  FApp.ActiveShape.OrderToFront;
   BitmapA.Delete;
   DeleteFile(CPtemp);
 end;

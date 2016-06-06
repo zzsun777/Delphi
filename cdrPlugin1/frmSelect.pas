@@ -43,31 +43,31 @@ var
   Fsize: Single;
 begin
   inherited;
-  RmbC := mApp.CreateColor('');
-  RmbCL := mApp.CreateColor('');
-  mApp.ActiveDocument.ReferencePoint := cdrTopLeft;
-  mApp.ActiveDocument.Unit_ := cdrMillimeter;
-  if mApp.ActiveDocument.Selection.Shapes.Count = 1 then
+  RmbC := FApp.CreateColor('');
+  RmbCL := FApp.CreateColor('');
+  FApp.ActiveDocument.ReferencePoint := cdrTopLeft;
+  FApp.ActiveDocument.Unit_ := cdrMillimeter;
+  if FApp.ActiveDocument.Selection.Shapes.Count = 1 then
   begin
-    S := mApp.ActiveSelection;
+    S := FApp.ActiveSelection;
     S.GetSize(CT, CN);
     s1 := S.Shapes[1];
     STy := s1.type_;
     STT := s1.Shapes.Count;
     if s1.Fill.type_ = cdrUniformFill then
     begin
-      RmbC.CopyAssign(mApp.ActiveShape.Fill.UniformColor);
+      RmbC.CopyAssign(FApp.ActiveShape.Fill.UniformColor);
     end;
     if s1.Outline.type_ = cdrOutline then
     begin
-      RmbCL.CopyAssign(mApp.ActiveShape.Outline.Color);
+      RmbCL.CopyAssign(FApp.ActiveShape.Outline.Color);
     end;
     if s1.type_ = cdrTextShape then
     begin
       FNT := s1.Text.Story.Font;
       Fsize := s1.Text.Story.Size;
     end;
-    sr := mApp.ActiveDocument.SelectableShapes.FindShapes;
+    sr := FApp.ActiveDocument.SelectableShapes.FindShapes;
     for I := 1 to sr.Count do
     begin
       s2 := sr[I];

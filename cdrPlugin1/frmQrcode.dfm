@@ -1,7 +1,7 @@
 inherited fQrcode: TfQrcode
   Caption = #20108#32500#30721
-  ClientHeight = 536
-  ClientWidth = 799
+  ClientHeight = 471
+  ClientWidth = 673
   Icon.Data = {
     000001000900303010000100040068060000960000002020100001000400E802
     0000FE060000101010000100040028010000E60900003030000001000800A80E
@@ -791,9 +791,9 @@ inherited fQrcode: TfQrcode
     000000000003000000F9000000FA000000FB000000FB000000FC000000FD0000
     0000000000000040000000000000000000000000000000000000000000000000
     000000000000000000000000000000000000000000000000000001800000}
-  OnCreate = FormCreate
-  ExplicitWidth = 815
-  ExplicitHeight = 575
+  OnShow = FormShow
+  ExplicitWidth = 679
+  ExplicitHeight = 499
   PixelsPerInch = 96
   TextHeight = 13
   object pbPreview: TPaintBox
@@ -951,13 +951,80 @@ inherited fQrcode: TfQrcode
     object ts2: TTabSheet
       Caption = 'WIFI'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+      object lbl11: TLabel
+        Left = 16
+        Top = 15
+        Width = 36
+        Height = 13
+        Caption = #36134#21495#65306
+      end
+      object lbl12: TLabel
+        Left = 16
+        Top = 42
+        Width = 36
+        Height = 13
+        Caption = #23494#30721#65306
+      end
+      object lbl13: TLabel
+        Left = 16
+        Top = 77
+        Width = 48
+        Height = 13
+        Caption = #21152#23494#31867#22411
+      end
+      object edtWIFIName: TEdit
+        Left = 58
+        Top = 11
+        Width = 119
+        Height = 21
+        TabOrder = 0
+        OnChange = edtWIFINameChange
+      end
+      object edtWIFIPwd: TEdit
+        Left = 58
+        Top = 38
+        Width = 119
+        Height = 21
+        TabOrder = 1
+        OnChange = edtWIFINameChange
+      end
+      object cbb_WIFIType: TComboBox
+        Left = 70
+        Top = 72
+        Width = 107
+        Height = 21
+        Style = csDropDownList
+        ItemIndex = 0
+        TabOrder = 2
+        Text = 'WPA/WPA2'
+        OnChange = cbb_WIFITypeChange
+        Items.Strings = (
+          'WPA/WPA2'
+          'WEB'
+          #26410#21152#23494)
+      end
     end
     object ts3: TTabSheet
       Caption = #33258#21161#25991#26412
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         649
         205)
+      object lbl10: TLabel
+        Left = 103
+        Top = 9
+        Width = 168
+        Height = 13
+        Caption = #20195#30721#32570#38519#65292#37096#20998#19981#33021#35782#21035#65281#65281#65281
+      end
       object btn_Cap: TButton
         Left = 3
         Top = 3
@@ -979,15 +1046,15 @@ inherited fQrcode: TfQrcode
     end
   end
   object btn_Gen: TButton
-    Left = 74
-    Top = 503
+    Left = 590
+    Top = 201
     Width = 75
     Height = 25
     Caption = #29983#25104#30690#37327
     TabOrder = 1
     OnClick = btn_GenClick
   end
-  object cbbDrawingMode: TComboBox
+  object cbbVersion: TComboBox
     Left = 240
     Top = 24
     Width = 145
@@ -995,15 +1062,50 @@ inherited fQrcode: TfQrcode
     Style = csDropDownList
     ItemIndex = 0
     TabOrder = 2
-    Text = 'Bitmap proportional'
-    OnChange = cbbDrawingModeChange
+    Text = #33258#21160
+    OnChange = cbbVersionChange
     Items.Strings = (
-      'Bitmap proportional'
-      'Bitmap non-proportional'
-      'Vector: rectangles proportional'
-      'Vector: rectangles non-proportional'
-      'Vector: region proportional'
-      'Vector: region non-proportional')
+      #33258#21160
+      '1'
+      '2'
+      '3'
+      '4'
+      '5'
+      '6'
+      '7'
+      '8'
+      '9'
+      '10'
+      '11'
+      '12'
+      '13'
+      '14'
+      '15'
+      '16'
+      '17'
+      '18'
+      '19'
+      '20'
+      '21'
+      '22'
+      '23'
+      '24'
+      '25'
+      '26'
+      '27'
+      '28'
+      '29'
+      '30'
+      '31'
+      '32'
+      '33'
+      '34'
+      '35'
+      '36'
+      '37'
+      '38'
+      '39'
+      '40')
   end
   object cbbErrorCorrectionLevel: TComboBox
     Left = 240
@@ -1013,12 +1115,12 @@ inherited fQrcode: TfQrcode
     Style = csDropDownList
     ItemIndex = 0
     TabOrder = 3
-    Text = 'L ~7% correction'
+    Text = 'L ~7%'
     OnChange = cbbErrorCorrectionLevelChange
     Items.Strings = (
-      'L ~7% correction'
-      'M ~15% correction'
-      'Q ~25% correction'
-      'H ~30% correction')
+      'L ~7%'
+      'M ~15%'
+      'Q ~25%'
+      'H ~30%')
   end
 end

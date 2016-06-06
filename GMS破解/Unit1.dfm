@@ -14,7 +14,6 @@ object Form1: TForm1
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object edt1: TEdit
@@ -64,6 +63,12 @@ object Form1: TForm1
     DefaultExt = 'gms'
     Filter = 'GMS'#25991#20214'|*.gms'
     Left = 224
+    Top = 32
+  end
+  object tsdrgcntrl1: TTSDragControl
+    DragControl = edt1
+    OnDropFiles = tsdrgcntrl1DropFiles
+    Left = 96
     Top = 32
   end
 end

@@ -790,16 +790,32 @@ inherited fFontRecognition: TfFontRecognition
     00BC00000021000000000000000000000000000000000000000000000000F03F
     0000F03F0000E03F0000FE3F0000000000000000000000000000FE0F0000E007
     000000000000000000001FF80000000000000000000000000000FC3F0000}
-  OnCreate = FormCreate
-  ExplicitWidth = 463
+  OnShow = FormShow
+  ExplicitWidth = 453
   PixelsPerInch = 96
   TextHeight = 13
+  object img1: TImage
+    Left = 24
+    Top = 120
+    Width = 50
+    Height = 50
+    Stretch = True
+  end
   object cbb_FontList: TComboBox
-    Left = 40
+    Left = 96
     Top = 40
     Width = 145
     Height = 21
     Style = csDropDownList
     TabOrder = 0
+  end
+  object btn1: TButton
+    Left = 152
+    Top = 144
+    Width = 75
+    Height = 25
+    Caption = 'btn1'
+    TabOrder = 1
+    OnClick = btn1Click
   end
 end

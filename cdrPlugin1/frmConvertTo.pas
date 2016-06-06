@@ -26,6 +26,7 @@ type
     procedure btn_ToCMYKClick(Sender: TObject);
     procedure btn_OneKeyClick(Sender: TObject);
     procedure btn_CompressPicClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     procedure ConvertToCurves; overload;
@@ -56,13 +57,13 @@ begin
   StartEvent(True);
   if rb1.Checked then
   begin
-    ConvertToCurves(mApp.ActivePage);
+    ConvertToCurves(FApp.ActivePage);
   end
   else
   begin
-    for I := 1 to mApp.ActiveDocument.Pages.Count do
+    for I := 1 to FApp.ActiveDocument.Pages.Count do
     begin
-      ConvertToCurves(mApp.ActiveDocument.Pages[I]);
+      ConvertToCurves(FApp.ActiveDocument.Pages[I]);
     end;
   end;
   EndEvent;
@@ -121,7 +122,7 @@ var
   sa: IVGStructSaveAsOptions;
 begin
   inherited;
-  s := InputBox('请输入', '请输入文件名：', mApp.ActiveDocument.Name);
+  s := InputBox('请输入', '请输入文件名：', FApp.ActiveDocument.Name);
   if not s.ToLower.EndsWith('.cdr') then
   begin
     s := s + '.cdr';
@@ -129,9 +130,9 @@ begin
   rb2.Checked := True;
   ConvertToCurves;
   FillOutlineToCMYK;
-  sa := mApp.CreateStructSaveAsOptions;
+  sa := FApp.CreateStructSaveAsOptions;
   sa.Version := cdrVersion14;
-  mApp.ActiveDocument.SaveAs(GetFolderPath(CSIDL_DESKTOP) + '\' + s, sa);
+  FApp.ActiveDocument.SaveAs(GetFolderPath(CSIDL_DESKTOP) + '\' + s, sa);
   MessageBox(Handle, '文件已存至桌面！', '提示', MB_OK + MB_ICONINFORMATION);
 end;
 
@@ -152,13 +153,13 @@ begin
   StartEvent(True);
   if rb1.Checked then
   begin
-    FillOutlineToCMYK(mApp.ActivePage);
+    FillOutlineToCMYK(FApp.ActivePage);
   end
   else
   begin
-    for I := 1 to mApp.ActiveDocument.Pages.Count do
+    for I := 1 to FApp.ActiveDocument.Pages.Count do
     begin
-      FillOutlineToCMYK(mApp.ActiveDocument.Pages[I]);
+      FillOutlineToCMYK(FApp.ActiveDocument.Pages[I]);
     end;
   end;
   EndEvent;
@@ -214,6 +215,12 @@ begin
   end;
 end;
 
+procedure TfConvertTo.FormCreate(Sender: TObject);
+begin
+  inherited;
+  pgc1.TabIndex := 0;
+end;
+
 procedure TfConvertTo.CompressPic;
 var
   I: Integer;
@@ -222,13 +229,13 @@ begin
   StartEvent(True);
   if rb1.Checked then
   begin
-    CompressPic(mApp.ActivePage);
+    CompressPic(FApp.ActivePage);
   end
   else
   begin
-    for I := 1 to mApp.ActiveDocument.Pages.Count do
+    for I := 1 to FApp.ActiveDocument.Pages.Count do
     begin
-      CompressPic(mApp.ActiveDocument.Pages[I]);
+      CompressPic(FApp.ActiveDocument.Pages[I]);
     end;
   end;
   EndEvent;
@@ -264,7 +271,7 @@ begin
   begin
     s := ss1[I];
     s.PowerClip.EnterEditMode;
-    CompressPic(mApp.ActiveLayer.Shapes);
+    CompressPic(FApp.ActiveLayer.Shapes);
     s.PowerClip.LeaveEditMode;
   end;
 end;

@@ -9,6 +9,7 @@ uses
 type
   TfTest = class(TForm)
     btn1: TButton;
+    edt1: TEdit;
   private
     { Private declarations }
   public

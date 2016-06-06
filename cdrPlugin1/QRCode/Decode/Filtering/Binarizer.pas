@@ -33,7 +33,7 @@ type
   /// </summary>
   TBinarizer = class
   private
-    FSource: TLuminanceSource;
+    FSource: ILuminanceSource;
     function GetWidth: Integer;
     function GetHeight: Integer;
 
@@ -43,7 +43,7 @@ type
     /// Initializes a new instance of the <see cref="Binarizer"/> class.
     /// </summary>
     /// <param name="source">The source.</param>
-    constructor Create(source: TLuminanceSource);
+    constructor Create(source: ILuminanceSource);
 
     /// <summary> Converts one row of luminance data to 1 bit data. May actually do the conversion, or return
     /// cached data. Callers should assume this method is expensive and call it as seldom as possible.
@@ -58,7 +58,7 @@ type
     /// </param>
     /// <returns> The array of bits for this row (true means black).</returns>
   public
-    function LuminanceSource(): TLuminanceSource;
+    function LuminanceSource(): ILuminanceSource;
     function GetBlackRow(y: Integer; row: TBitArray): TBitArray;
       virtual; abstract;
 
@@ -71,7 +71,7 @@ type
     /// </summary>
     /// <param name="source">The LuminanceSource this Binarizer will operate on.</param>
     /// <returns> A new concrete Binarizer implementation object.</returns>
-    function createBinarizer(source: TLuminanceSource): TBinarizer;
+    function createBinarizer(source: ILuminanceSource): TBinarizer;
       virtual; abstract;
 
     property Width: Integer read GetWidth;
@@ -85,7 +85,7 @@ implementation
 
 { TBinarizer }
 
-constructor TBinarizer.Create(source: TLuminanceSource);
+constructor TBinarizer.Create(source: ILuminanceSource);
 begin
 
   if (source = nil) then
@@ -113,7 +113,7 @@ begin
 end;
 
 
-function TBinarizer.LuminanceSource: TLuminanceSource;
+function TBinarizer.LuminanceSource: ILuminanceSource;
 begin
   result := Self.FSource;
 end;

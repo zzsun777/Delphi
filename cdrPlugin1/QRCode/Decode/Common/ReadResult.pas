@@ -20,11 +20,9 @@ unit ReadResult;
 interface
 
 uses
-  SysUtils, Generics.Collections,
-  ResultPoint, ResultMetadataType, BarcodeFormat;
+  SysUtils, Generics.Collections, ResultPoint, ResultMetadataType, BarcodeFormat;
 
 type
-
   TReadResult = class
   private
     FText: string;
@@ -32,7 +30,6 @@ type
     FRawBytes: TArray<byte>;
     FResultPoints: TArray<TResultPoint>;
     FBarcodeFormat: TBarcodeFormat;
-
   public
 
     /// <returns>raw text encoded by the barcode, if applicable, otherwise <code>null</code></returns>
@@ -44,34 +41,20 @@ type
     /// identifying finder patterns or the corners of the barcode. The exact meaning is
     /// specific to the type of barcode that was decoded.
     /// </returns>
-    property ResultPoints: TArray<TResultPoint> read FResultPoints
-      write FResultPoints;
-
-    property BarcodeFormat: TBarcodeFormat read FBarcodeFormat
-      write FBarcodeFormat;
-
-    property ResultMetaData: TDictionary<TResultMetadataType, TObject>
-      read FResultMetadata write FResultMetadata;
-
-    constructor Create(Text: string; RawBytes: TArray<byte>;
-      ResultPoints: TArray<TResultPoint>; BarcodeFormat: TBarcodeFormat);
-
+    property ResultPoints: TArray<TResultPoint> read FResultPoints write FResultPoints;
+    property BarcodeFormat: TBarcodeFormat read FBarcodeFormat write FBarcodeFormat;
+    property ResultMetaData: TDictionary<TResultMetadataType, TObject> read FResultMetadata write FResultMetadata;
+    constructor Create(Text: string; RawBytes: TArray<byte>; ResultPoints: TArray<TResultPoint>; BarcodeFormat: TBarcodeFormat);
     destructor Destroy(); override;
-
-    procedure putMetadata(ResultMetadataType: TResultMetadataType;
-      value: TObject);
-
-    procedure PutAllMetaData(metaData: TDictionary<TResultMetadataType,
-      TObject>);
-
+    procedure putMetadata(ResultMetadataType: TResultMetadataType; value: TObject);
+    procedure PutAllMetaData(metaData: TDictionary<TResultMetadataType, TObject>);
   end;
 
 implementation
 
 { TReadResult }
 
-constructor TReadResult.Create(Text: string; RawBytes: TArray<byte>;
-  ResultPoints: TArray<TResultPoint>; BarcodeFormat: TBarcodeFormat);
+constructor TReadResult.Create(Text: string; RawBytes: TArray<byte>; ResultPoints: TArray<TResultPoint>; BarcodeFormat: TBarcodeFormat);
 begin
   if ((Text = '') and (RawBytes = nil)) then
   begin
@@ -107,12 +90,9 @@ begin
   inherited;
 end;
 
-procedure TReadResult.PutAllMetaData(metaData: TDictionary<TResultMetadataType,
-  TObject>);
-
+procedure TReadResult.PutAllMetaData(metaData: TDictionary<TResultMetadataType, TObject>);
 var
   key: TResultMetadataType;
-
 begin
   if (metaData <> nil) then
   begin
@@ -133,20 +113,14 @@ begin
   end;
 end;
 
-procedure TReadResult.putMetadata(ResultMetadataType: TResultMetadataType;
-  value: TObject);
+procedure TReadResult.putMetadata(ResultMetadataType: TResultMetadataType; value: TObject);
 begin
   if (FResultMetadata = nil) then
   begin
     FResultMetadata := TDictionary<TResultMetadataType, TObject>.Create();
   end;
-
-  try
-    // FResultMetadata[ResultMetadataType] := value;
-  except
-
-  end;
-
+  FResultMetadata.Add(ResultMetadataType, value);
 end;
 
 end.
+

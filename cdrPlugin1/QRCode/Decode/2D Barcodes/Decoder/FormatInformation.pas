@@ -19,27 +19,27 @@ unit FormatInformation;
 }
 interface
 
-uses Generics.Collections, ErrorCorrectionLevel, classes, MathUtils;
+uses
+  Generics.Collections, ErrorCorrectionLevel, classes, MathUtils;
 
 const
   FORMAT_INFO_MASK_QR: Integer = $5412;
 
 type
-
   T2DIntegerArray = TArray<TArray<Integer>>;
 
   TFormatInformation = class
   private
-    class var FORMAT_INFO_DECODE_LOOKUP: T2DIntegerArray;
-    class var BITS_SET_IN_HALF_BYTE: TArray<Integer>;
+    class var
+      FORMAT_INFO_DECODE_LOOKUP: T2DIntegerArray;
+    class var
+      BITS_SET_IN_HALF_BYTE: TArray<Integer>;
     class procedure InitClass(); static;
     constructor Create(formatInfo: Integer);
-
   public
-  var
-    ErrorCorrectionLevel: TErrorCorrectionLevel;
-    DataMask: Byte;
-
+    var
+      ErrorCorrectionLevel: TErrorCorrectionLevel;
+      DataMask: Byte;
     function Equals(o: TObject): boolean; override;
     function GetHashCode: Integer; override;
     class function decodeFormatInformation(maskedFormatInfo1: Integer;
@@ -55,8 +55,8 @@ implementation
 
 constructor TFormatInformation.Create(formatInfo: Integer);
 begin
-  self.ErrorCorrectionLevel := ErrorCorrectionLevel.forBits
-    (TMathUtils.Asr(formatInfo, 3) and 3);
+  self.ErrorCorrectionLevel := ErrorCorrectionLevel.forBits(TMathUtils.Asr(formatInfo,
+    3) and 3);
 
   self.DataMask := Byte(formatInfo and 7);
 
@@ -75,8 +75,8 @@ begin
     exit
   end;
 
-  Result := TFormatInformation.doDecodeFormatInformation
-    ((maskedFormatInfo1 xor $5412), (maskedFormatInfo2 xor $5412));
+  Result := TFormatInformation.doDecodeFormatInformation((maskedFormatInfo1 xor
+    $5412), (maskedFormatInfo2 xor $5412));
 
 end;
 
@@ -85,7 +85,6 @@ class function TFormatInformation.doDecodeFormatInformation(maskedFormatInfo1,
 var
   bestDifference, bestFormatInfo, bitsDifference, targetInfo: Integer;
   decodeInfo: TArray<Integer>;
-
 begin
   bestDifference := $7FFFFFFF;
   bestFormatInfo := 0;
@@ -95,15 +94,13 @@ begin
 
     targetInfo := decodeInfo[0];
 
-    if ((targetInfo = maskedFormatInfo1) or (targetInfo = maskedFormatInfo2))
-    then
+    if ((targetInfo = maskedFormatInfo1) or (targetInfo = maskedFormatInfo2)) then
     begin
       Result := TFormatInformation.Create(decodeInfo[1]);
       exit
     end;
 
-    bitsDifference := TFormatInformation.numBitsDiffering(maskedFormatInfo1,
-      targetInfo);
+    bitsDifference := TFormatInformation.numBitsDiffering(maskedFormatInfo1, targetInfo);
 
     if (bitsDifference < bestDifference) then
     begin
@@ -137,7 +134,7 @@ function TFormatInformation.Equals(o: TObject): boolean;
 var
   other: TFormatInformation;
 begin
-  if (not(o is TFormatInformation)) then
+  if (not (o is TFormatInformation)) then
   begin
     Result := false;
     exit
@@ -145,8 +142,8 @@ begin
 
   other := (o as TFormatInformation);
 
-  Result := ((self.ErrorCorrectionLevel = other.ErrorCorrectionLevel) and
-    (self.DataMask = other.DataMask));
+  Result := ((self.ErrorCorrectionLevel = other.ErrorCorrectionLevel) and (self.DataMask
+    = other.DataMask));
 end;
 
 function TFormatInformation.GetHashCode: Integer;
@@ -197,18 +194,17 @@ end;
 class function TFormatInformation.numBitsDiffering(a, b: Integer): Integer;
 begin
   a := (a xor b);
-  Result := (((((((BITS_SET_IN_HALF_BYTE[(a and 15)] + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, 4)) and 15)]) + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, 8)) and 15)]) + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, 12)) and 15)]) + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, $10)) and 15)]) + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, 20)) and 15)]) + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, $18)) and 15)]) + BITS_SET_IN_HALF_BYTE
-    [((TMathUtils.Asr(a, $1C)) and 15)])
+  Result := (((((((BITS_SET_IN_HALF_BYTE[(a and 15)] + BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr
+    (a, 4)) and 15)]) + BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr(a, 8)) and 15)])
+    + BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr(a, 12)) and 15)]) +
+    BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr(a, $10)) and 15)]) +
+    BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr(a, 20)) and 15)]) +
+    BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr(a, $18)) and 15)]) +
+    BITS_SET_IN_HALF_BYTE[((TMathUtils.Asr(a, $1C)) and 15)])
 end;
 
-Initialization
-
-TFormatInformation.InitClass();
+initialization
+  TFormatInformation.InitClass();
 
 end.
+

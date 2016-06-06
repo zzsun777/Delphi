@@ -19,47 +19,28 @@ unit DecodedBitStreamParser;
 }
 interface
 
-uses BitSource, SysUtils, DecodeHintType, Generics.Collections,
+uses
+  BitSource, SysUtils, DecodeHintType, Generics.Collections,
   ErrorCorrectionLevel, version, DecoderResult, CharacterSetECI, StringUtils,
   Mode, MathUtils;
 
 type
-
   TDecodedBitStreamParser = class abstract
-
   private
-
-    class var ALPHANUMERIC_CHARS: TArray<Char>;
+    class var
+      ALPHANUMERIC_CHARS: TArray<Char>;
     class procedure InitializeClass;
-
-  const
-    GB2312_SUBSET: Integer = 1;
-
-    class function decodeAlphanumericSegment(bits: TBitSource;
-      res: TStringBuilder; count: Integer; fc1InEffect: boolean)
-      : boolean; static;
-
-    class function decodeByteSegment(bits: TBitSource; res: TStringBuilder;
-      count: Integer; currentCharacterSetECI: TCharacterSetECI;
-      byteSegments: TList<TArray<Byte>>;
-      hints: TDictionary<TDecodeHintType, TObject>): boolean; static;
-
-    class function decodeHanziSegment(bits: TBitSource; res: TStringBuilder;
-      count: Integer): boolean; static;
-
-    class function decodeKanjiSegment(bits: TBitSource; res: TStringBuilder;
-      count: Integer): boolean; static;
-
-    class function decodeNumericSegment(bits: TBitSource; res: TStringBuilder;
-      count: Integer): boolean; static;
+    const
+      GB2312_SUBSET: Integer = 1;
+    class function decodeAlphanumericSegment(bits: TBitSource; res: TStringBuilder; count: Integer; fc1InEffect: boolean): boolean; static;
+    class function decodeByteSegment(bits: TBitSource; res: TStringBuilder; count: Integer; currentCharacterSetECI: TCharacterSetECI; byteSegments: TList<TArray<Byte>>; hints: TDictionary<TDecodeHintType, TObject>): boolean; static;
+    class function decodeHanziSegment(bits: TBitSource; res: TStringBuilder; count: Integer): boolean; static;
+    class function decodeKanjiSegment(bits: TBitSource; res: TStringBuilder; count: Integer): boolean; static;
+    class function decodeNumericSegment(bits: TBitSource; res: TStringBuilder; count: Integer): boolean; static;
     class function parseECIValue(bits: TBitSource): Integer; static;
     class function toAlphaNumericChar(value: Integer): Char; static;
-
   public
-    class function decode(bytes: TArray<Byte>; version: TVersion;
-      ecLevel: TErrorCorrectionLevel;
-      hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult; static;
-
+    class function decode(bytes: TArray<Byte>; version: TVersion; ecLevel: TErrorCorrectionLevel; hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult; static;
   end;
 
 implementation
@@ -68,15 +49,10 @@ implementation
 
 class procedure TDecodedBitStreamParser.InitializeClass;
 begin
-  ALPHANUMERIC_CHARS := TArray<Char>.Create('0', '1', '2', '3', '4', '5', '6',
-    '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ',
-    '$', '%', '*', '+', '-', '.', '/', ':');
+  ALPHANUMERIC_CHARS := TArray<Char>.Create('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '$', '%', '*', '+', '-', '.', '/', ':');
 end;
 
-class function TDecodedBitStreamParser.decode(bytes: TArray<Byte>;
-  version: TVersion; ecLevel: TErrorCorrectionLevel;
-  hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult;
+class function TDecodedBitStreamParser.decode(bytes: TArray<Byte>; version: TVersion; ecLevel: TErrorCorrectionLevel; hints: TDictionary<TDecodeHintType, TObject>): TDecoderResult;
 var
   Mode: TMode;
   bits: TBitSource;
@@ -84,13 +60,12 @@ var
   fc1InEffect: boolean;
   symbolSequence, parityData, count, countHanzi, subSet: Integer;
   currentCharacterSetECI: TCharacterSetECI;
-  ecstring: String;
+  ecstring: string;
   res: TStringBuilder;
-
 begin
   bits := TBitSource.Create(bytes);
   res := TStringBuilder.Create(50);
-  byteSegments := TList < TArray < Byte >>.Create();
+  byteSegments := TList<TArray<Byte>>.Create();
   byteSegments.Capacity := 1;
   symbolSequence := -1;
   parityData := -1;
@@ -123,8 +98,7 @@ begin
         if (Mode <> TMode.TERMINATOR) then
         begin
 
-          if ((Mode = TMode.FNC1_FIRST_POSITION) or
-            (Mode = TMode.FNC1_SECOND_POSITION)) then
+          if ((Mode = TMode.FNC1_FIRST_POSITION) or (Mode = TMode.FNC1_SECOND_POSITION)) then
           begin
             fc1InEffect := true;
           end
@@ -141,8 +115,7 @@ begin
           end
           else if (Mode = TMode.ECI) then
           begin
-            currentCharacterSetECI := TCharacterSetECI.getCharacterSetECIByValue
-              (TDecodedBitStreamParser.parseECIValue(bits));
+            currentCharacterSetECI := TCharacterSetECI.getCharacterSetECIByValue(parseECIValue(bits));
 
             if (currentCharacterSetECI = nil) then
             begin
@@ -157,10 +130,9 @@ begin
             begin
               subSet := bits.readBits(4);
               countHanzi := bits.readBits(Mode.getCharacterCountBits(version));
-              if (subSet = 1) then
+              if (subSet = TDecodedBitStreamParser.GB2312_SUBSET) then
               begin
-                if (not TDecodedBitStreamParser.decodeHanziSegment(bits, res,
-                  countHanzi)) then
+                if (not TDecodedBitStreamParser.decodeHanziSegment(bits, res, countHanzi)) then
                 begin
                   result := nil;
                   exit
@@ -172,8 +144,7 @@ begin
               count := bits.readBits(Mode.getCharacterCountBits(version));
               if (Mode = TMode.NUMERIC) then
               begin
-                if (not TDecodedBitStreamParser.decodeNumericSegment(bits, res,
-                  count)) then
+                if (not TDecodedBitStreamParser.decodeNumericSegment(bits, res, count)) then
                 begin
                   result := nil;
                   exit
@@ -181,8 +152,7 @@ begin
               end
               else if (Mode = TMode.ALPHANUMERIC) then
               begin
-                if (not TDecodedBitStreamParser.decodeAlphanumericSegment(bits,
-                  res, count, fc1InEffect)) then
+                if (not TDecodedBitStreamParser.decodeAlphanumericSegment(bits, res, count, fc1InEffect)) then
                 begin
                   result := nil;
                   exit
@@ -190,8 +160,7 @@ begin
               end
               else if (Mode = TMode.BYTE) then
               begin
-                if (not TDecodedBitStreamParser.decodeByteSegment(bits, res,
-                  count, currentCharacterSetECI, byteSegments, hints)) then
+                if (not TDecodedBitStreamParser.decodeByteSegment(bits, res, count, currentCharacterSetECI, byteSegments, hints)) then
                 begin
                   result := nil;
                   exit;
@@ -199,8 +168,7 @@ begin
               end
               else if (Mode <> TMode.KANJI) then
               begin
-                if (not TDecodedBitStreamParser.decodeKanjiSegment(bits, res,
-                  count)) then
+                if (not TDecodedBitStreamParser.decodeKanjiSegment(bits, res, count)) then
                 begin
                   result := nil;
                   exit
@@ -214,366 +182,340 @@ begin
             end
           end
         end
-        until (Mode = TMode.TERMINATOR)
+      until (Mode = TMode.TERMINATOR)
 
-      except
-        on exception2: EArgumentException do
-        begin
-          result := nil;
-          exit
-        end
-      end;
-
-      if (byteSegments.count = 0) then
-        byteSegments := nil;
-
-      if (ecLevel = nil) then
-        ecstring := ''
-      else
-        ecstring := ecLevel.toString();
-
-      result := TDecoderResult.Create(bytes, res.toString.Replace('#13#10',
-        '#10').Replace('#10', #13), byteSegments, ecstring, symbolSequence,
-        parityData);
-
-    finally
-      FreeAndNil(res);
-      FreeAndNil(bits);
+    except
+      on exception2: EArgumentException do
+      begin
+        result := nil;
+        exit
+      end
     end;
 
+    if (byteSegments.count = 0) then
+      byteSegments := nil;
+
+    if (ecLevel = nil) then
+      ecstring := ''
+    else
+      ecstring := ecLevel.toString();
+
+    result := TDecoderResult.Create(bytes, res.toString.Replace('#13#10', '#10').Replace('#10', #13), byteSegments, ecstring, symbolSequence, parityData);
+
+  finally
+    FreeAndNil(res);
+    FreeAndNil(bits);
   end;
 
-  class function TDecodedBitStreamParser.decodeAlphanumericSegment
-    (bits: TBitSource; res: TStringBuilder; count: Integer;
-    fc1InEffect: boolean): boolean;
-  var
-    start, i, nextTwoCharsBits: Integer;
-    charArray: TArray<Char>;
+end;
+
+class function TDecodedBitStreamParser.decodeAlphanumericSegment(bits: TBitSource; res: TStringBuilder; count: Integer; fc1InEffect: boolean): boolean;
+var
+  start, i, nextTwoCharsBits: Integer;
+  charArray: TArray<Char>;
+begin
+
+  start := res.Length;
+  while ((count > 1)) do
   begin
-
-    start := res.Length;
-    while ((count > 1)) do
-    begin
-      if (bits.available < 11) then
-      begin
-        result := false;
-        exit
-      end;
-
-      nextTwoCharsBits := bits.readBits(11);
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        ((nextTwoCharsBits div $2D)));
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        ((nextTwoCharsBits mod $2D)));
-      dec(count, 2)
-
-    end;
-
-    if (count = 1) then
-    begin
-      if (bits.available < 6) then
-      begin
-        result := false;
-        exit
-      end;
-
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar(bits.readBits(6)))
-
-    end;
-
-    if (fc1InEffect) then
-    begin
-
-      i := start;
-      while ((i < res.Length)) do
-      begin
-        if (res.Chars[i] = '%') then
-        begin
-          if ((i < (res.Length - 1)) and (res.Chars[(i + 1)] = '%')) then
-            res.Remove((i + 1), 1)
-          else
-          begin
-            res.Remove(i, 1);
-            charArray := TArray<Char>.Create(' ');
-            res.Insert(i, charArray);
-          end;
-        end;
-        inc(i)
-      end;
-
-    end;
-
-    result := true;
-
-  end;
-
-  class function TDecodedBitStreamParser.decodeByteSegment(bits: TBitSource;
-    res: TStringBuilder; count: Integer;
-    currentCharacterSetECI: TCharacterSetECI; byteSegments: TList<TArray<Byte>>;
-    hints: TDictionary<TDecodeHintType, TObject>): boolean;
-  var
-    Enc:TEncoding;
-    encodingS, s: string;
-    readBytes: TArray<Byte>;
-    i: Integer;
-
-  begin
-
-    if ((count shl 3) > bits.available) then
+    if (bits.available < 11) then
     begin
       result := false;
       exit
     end;
 
-    readBytes := TArray<Byte>.Create();
-    SetLength(readBytes, count);
-    i := 0;
-    while ((i < count)) do
+    nextTwoCharsBits := bits.readBits(11);
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar((nextTwoCharsBits div $2D)));
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar((nextTwoCharsBits mod $2D)));
+    dec(count, 2)
+
+  end;
+
+  if (count = 1) then
+  begin
+    if (bits.available < 6) then
     begin
-      readBytes[i] := Byte(bits.readBits(8));
+      result := false;
+      exit
+    end;
+
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar(bits.readBits(6)))
+
+  end;
+
+  if (fc1InEffect) then
+  begin
+
+    i := start;
+    while ((i < res.Length)) do
+    begin
+      if (res.Chars[i] = '%') then
+      begin
+        if ((i < (res.Length - 1)) and (res.Chars[(i + 1)] = '%')) then
+          res.Remove((i + 1), 1)
+        else
+        begin
+          res.Remove(i, 1);
+          charArray := TArray<Char>.Create(' ');
+          res.Insert(i, charArray);
+        end;
+      end;
       inc(i)
     end;
 
-    if (currentCharacterSetECI = nil) then
-      encodingS := TStringUtils.guessEncoding(readBytes, hints)
+  end;
+
+  result := true;
+
+end;
+
+class function TDecodedBitStreamParser.decodeByteSegment(bits: TBitSource; res: TStringBuilder; count: Integer; currentCharacterSetECI: TCharacterSetECI; byteSegments: TList<TArray<Byte>>; hints: TDictionary<TDecodeHintType, TObject>): boolean;
+var
+  Enc: TEncoding;
+  encodingS, s: string;
+  readBytes: TArray<Byte>;
+  i: Integer;
+begin
+
+  if ((count shl 3) > bits.available) then
+  begin
+    result := false;
+    exit
+  end;
+
+  readBytes := TArray<Byte>.Create();
+  SetLength(readBytes, count);
+  i := 0;
+  while ((i < count)) do
+  begin
+    readBytes[i] := Byte(bits.readBits(8));
+    inc(i)
+  end;
+
+  if (currentCharacterSetECI = nil) then
+    encodingS := TStringUtils.guessEncoding(readBytes, hints)
+  else
+    encodingS := currentCharacterSetECI.EncodingName;
+
+  try
+    enc := Tencoding.GetEncoding(encodingS);
+    s := enc.GetString(readBytes, 0, Length(readBytes));
+    res.Append(s);
+    FreeAndNil(enc);
+  except
+    on exception1: Exception do
+    begin
+      result := false;
+      exit
+    end
+  end;
+
+  byteSegments.Add(readBytes);
+  result := true;
+end;
+
+class function TDecodedBitStreamParser.decodeHanziSegment(bits: TBitSource; res: TStringBuilder; count: Integer): boolean;
+var
+  buffer: TArray<Byte>;
+  offset, twoBytes, assembledTwoBytes: Integer;
+begin
+  if ((count * 13) > bits.available) then
+  begin
+    result := false;
+    exit
+  end;
+
+  buffer := TArray<Byte>.Create();
+  SetLength(buffer, 2 * count);
+  offset := 0;
+
+  while ((count > 0)) do
+  begin
+    twoBytes := bits.readBits(13);
+    assembledTwoBytes := (((twoBytes div $60) shl 8) or (twoBytes mod $60));
+
+    if (assembledTwoBytes < $3BF) then
+      inc(assembledTwoBytes, $A1A1)
     else
-      encodingS := currentCharacterSetECI.EncodingName;
+      inc(assembledTwoBytes, $A6A1);
 
-    try
-      enc:=Tencoding.GetEncoding(encodingS);
-      s:=enc.GetString(readBytes, 0, Length(readBytes));
-      res.Append(s);
-      FreeAndNil(enc);
-    except
-      on exception1: Exception do
-      begin
-        result := false;
-        exit
-      end
-    end;
-
-    byteSegments.Add(readBytes);
-    result := true;
+    buffer[offset] := Byte(TMathUtils.Asr(assembledTwoBytes, 8) and $FF);
+    buffer[(offset + 1)] := Byte(assembledTwoBytes and $FF);
+    inc(offset, 2);
+    dec(count)
   end;
 
-  class function TDecodedBitStreamParser.decodeHanziSegment(bits: TBitSource;
-    res: TStringBuilder; count: Integer): boolean;
-  var
-    buffer: TArray<Byte>;
-    offset, twoBytes, assembledTwoBytes: Integer;
+  try
+    res.Append(Tencoding.GetEncoding(TStringUtils.GB2312).GetString(buffer, 0, Length(buffer)))
+  except
+    on exception1: Exception do
+    begin
+      result := false;
+      exit
+    end
+  end;
 
+  result := true;
+end;
+
+class function TDecodedBitStreamParser.decodeKanjiSegment(bits: TBitSource; res: TStringBuilder; count: Integer): boolean;
+var
+  buffer: TArray<Byte>;
+  twoBytes, offset, assembledTwoBytes: Integer;
+begin
+
+  if ((count * 13) > bits.available) then
+  begin
+    result := false;
+    exit
+  end;
+
+  buffer := TArray<Byte>.Create();
+  SetLength(buffer, 2 * count);
+
+  offset := 0;
+
+  while ((count > 0)) do
+  begin
+    twoBytes := bits.readBits(13);
+    assembledTwoBytes := (((twoBytes div $C0) shl 8) or (twoBytes mod $C0));
+    if (assembledTwoBytes < $1F00) then
+      inc(assembledTwoBytes, $8140)
+    else
+      inc(assembledTwoBytes, $C140);
+    buffer[offset] := Byte(TMathUtils.Asr(assembledTwoBytes, 8));
+    buffer[(offset + 1)] := Byte(assembledTwoBytes);
+    inc(offset, 2);
+    dec(count)
+  end;
+
+  try
+    res.Append(Tencoding.GetEncoding(TStringUtils.SHIFT_JIS).GetString(buffer, 0, Length(buffer)))
+  except
+    on exception1: Exception do
+    begin
+      result := false;
+      exit
+    end
+  end;
+
+  result := true;
+
+end;
+
+class function TDecodedBitStreamParser.decodeNumericSegment(bits: TBitSource; res: TStringBuilder; count: Integer): boolean;
+var
+  threeDigitsBits, twoDigitsBits, digitBits: Integer;
+begin
+
+  while ((count >= 3)) do
   begin
 
-    if ((count * 13) > bits.available) then
+    if (bits.available < 10) then
     begin
       result := false;
       exit
     end;
 
-    buffer := TArray<Byte>.Create();
-    SetLength(buffer, 2 * count);
-    offset := 0;
-
-    while ((count > 0)) do
-    begin
-      twoBytes := bits.readBits(13);
-      assembledTwoBytes := (((twoBytes div $60) shl 8) or (twoBytes mod $60));
-
-      if (assembledTwoBytes < $3BF) then
-        inc(assembledTwoBytes, $A1A1)
-      else
-        inc(assembledTwoBytes, $A6A1);
-
-      buffer[offset] := Byte(TMathUtils.Asr(assembledTwoBytes, 8) and $FF);
-      buffer[(offset + 1)] := Byte(assembledTwoBytes and $FF);
-      inc(offset, 2);
-      dec(count)
-    end;
-
-    try
-      res.Append(Tencoding.GetEncoding(TStringUtils.GB2312).GetString(buffer, 0,
-        Length(buffer)))
-    except
-      on exception1: Exception do
-      begin
-        result := false;
-        exit
-      end
-    end;
-
-    result := true;
-  end;
-
-  class function TDecodedBitStreamParser.decodeKanjiSegment(bits: TBitSource;
-    res: TStringBuilder; count: Integer): boolean;
-  var
-    buffer: TArray<Byte>;
-    twoBytes, offset, assembledTwoBytes: Integer;
-
-  begin
-
-    if ((count * 13) > bits.available) then
+    threeDigitsBits := bits.readBits(10);
+    if (threeDigitsBits >= $3E8) then
     begin
       result := false;
       exit
     end;
 
-    buffer := TArray<Byte>.Create();
-    SetLength(buffer, 2 * count);
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar((threeDigitsBits div 100)));
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar(((threeDigitsBits div 10) mod 10)));
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar((threeDigitsBits mod 10)));
 
-    offset := 0;
-
-    while ((count > 0)) do
-    begin
-      twoBytes := bits.readBits(13);
-      assembledTwoBytes := (((twoBytes div $C0) shl 8) or (twoBytes mod $C0));
-      if (assembledTwoBytes < $1F00) then
-        inc(assembledTwoBytes, $8140)
-      else
-        inc(assembledTwoBytes, $C140);
-      buffer[offset] := Byte(TMathUtils.Asr(assembledTwoBytes, 8));
-      buffer[(offset + 1)] := Byte(assembledTwoBytes);
-      inc(offset, 2);
-      dec(count)
-    end;
-
-    try
-      res.Append(Tencoding.GetEncoding(TStringUtils.SHIFT_JIS).GetString(buffer,
-        0, Length(buffer)))
-    except
-      on exception1: Exception do
-      begin
-        result := false;
-        exit
-      end
-    end;
-
-    result := true;
-
+    dec(count, 3)
   end;
 
-  class function TDecodedBitStreamParser.decodeNumericSegment(bits: TBitSource;
-    res: TStringBuilder; count: Integer): boolean;
-  var
-    threeDigitsBits, twoDigitsBits, digitBits: Integer;
+  if (count = 2) then
   begin
-
-    while ((count >= 3)) do
+    if (bits.available < 7) then
     begin
-
-      if (bits.available < 10) then
-      begin
-        result := false;
-        exit
-      end;
-
-      threeDigitsBits := bits.readBits(10);
-      if (threeDigitsBits >= $3E8) then
-      begin
-        result := false;
-        exit
-      end;
-
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        ((threeDigitsBits div 100)));
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        (((threeDigitsBits div 10) mod 10)));
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        ((threeDigitsBits mod 10)));
-
-      dec(count, 3)
-    end;
-
-    if (count = 2) then
-    begin
-      if (bits.available < 7) then
-      begin
-        result := false;
-        exit
-      end;
-
-      twoDigitsBits := bits.readBits(7);
-      if (twoDigitsBits >= 100) then
-      begin
-        result := false;
-        exit
-      end;
-
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        ((twoDigitsBits div 10)));
-
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar
-        ((twoDigitsBits mod 10)))
-
-    end
-    else if (count = 1) then
-    begin
-
-      if (bits.available < 4) then
-      begin
-        result := false;
-        exit
-      end;
-
-      digitBits := bits.readBits(4);
-      if (digitBits >= 10) then
-      begin
-        result := false;
-        exit
-      end;
-
-      res.Append(TDecodedBitStreamParser.toAlphaNumericChar(digitBits))
-    end;
-
-    result := true;
-
-  end;
-
-  class function TDecodedBitStreamParser.parseECIValue
-    (bits: TBitSource): Integer;
-  var
-    firstByte, secondByte, SecondThirdBytes: Integer;
-  begin
-
-    firstByte := bits.readBits(8);
-
-    if ((firstByte and $80) = 0) then
-    begin
-      result := (firstByte and $7F);
+      result := false;
       exit
     end;
 
-    if ((firstByte and $C0) = $80) then
+    twoDigitsBits := bits.readBits(7);
+    if (twoDigitsBits >= 100) then
     begin
-      secondByte := bits.readBits(8);
-      begin
-        result := (((firstByte and $3F) shl 8) or secondByte);
-        exit
-      end
+      result := false;
+      exit
     end;
 
-    if ((firstByte and $E0) <> $C0) then
-      raise EArgumentException.Create('Bad ECI bits starting with byte ' +
-        firstByte.toString());
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar((twoDigitsBits div 10)));
 
-    SecondThirdBytes := bits.readBits($10);
-    result := (((firstByte and $1F) shl $10) or SecondThirdBytes);
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar((twoDigitsBits mod 10)))
+
+  end
+  else if (count = 1) then
+  begin
+
+    if (bits.available < 4) then
+    begin
+      result := false;
+      exit
+    end;
+
+    digitBits := bits.readBits(4);
+    if (digitBits >= 10) then
+    begin
+      result := false;
+      exit
+    end;
+
+    res.Append(TDecodedBitStreamParser.toAlphaNumericChar(digitBits))
   end;
 
-  class function TDecodedBitStreamParser.toAlphaNumericChar
-    (value: Integer): Char;
+  result := true;
+
+end;
+
+class function TDecodedBitStreamParser.parseECIValue(bits: TBitSource): Integer;
+var
+  firstByte, secondByte, SecondThirdBytes: Integer;
+begin
+
+  firstByte := bits.readBits(8);
+
+  if ((firstByte and $80) = 0) then
   begin
-    if (value >= Length(TDecodedBitStreamParser.ALPHANUMERIC_CHARS)) then
-      raise Exception.Create('Format exception');
+    result := (firstByte and $7F);
+    exit
+  end;
+
+  if ((firstByte and $C0) = $80) then
+  begin
+    secondByte := bits.readBits(8);
     begin
-      result := TDecodedBitStreamParser.ALPHANUMERIC_CHARS[value];
+      result := (((firstByte and $3F) shl 8) or secondByte);
       exit
     end
-
   end;
 
-Initialization
+  if ((firstByte and $E0) <> $C0) then
+    raise EArgumentException.Create('Bad ECI bits starting with byte ' + firstByte.toString());
 
-TDecodedBitStreamParser.InitializeClass;
+  SecondThirdBytes := bits.readBits($10);
+  result := (((firstByte and $1F) shl $10) or SecondThirdBytes);
+end;
+
+class function TDecodedBitStreamParser.toAlphaNumericChar(value: Integer): Char;
+begin
+  if (value >= Length(TDecodedBitStreamParser.ALPHANUMERIC_CHARS)) then
+    raise Exception.Create('Format exception');
+  begin
+    result := TDecodedBitStreamParser.ALPHANUMERIC_CHARS[value];
+    exit
+  end
+
+end;
+
+initialization
+  TDecodedBitStreamParser.InitializeClass;
 
 end.
+
