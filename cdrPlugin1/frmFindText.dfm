@@ -1,8 +1,6 @@
 inherited fFindText: TfFindText
-  BorderIcons = [biSystemMenu]
-  BorderStyle = bsToolWindow
   Caption = #26597#25214#25991#26412
-  ClientHeight = 131
+  ClientHeight = 129
   ClientWidth = 488
   Position = poMainFormCenter
   ExplicitWidth = 494

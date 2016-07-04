@@ -808,10 +808,14 @@ inherited fQrcode: TfQrcode
     Top = 232
     Width = 657
     Height = 233
-    ActivePage = ts1
+    ActivePage = ts3
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #30005#23376#21517#29255
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lbl1: TLabel
         Left = 8
         Top = 7
@@ -1011,10 +1015,6 @@ inherited fQrcode: TfQrcode
     object ts3: TTabSheet
       Caption = #33258#21161#25991#26412
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         649
         205)

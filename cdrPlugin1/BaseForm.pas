@@ -271,18 +271,11 @@ begin
 end;
 
 procedure TTBaseForm.DocumentClose(const Doc: IVGDocument);
-var
-  N: Integer;
 begin
-  N := 1;
-  if FApp.VersionMajor > 14 then
+  if FApp.Documents.Count = 1 then
   begin
-    N := 0;
-  end;
-  if FApp.Documents.Count = N then
-  begin
-    Close;
-    Exit;
+    if Self.Showing then
+      Close;
   end;
 end;
 

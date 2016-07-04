@@ -70,4 +70,22 @@ object fMain: TfMain
     TabOrder = 5
     OnClick = btn5Click
   end
+  object btn6: TButton
+    Left = 8
+    Top = 70
+    Width = 75
+    Height = 25
+    Caption = #21360#21069#26816#26597
+    TabOrder = 6
+    OnClick = btn5Click
+  end
+  object btn7: TButton
+    Left = 89
+    Top = 70
+    Width = 75
+    Height = 25
+    Caption = #25209#37327#23548#20837
+    TabOrder = 7
+    OnClick = btn7Click
+  end
 end

@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>cdrPlugin1.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">调试</Config>
+        <Config Condition="'$(Config)'==''">发布</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -110,12 +110,14 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2016/06/19 13:13:58</VerInfo_Keys>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2016/06/19 12:57:14</VerInfo_Keys>
         <Debugger_HostApplication>D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Programs64\CorelDRW.exe</Debugger_HostApplication>
         <Debugger_CWD>D:\Program Files\Corel\CorelDRAW Graphics Suite X8\Draw\Plugins64</Debugger_CWD>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -128,6 +130,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2016/07/03 15:29:45</VerInfo_Keys>
         <Debugger_HostApplication>D:\Program Files (x86)\Corel\CorelDRAW Graphics Suite X7\Programs\CorelDRW.exe</Debugger_HostApplication>
         <Debugger_CWD>D:\Program Files (x86)\Corel\CorelDRAW Graphics Suite X7\Draw\Plugins</Debugger_CWD>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -136,6 +139,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2016/07/04 13:18:49</VerInfo_Keys>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
@@ -258,6 +262,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="..\控件包\SpeedButtonEx.pas"/>
         <DCCReference Include="frmCheck.pas">
             <Form>fCheck</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="frmBatchImport.pas">
+            <Form>fBatchImport</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <RcItem Include="UI\x4.xslt">

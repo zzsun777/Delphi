@@ -30,7 +30,7 @@ unit DelphiZXingQRCode;
 interface
 
 uses
-  Contnrs, Classes, System.Math;
+  Contnrs, Classes;
 
 const
   // ----------------- encodings -----------------
@@ -55,24 +55,16 @@ resourcestring
 type
   // ----------------- exceptions -----------------
   // too large matrix error
-
   EQRMatrixTooLarge = class(EInvalidOperation);
 
   // ----------------- auxiliary types -----------------
   TByteArray = array of Byte;
-
   TIntegerArray = array of Integer;
-
   T2DBooleanArray = array of array of Boolean;
-
   T2DByteArray = array of array of Byte;
-
   TBitArray = class;
-
   TByteMatrix = class;
-
   TErrorCorrectionLevel = class;
-
   TQRCode = class;
 
   // error correction level
@@ -83,11 +75,132 @@ type
     // ecoH = ~30% correction
 
   // write data mode (used by TEncoder)
-
-  TMode = (qmTerminator, qmNumeric, qmAlphanumeric, qmStructuredAppend, qmByte, qmECI, qmKanji, qmFNC1FirstPosition, qmFNC1SecondPosition, qmHanzi);
+  TMode = (qmTerminator, qmNumeric, qmAlphanumeric, qmStructuredAppend,
+    qmByte, qmECI, qmKanji, qmFNC1FirstPosition, qmFNC1SecondPosition,
+    qmHanzi);
 
   // TEncoder
+  TEncoder = class;
+  TEncoderClass = class of TEncoder;
 
+  // ----------------- main class -----------------
+  TDelphiZXingQRCode = class
+  private
+    FData: WideString;
+    FFilteredData: WideString;
+    FRows: Integer;
+    FColumns: Integer;
+    FEncoding: Integer;
+    FQuietZone: Integer;
+    FElements: T2DBooleanArray;
+    FEncoders: TClassList;
+    FErrorCorrectionOrdinal: TErrorCorrectionOrdinal;
+    FAfterUpdate: TNotifyEvent;
+    FBeforeUpdate: TNotifyEvent;
+    FUpdateLockCount: Integer;
+    procedure SetEncoding(NewEncoding: Integer);
+    procedure SetData(const NewData: WideString);
+    procedure SetQuietZone(NewQuietZone: Integer);
+    procedure SetErrorCorrectionOrdinal(Value: TErrorCorrectionOrdinal);
+    function GetIsBlack(Row, Column: Integer): Boolean;
+    function GetEncoderClass: TEncoderClass;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    // add new encoder class
+    procedure RegisterEncoder(NewEncoding: Integer; NewEncoder: TEncoderClass);
+
+    // increase updates lock counter
+    procedure BeginUpdate;
+    // decrease updates lock counter and call Update if lock counter is 0
+    // and DoUpdate = true
+    procedure EndUpdate(DoUpdate: Boolean = False);
+    // update data. The main work is done here
+    procedure Update;
+
+    // input string
+    property Data: WideString read FData write SetData;
+    // ecoding ID, see ENCODING_... constants above
+    property Encoding: Integer read FEncoding write SetEncoding;
+    // error correction level, see TErrorCorrectionOrdinal type above
+    property ErrorCorrectionOrdinal: TErrorCorrectionOrdinal read
+      FErrorCorrectionOrdinal write SetErrorCorrectionOrdinal;
+    // input string after TEncoder filtering
+    property FilteredData: WideString read FFilteredData;
+    // margins size, from 0 to 100, default 4
+    property QuietZone: Integer read FQuietZone write SetQuietZone;
+    // height of matrix, in dots, including QuietZone
+    property Rows: Integer read FRows;
+    // width of matrix, in dots, including QuietZone
+    property Columns: Integer read FColumns;
+    // True if the dot is black. NB! Row and Column are considered EXCLUDING
+    // QuietZone!
+    property IsBlack[Row, Column: Integer]: Boolean read GetIsBlack; default;
+
+    // the event called immediately after update. Here you can e.g. redraw
+    // the QR image. BeginUpdate and EndUpdate are called internally, so you can
+    // even change input string or other field if needed
+    property AfterUpdate: TNotifyEvent read FAfterUpdate write FAfterUpdate;
+
+    // the event called immediately before update. Here you can e.g. change
+    // input string or other field (BeginUpdate and EndUpdate are called
+    // internally, so this should not lead to recursive hangs)
+    property BeforeUpdate: TNotifyEvent read FBeforeUpdate write FBeforeUpdate;
+  end;
+
+  // ----------------- encoder class -----------------
+  TEncoder = class
+  private
+    function ApplyMaskPenaltyRule1Internal(Matrix: TByteMatrix;
+      IsHorizontal: Boolean): Integer;
+    procedure Append8BitBytes(const Content: WideString; Bits: TBitArray;
+      EncodeOptions: Integer);
+
+    procedure AppendAlphanumericBytes(const Content: WideString;
+      Bits: TBitArray);
+    procedure AppendKanjiBytes(const Content: WideString; Bits: TBitArray);
+    procedure AppendLengthInfo(NumLetters, VersionNum: Integer; Mode: TMode;
+      Bits: TBitArray);
+    procedure AppendModeInfo(Mode: TMode; Bits: TBitArray);
+    procedure AppendNumericBytes(const Content: WideString; Bits: TBitArray);
+    function ChooseMaskPattern(Bits: TBitArray; ECLevel: TErrorCorrectionLevel;
+      Version: Integer; Matrix: TByteMatrix): Integer;
+    function GenerateECBytes(DataBytes: TByteArray;
+
+      NumECBytesInBlock: Integer): TByteArray;
+    function GetAlphanumericCode(Code: Integer): Integer;
+    procedure GetNumDataBytesAndNumECBytesForBlockID(NumTotalBytes,
+      NumDataBytes, NumRSBlocks, BlockID: Integer; var NumDataBytesInBlock:
+        TIntegerArray; var NumECBytesInBlock: TIntegerArray);
+    procedure InterleaveWithECBytes(Bits: TBitArray; NumTotalBytes,
+      NumDataBytes, NumRSBlocks: Integer; var Result: TBitArray);
+    //function IsOnlyDoubleByteKanji(const Content: WideString): Boolean;
+    procedure TerminateBits(NumDataBytes: Integer; var Bits: TBitArray);
+    function CalculateMaskPenalty(Matrix: TByteMatrix): Integer;
+    function ApplyMaskPenaltyRule1(Matrix: TByteMatrix): Integer;
+    function ApplyMaskPenaltyRule2(Matrix: TByteMatrix): Integer;
+    function ApplyMaskPenaltyRule3(Matrix: TByteMatrix): Integer;
+    function ApplyMaskPenaltyRule4(Matrix: TByteMatrix): Integer;
+  protected
+    FEncoderError: Boolean;
+
+    // select the suitable mode for encoding
+    function ChooseMode(const Content: WideString; var EncodeOptions: Integer):
+      TMode; virtual;
+    // remove any inappropriate chars from the input string
+    function FilterContent(const Content: WideString; Mode: TMode;
+      EncodeOptions: Integer): WideString; virtual;
+    // add previously filtered chars into bit array
+    procedure AppendBytes(const Content: WideString; Mode: TMode;
+      Bits: TBitArray; EncodeOptions: Integer); virtual;
+  public
+    // do encoding (call ChooseMode, FilterContent, and AppendBytes)
+    function Encode(const Content: WideString; EncodeOptions: Integer;
+      ECLevel: TErrorCorrectionLevel; QRCode: TQRCode): WideString;
+    constructor Create;
+    property EncoderError: Boolean read FEncoderError;
+  end;
 
   // ----------------- auxiliary classes -----------------
   TBitArray = class
@@ -105,7 +218,8 @@ type
     procedure AppendBit(Bit: Boolean);
     procedure AppendBits(Value, NumBits: Integer);
     procedure AppendBitArray(NewBitArray: TBitArray);
-    procedure ToBytes(BitOffset: Integer; Source: TByteArray; Offset, NumBytes: Integer);
+    procedure ToBytes(BitOffset: Integer; Source: TByteArray; Offset,
+      NumBytes: Integer);
     procedure XorOperation(Other: TBitArray);
   end;
 
@@ -154,12 +268,13 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function at(X, Y: Integer): Integer;
+    function At(X, Y: Integer): Integer;
     function IsValid: Boolean;
     function IsValidMaskPattern(MaskPattern: Integer): Boolean;
     procedure SetMatrix(NewMatrix: TByteMatrix);
     procedure SetECLevel(NewECLevel: TErrorCorrectionLevel);
-    procedure SetAll(VersionNum, NumBytes, NumDataBytes, NumRSBlocks, NumECBytes, MatrixWidth: Integer);
+    procedure SetAll(VersionNum, NumBytes, NumDataBytes, NumRSBlocks,
+      NumECBytes, MatrixWidth: Integer);
     property QRCodeError: Boolean read FQRCodeError;
     property Mode: TMode read FMode write FMode;
     property Version: Integer read FVersion write FVersion;
@@ -171,67 +286,111 @@ type
     property ECLevel: TErrorCorrectionLevel read FECLevel;
   end;
 
+implementation
+
+uses
+  Math;
+
 const
   NUM_MASK_PATTERNS = 8;
+
   QUIET_ZONE_SIZE = 4;
-  ALPHANUMERIC_TABLE: array[0..95] of Integer = (-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x00-0x0f
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x10-0x1f
-    36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43,  // 0x20-0x2f
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 44, -1, -1, -1, -1, -1,  // 0x30-0x3f
-    -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  // 0x40-0x4f
-    25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1   // 0x50-0x5f
-    );
+
+  ALPHANUMERIC_TABLE: array[0..95] of Integer = (
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x00-0x0f
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x10-0x1f
+      36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43,  // 0x20-0x2f
+      0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 44, -1, -1, -1, -1, -1,  // 0x30-0x3f
+      -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  // 0x40-0x4f
+      25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1   // 0x50-0x5f
+  );
+
   DEFAULT_BYTE_MODE_ENCODING = 'ISO-8859-1';
-  POSITION_DETECTION_PATTERN: array[0..6, 0..6] of Integer = ((1, 1, 1, 1, 1, 1, 1), (1, 0, 0, 0, 0, 0, 1), (1, 0, 1, 1, 1, 0, 1), (1, 0, 1, 1, 1, 0, 1), (1, 0, 1, 1, 1, 0, 1), (1, 0, 0, 0, 0, 0, 1), (1, 1, 1, 1, 1, 1, 1));
-  HORIZONTAL_SEPARATION_PATTERN: array[0..0, 0..7] of Integer = ((0, 0, 0, 0, 0, 0, 0, 0));
-  VERTICAL_SEPARATION_PATTERN: array[0..6, 0..0] of Integer = ((0), (0), (0), (0), (0), (0), (0));
-  POSITION_ADJUSTMENT_PATTERN: array[0..4, 0..4] of Integer = ((1, 1, 1, 1, 1), (1, 0, 0, 0, 1), (1, 0, 1, 0, 1), (1, 0, 0, 0, 1), (1, 1, 1, 1, 1));
+
+  POSITION_DETECTION_PATTERN: array[0..6, 0..6] of Integer = (
+    (1, 1, 1, 1, 1, 1, 1),
+    (1, 0, 0, 0, 0, 0, 1),
+    (1, 0, 1, 1, 1, 0, 1),
+    (1, 0, 1, 1, 1, 0, 1),
+    (1, 0, 1, 1, 1, 0, 1),
+    (1, 0, 0, 0, 0, 0, 1),
+    (1, 1, 1, 1, 1, 1, 1));
+
+  HORIZONTAL_SEPARATION_PATTERN: array[0..0, 0..7] of Integer = (
+    (0, 0, 0, 0, 0, 0, 0, 0));
+
+  VERTICAL_SEPARATION_PATTERN: array[0..6, 0..0] of Integer = (
+    (0), (0), (0), (0), (0), (0), (0));
+
+  POSITION_ADJUSTMENT_PATTERN: array[0..4, 0..4] of Integer = (
+    (1, 1, 1, 1, 1),
+    (1, 0, 0, 0, 1),
+    (1, 0, 1, 0, 1),
+    (1, 0, 0, 0, 1),
+    (1, 1, 1, 1, 1));
 
   // From Appendix E. Table 1, JIS0510X:2004 (p 71). The table was double-checked by komatsu.
-  POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE: array[0..39, 0..6] of Integer = ((-1, -1, -1, -1, -1, -1, -1),  // Version 1
-    (6, 18, -1, -1, -1, -1, -1),  // Version 2
-    (6, 22, -1, -1, -1, -1, -1),  // Version 3
-    (6, 26, -1, -1, -1, -1, -1),  // Version 4
-    (6, 30, -1, -1, -1, -1, -1),  // Version 5
-    (6, 34, -1, -1, -1, -1, -1),  // Version 6
-    (6, 22, 38, -1, -1, -1, -1),  // Version 7
-    (6, 24, 42, -1, -1, -1, -1),  // Version 8
-    (6, 26, 46, -1, -1, -1, -1),  // Version 9
-    (6, 28, 50, -1, -1, -1, -1),  // Version 10
-    (6, 30, 54, -1, -1, -1, -1),  // Version 11
-    (6, 32, 58, -1, -1, -1, -1),  // Version 12
-    (6, 34, 62, -1, -1, -1, -1),  // Version 13
-    (6, 26, 46, 66, -1, -1, -1),  // Version 14
-    (6, 26, 48, 70, -1, -1, -1),  // Version 15
-    (6, 26, 50, 74, -1, -1, -1),  // Version 16
-    (6, 30, 54, 78, -1, -1, -1),  // Version 17
-    (6, 30, 56, 82, -1, -1, -1),  // Version 18
-    (6, 30, 58, 86, -1, -1, -1),  // Version 19
-    (6, 34, 62, 90, -1, -1, -1),  // Version 20
-    (6, 28, 50, 72, 94, -1, -1),  // Version 21
-    (6, 26, 50, 74, 98, -1, -1),  // Version 22
-    (6, 30, 54, 78, 102, -1, -1),  // Version 23
-    (6, 28, 54, 80, 106, -1, -1),  // Version 24
-    (6, 32, 58, 84, 110, -1, -1),  // Version 25
-    (6, 30, 58, 86, 114, -1, -1),  // Version 26
-    (6, 34, 62, 90, 118, -1, -1),  // Version 27
-    (6, 26, 50, 74, 98, 122, -1),  // Version 28
-    (6, 30, 54, 78, 102, 126, -1),  // Version 29
-    (6, 26, 52, 78, 104, 130, -1),  // Version 30
-    (6, 30, 56, 82, 108, 134, -1),  // Version 31
-    (6, 34, 60, 86, 112, 138, -1),  // Version 32
-    (6, 30, 58, 86, 114, 142, -1),  // Version 33
-    (6, 34, 62, 90, 118, 146, -1),  // Version 34
-    (6, 30, 54, 78, 102, 126, 150),  // Version 35
-    (6, 24, 50, 76, 102, 128, 154),  // Version 36
-    (6, 28, 54, 80, 106, 132, 158),  // Version 37
-    (6, 32, 58, 84, 110, 136, 162),  // Version 38
-    (6, 26, 54, 82, 110, 138, 166),  // Version 39
-    (6, 30, 58, 86, 114, 142, 170)   // Version 40
-    );
+  POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE: array[0..39, 0..6] of Integer = (
+    (-1, -1, -1, -1,  -1,  -1,  -1),  // Version 1
+    ( 6, 18, -1, -1,  -1,  -1,  -1),  // Version 2
+    ( 6, 22, -1, -1,  -1,  -1,  -1),  // Version 3
+    ( 6, 26, -1, -1,  -1,  -1,  -1),  // Version 4
+    ( 6, 30, -1, -1,  -1,  -1,  -1),  // Version 5
+    ( 6, 34, -1, -1,  -1,  -1,  -1),  // Version 6
+    ( 6, 22, 38, -1,  -1,  -1,  -1),  // Version 7
+    ( 6, 24, 42, -1,  -1,  -1,  -1),  // Version 8
+    ( 6, 26, 46, -1,  -1,  -1,  -1),  // Version 9
+    ( 6, 28, 50, -1,  -1,  -1,  -1),  // Version 10
+    ( 6, 30, 54, -1,  -1,  -1,  -1),  // Version 11
+    ( 6, 32, 58, -1,  -1,  -1,  -1),  // Version 12
+    ( 6, 34, 62, -1,  -1,  -1,  -1),  // Version 13
+    ( 6, 26, 46, 66,  -1,  -1,  -1),  // Version 14
+    ( 6, 26, 48, 70,  -1,  -1,  -1),  // Version 15
+    ( 6, 26, 50, 74,  -1,  -1,  -1),  // Version 16
+    ( 6, 30, 54, 78,  -1,  -1,  -1),  // Version 17
+    ( 6, 30, 56, 82,  -1,  -1,  -1),  // Version 18
+    ( 6, 30, 58, 86,  -1,  -1,  -1),  // Version 19
+    ( 6, 34, 62, 90,  -1,  -1,  -1),  // Version 20
+    ( 6, 28, 50, 72,  94,  -1,  -1),  // Version 21
+    ( 6, 26, 50, 74,  98,  -1,  -1),  // Version 22
+    ( 6, 30, 54, 78, 102,  -1,  -1),  // Version 23
+    ( 6, 28, 54, 80, 106,  -1,  -1),  // Version 24
+    ( 6, 32, 58, 84, 110,  -1,  -1),  // Version 25
+    ( 6, 30, 58, 86, 114,  -1,  -1),  // Version 26
+    ( 6, 34, 62, 90, 118,  -1,  -1),  // Version 27
+    ( 6, 26, 50, 74,  98, 122,  -1),  // Version 28
+    ( 6, 30, 54, 78, 102, 126,  -1),  // Version 29
+    ( 6, 26, 52, 78, 104, 130,  -1),  // Version 30
+    ( 6, 30, 56, 82, 108, 134,  -1),  // Version 31
+    ( 6, 34, 60, 86, 112, 138,  -1),  // Version 32
+    ( 6, 30, 58, 86, 114, 142,  -1),  // Version 33
+    ( 6, 34, 62, 90, 118, 146,  -1),  // Version 34
+    ( 6, 30, 54, 78, 102, 126, 150),  // Version 35
+    ( 6, 24, 50, 76, 102, 128, 154),  // Version 36
+    ( 6, 28, 54, 80, 106, 132, 158),  // Version 37
+    ( 6, 32, 58, 84, 110, 136, 162),  // Version 38
+    ( 6, 26, 54, 82, 110, 138, 166),  // Version 39
+    ( 6, 30, 58, 86, 114, 142, 170)   // Version 40
+  );
 
   // Type info cells at the left top corner.
-  TYPE_INFO_COORDINATES: array[0..14, 0..1] of Integer = ((8, 0), (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 7), (8, 8), (7, 8), (5, 8), (4, 8), (3, 8), (2, 8), (1, 8), (0, 8));
+  TYPE_INFO_COORDINATES: array[0..14, 0..1] of Integer = (
+    (8, 0),
+    (8, 1),
+    (8, 2),
+    (8, 3),
+    (8, 4),
+    (8, 5),
+    (8, 7),
+    (8, 8),
+    (7, 8),
+    (5, 8),
+    (4, 8),
+    (3, 8),
+    (2, 8),
+    (1, 8),
+    (0, 8)
+  );
 
   // From Appendix D in JISX0510:2004 (p. 67)
   VERSION_INFO_POLY = $1f25;  // 1 1111 0010 0101
@@ -239,15 +398,29 @@ const
   // From Appendix C in JISX0510:2004 (p.65).
   TYPE_INFO_POLY = $537;
   TYPE_INFO_MASK_PATTERN = $5412;
-  VERSION_DECODE_INFO: array[0..33] of Integer = ($07C94, $085BC, $09A99, $0A4D3, $0BBF6, $0C762, $0D847, $0E60D, $0F928, $10B78, $1145D, $12A17, $13532, $149A6, $15683, $168C9, $177EC, $18EC4, $191E1, $1AFAB, $1B08E, $1CC1A, $1D33F, $1ED75, $1F250, $209D5, $216F0, $228BA, $2379F, $24B0B, $2542E, $26A64, $27541, $28C69);
+
+
+  VERSION_DECODE_INFO: array[0..33] of Integer = (
+      $07C94, $085BC, $09A99, $0A4D3, $0BBF6,
+      $0C762, $0D847, $0E60D, $0F928, $10B78,
+      $1145D, $12A17, $13532, $149A6, $15683,
+      $168C9, $177EC, $18EC4, $191E1, $1AFAB,
+      $1B08E, $1CC1A, $1D33F, $1ED75, $1F250,
+      $209D5, $216F0, $228BA, $2379F, $24B0B,
+      $2542E, $26A64, $27541, $28C69);
 
 const
-  ModeCharacterCountBits: array[TMode] of array[0..2] of Integer = ((0, 0, 0), (10, 12, 14), (9, 11, 13), (0, 0, 0), (8, 16, 16), (0, 0, 0), (8, 10, 12), (0, 0, 0), (0, 0, 0), (8, 10, 12));
+  ModeCharacterCountBits: array[TMode] of array[0..2] of Integer = (
+    (0, 0, 0), (10, 12, 14), (9, 11, 13), (0, 0, 0), (8, 16, 16),
+    (0, 0, 0), (8, 10, 12), (0, 0, 0), (0, 0, 0), (8, 10, 12));
+
   ModeBits: array[TMode] of Integer = (0, 1, 2, 3, 4, 7, 8, 5, 9, 13);
-  ErrorCorrectionDescriptors: array[TErrorCorrectionOrdinal] of Integer = ($01, // L = ~7% correction
-    $00, // M = ~15% correction
-    $03, // Q = ~25% correction
-    $02  // H = ~30% correction
+
+  ErrorCorrectionDescriptors: array[TErrorCorrectionOrdinal] of Integer =
+    ($01, // L = ~7% correction
+     $00, // M = ~15% correction
+     $03, // Q = ~25% correction
+     $02  // H = ~30% correction
     );
 
 type
@@ -264,7 +437,8 @@ type
     FECBlocks: TECBArray;
   public
     constructor Create(ECCodewordsPerBlock: Integer; ECBlocks: TECB); overload;
-    constructor Create(ECCodewordsPerBlock: Integer; ECBlocks1, ECBlocks2: TECB); overload;
+    constructor Create(ECCodewordsPerBlock: Integer; ECBlocks1,
+      ECBlocks2: TECB); overload;
     destructor Destroy; override;
     function GetTotalECCodewords: Integer;
     function GetNumBlocks: Integer;
@@ -280,153 +454,58 @@ type
     FTotalCodewords: Integer;
     FECCodewords: Integer;
   public
-    constructor Create(VersionNumber: Integer; AlignmentPatternCenters: array of Integer; ECBlocks1, ECBlocks2, ECBlocks3, ECBlocks4: TECBlocks);
+    constructor Create(VersionNumber: Integer; AlignmentPatternCenters:
+      array of Integer; ECBlocks1, ECBlocks2, ECBlocks3, ECBlocks4: TECBlocks);
     destructor Destroy; override;
     class function GetVersionForNumber(VersionNum: Integer): TVersion;
-    class function ChooseVersion(NumInputBits: Integer; ecLevel: TErrorCorrectionLevel): TVersion;
+    class function ChooseVersion(NumInputBits: Integer;
+      ecLevel: TErrorCorrectionLevel): TVersion;
     function GetTotalCodewords: Integer;
     function GetECBlocksForLevel(ECLevel: TErrorCorrectionLevel): TECBlocks;
     function GetDimensionForVersion: Integer;
+
     property VersionNumber: Integer read FVersionNumber;
   end;
 
   TMatrixUtil = class
   private
     FMatrixUtilError: Boolean;
+
     function GetDataMaskBit(MaskPattern, X, Y: Integer): Boolean;
+
     procedure ClearMatrix(Matrix: TByteMatrix);
+
     procedure EmbedBasicPatterns(Version: Integer; Matrix: TByteMatrix);
-    procedure EmbedTypeInfo(ECLevel: TErrorCorrectionLevel; MaskPattern: Integer; Matrix: TByteMatrix);
+    procedure EmbedTypeInfo(ECLevel: TErrorCorrectionLevel;
+      MaskPattern: Integer; Matrix: TByteMatrix);
     procedure MaybeEmbedVersionInfo(Version: Integer; Matrix: TByteMatrix);
-    procedure EmbedDataBits(DataBits: TBitArray; MaskPattern: Integer; Matrix: TByteMatrix);
+    procedure EmbedDataBits(DataBits: TBitArray; MaskPattern: Integer;
+      Matrix: TByteMatrix);
     function FindMSBSet(Value: Integer): Integer;
     function CalculateBCHCode(Value, Poly: Integer): Integer;
-    procedure MakeTypeInfoBits(ECLevel: TErrorCorrectionLevel; MaskPattern: Integer; Bits: TBitArray);
+    procedure MakeTypeInfoBits(ECLevel: TErrorCorrectionLevel;
+      MaskPattern: Integer; Bits: TBitArray);
     procedure MakeVersionInfoBits(Version: Integer; Bits: TBitArray);
     function IsEmpty(Value: Integer): Boolean;
     procedure EmbedTimingPatterns(Matrix: TByteMatrix);
     procedure EmbedDarkDotAtLeftBottomCorner(Matrix: TByteMatrix);
-    procedure EmbedHorizontalSeparationPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
-    procedure EmbedVerticalSeparationPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
-    procedure EmbedPositionAdjustmentPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
-    procedure EmbedPositionDetectionPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
+    procedure EmbedHorizontalSeparationPattern(XStart, YStart: Integer;
+      Matrix: TByteMatrix);
+    procedure EmbedVerticalSeparationPattern(XStart, YStart: Integer;
+      Matrix: TByteMatrix);
+    procedure EmbedPositionAdjustmentPattern(XStart, YStart: Integer;
+      Matrix: TByteMatrix);
+    procedure EmbedPositionDetectionPattern(XStart, YStart: Integer;
+      Matrix: TByteMatrix);
     procedure EmbedPositionDetectionPatternsAndSeparators(Matrix: TByteMatrix);
-    procedure MaybeEmbedPositionAdjustmentPatterns(Version: Integer; Matrix: TByteMatrix);
+    procedure MaybeEmbedPositionAdjustmentPatterns(Version: Integer;
+      Matrix: TByteMatrix);
   public
     constructor Create;
     property MatrixUtilError: Boolean read FMatrixUtilError;
-    procedure BuildMatrix(DataBits: TBitArray; ECLevel: TErrorCorrectionLevel; Version, MaskPattern: Integer; Matrix: TByteMatrix);
+    procedure BuildMatrix(DataBits: TBitArray; ECLevel: TErrorCorrectionLevel;
+      Version, MaskPattern: Integer; Matrix: TByteMatrix);
   end;
- // ----------------- main class -----------------
-
-  TEncoderClass = class of TEncoder;
-  TDelphiZXingQRCode = class
-  private
-    FData: WideString;
-    FFilteredData: WideString;
-    FRows: Integer;
-    FColumns: Integer;
-    FEncoding: Integer;
-    FQuietZone: Integer;
-    FElements: T2DBooleanArray;
-    FEncoders: TClassList;
-    FErrorCorrectionOrdinal: TErrorCorrectionOrdinal;
-    FAfterUpdate: TNotifyEvent;
-    FBeforeUpdate: TNotifyEvent;
-    FUpdateLockCount: Integer;
-    FVersion: TVersion;
-    procedure SetEncoding(NewEncoding: Integer);
-    procedure SetData(const NewData: WideString);
-    procedure SetQuietZone(NewQuietZone: Integer);
-    procedure SetErrorCorrectionOrdinal(Value: TErrorCorrectionOrdinal);
-    function GetIsBlack(Row, Column: Integer): Boolean;
-    function GetEncoderClass: TEncoderClass;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    // add new encoder class
-    procedure RegisterEncoder(NewEncoding: Integer; NewEncoder: TEncoderClass);
-
-    // increase updates lock counter
-    procedure BeginUpdate;
-    // decrease updates lock counter and call Update if lock counter is 0
-    // and DoUpdate = true
-    procedure EndUpdate(DoUpdate: Boolean = False);
-    // update data. The main work is done here
-    procedure Update;
-
-    // input string
-    property Data: WideString read FData write SetData;
-    // ecoding ID, see ENCODING_... constants above
-    property Encoding: Integer read FEncoding write SetEncoding;
-    // error correction level, see TErrorCorrectionOrdinal type above
-    property ErrorCorrectionOrdinal: TErrorCorrectionOrdinal read FErrorCorrectionOrdinal write SetErrorCorrectionOrdinal;
-    // input string after TEncoder filtering
-    property FilteredData: WideString read FFilteredData;
-    // margins size, from 0 to 100, default 4
-    property QuietZone: Integer read FQuietZone write SetQuietZone;
-    // height of matrix, in dots, including QuietZone
-    property Rows: Integer read FRows;
-    // width of matrix, in dots, including QuietZone
-    property Columns: Integer read FColumns;
-    // True if the dot is black. NB! Row and Column are considered EXCLUDING
-    // QuietZone!
-    property IsBlack[Row, Column: Integer]: Boolean read GetIsBlack; default;
-
-    // the event called immediately after update. Here you can e.g. redraw
-    // the QR image. BeginUpdate and EndUpdate are called internally, so you can
-    // even change input string or other field if needed
-    property AfterUpdate: TNotifyEvent read FAfterUpdate write FAfterUpdate;
-
-    // the event called immediately before update. Here you can e.g. change
-    // input string or other field (BeginUpdate and EndUpdate are called
-    // internally, so this should not lead to recursive hangs)
-    property BeforeUpdate: TNotifyEvent read FBeforeUpdate write FBeforeUpdate;
-    property Version: TVersion read FVersion write FVersion;
-  end;
-
-    // ----------------- encoder class -----------------
-  TEncoder = class
-  private
-    FVersion: TVersion;
-    function ApplyMaskPenaltyRule1Internal(Matrix: TByteMatrix; IsHorizontal: Boolean): Integer;
-    procedure Append8BitBytes(const Content: WideString; Bits: TBitArray; EncodeOptions: Integer);
-    procedure AppendAlphanumericBytes(const Content: WideString; Bits: TBitArray);
-    procedure AppendKanjiBytes(const Content: WideString; Bits: TBitArray);
-    procedure AppendLengthInfo(NumLetters, VersionNum: Integer; Mode: TMode; Bits: TBitArray);
-    procedure AppendModeInfo(Mode: TMode; Bits: TBitArray);
-    procedure AppendNumericBytes(const Content: WideString; Bits: TBitArray);
-    function ChooseMaskPattern(Bits: TBitArray; ECLevel: TErrorCorrectionLevel; Version: Integer; Matrix: TByteMatrix): Integer;
-    function GenerateECBytes(DataBytes: TByteArray; NumECBytesInBlock: Integer): TByteArray;
-    function GetAlphanumericCode(Code: Integer): Integer;
-    procedure GetNumDataBytesAndNumECBytesForBlockID(NumTotalBytes, NumDataBytes, NumRSBlocks, BlockID: Integer; var NumDataBytesInBlock: TIntegerArray; var NumECBytesInBlock: TIntegerArray);
-    procedure InterleaveWithECBytes(Bits: TBitArray; NumTotalBytes, NumDataBytes, NumRSBlocks: Integer; var Result: TBitArray);
-    //function IsOnlyDoubleByteKanji(const Content: WideString): Boolean;
-    procedure TerminateBits(NumDataBytes: Integer; var Bits: TBitArray);
-    function CalculateMaskPenalty(Matrix: TByteMatrix): Integer;
-    function ApplyMaskPenaltyRule1(Matrix: TByteMatrix): Integer;
-    function ApplyMaskPenaltyRule2(Matrix: TByteMatrix): Integer;
-    function ApplyMaskPenaltyRule3(Matrix: TByteMatrix): Integer;
-    function ApplyMaskPenaltyRule4(Matrix: TByteMatrix): Integer;
-  protected
-    FEncoderError: Boolean;
-
-    // select the suitable mode for encoding
-    function ChooseMode(const Content: WideString; var EncodeOptions: Integer): TMode; virtual;
-    // remove any inappropriate chars from the input string
-    function FilterContent(const Content: WideString; Mode: TMode; EncodeOptions: Integer): WideString; virtual;
-    // add previously filtered chars into bit array
-    procedure AppendBytes(const Content: WideString; Mode: TMode; Bits: TBitArray; EncodeOptions: Integer); virtual;
-  public
-    // do encoding (call ChooseMode, FilterContent, and AppendBytes)
-    function Encode(const Content: WideString; EncodeOptions: Integer; ECLevel: TErrorCorrectionLevel; QRCode: TQRCode): WideString;
-    constructor Create;
-    property EncoderError: Boolean read FEncoderError;
-    property Version: TVersion read FVersion write FVersion;
-  end;
-
-implementation
 
 function GetModeCharacterCountBits(Mode: TMode; Version: TVersion): Integer;
 var
@@ -438,12 +517,11 @@ begin
   if Number <= 9 then
   begin
     Offset := 0;
-  end
-  else if Number <= 26 then
+  end else
+  if Number <= 26 then
   begin
     Offset := 1;
-  end
-  else
+  end else
   begin
     Offset := 2;
   end;
@@ -474,6 +552,7 @@ type
     FGeneratorBase: Integer;
     FInitialized: Boolean;
     FPolyList: array of TGenericGFPoly;
+
     procedure CheckInit;
     procedure Initialize;
   public
@@ -490,7 +569,6 @@ type
   end;
 
   TGenericGFPolyArray = array of TGenericGFPoly;
-
   TGenericGFPoly = class
   private
     FField: TGenericGF;
@@ -522,7 +600,8 @@ type
 
 function TEncoder.ApplyMaskPenaltyRule1(Matrix: TByteMatrix): Integer;
 begin
-  Result := ApplyMaskPenaltyRule1Internal(Matrix, True) + ApplyMaskPenaltyRule1Internal(Matrix, False);
+  Result := ApplyMaskPenaltyRule1Internal(Matrix, True) +
+    ApplyMaskPenaltyRule1Internal(Matrix, False);
 end;
 
 // Apply mask penalty rule 2 and return the penalty. Find 2x2 blocks with the same color and give
@@ -546,7 +625,8 @@ begin
     for X := 0 to Width - 2 do
     begin
       Value := TheArray[Y][X];
-      if (Value = TheArray[Y][X + 1]) and (Value = TheArray[Y + 1][X]) and (Value = TheArray[Y + 1][X + 1]) then
+      if (Value = TheArray[Y][X + 1]) and (Value = TheArray[Y + 1][X]) and
+        (Value = TheArray[Y + 1][X + 1]) then
       begin
         Inc(Penalty, 3);
       end;
@@ -575,11 +655,45 @@ begin
   begin
     for X := 0 to Width - 1 do
     begin
-      if (X + 6 < Width) and (TheArray[Y][X] = 1) and (TheArray[Y][X + 1] = 0) and (TheArray[Y][X + 2] = 1) and (TheArray[Y][X + 3] = 1) and (TheArray[Y][X + 4] = 1) and (TheArray[Y][X + 5] = 0) and (TheArray[Y][X + 6] = 1) and (((X + 10 < Width) and (TheArray[Y][X + 7] = 0) and (TheArray[Y][X + 8] = 0) and (TheArray[Y][X + 9] = 0) and (TheArray[Y][X + 10] = 0)) or ((x - 4 >= 0) and (TheArray[Y][X - 1] = 0) and (TheArray[Y][X - 2] = 0) and (TheArray[Y][X - 3] = 0) and (TheArray[Y][X - 4] = 0))) then
+      if (X + 6 < Width) and
+         (TheArray[Y][X] = 1) and
+         (TheArray[Y][X + 1] = 0) and
+         (TheArray[Y][X + 2] = 1) and
+         (TheArray[Y][X + 3] = 1) and
+         (TheArray[Y][X + 4] = 1) and
+         (TheArray[Y][X + 5] = 0) and
+         (TheArray[Y][X + 6] = 1) and
+         (((X + 10 < Width) and
+             (TheArray[Y][X + 7] = 0) and
+             (TheArray[Y][X + 8] = 0) and
+             (TheArray[Y][X + 9] = 0) and
+             (TheArray[Y][X + 10] = 0)) or
+             ((x - 4 >= 0) and
+                 (TheArray[Y][X -  1] = 0) and
+                 (TheArray[Y][X -  2] = 0) and
+                 (TheArray[Y][X -  3] = 0) and
+                 (TheArray[Y][X -  4] = 0))) then
       begin
         Inc(Penalty, 40);
       end;
-      if (Y + 6 < Height) and (TheArray[Y][X] = 1) and (TheArray[Y + 1][X] = 0) and (TheArray[Y + 2][X] = 1) and (TheArray[Y + 3][X] = 1) and (TheArray[Y + 4][X] = 1) and (TheArray[Y + 5][X] = 0) and (TheArray[Y + 6][X] = 1) and (((Y + 10 < Height) and (TheArray[Y + 7][X] = 0) and (TheArray[Y + 8][X] = 0) and (TheArray[Y + 9][X] = 0) and (TheArray[Y + 10][X] = 0)) or ((Y - 4 >= 0) and (TheArray[Y - 1][X] = 0) and (TheArray[Y - 2][X] = 0) and (TheArray[Y - 3][X] = 0) and (TheArray[Y - 4][X] = 0))) then
+      if (Y + 6 < Height) and
+         (TheArray[Y][X] = 1)  and
+         (TheArray[Y + 1][X] = 0) and
+         (TheArray[Y + 2][X] = 1)  and
+         (TheArray[Y + 3][X] = 1)  and
+         (TheArray[Y + 4][X] = 1)  and
+         (TheArray[Y + 5][X] = 0) and
+         (TheArray[Y + 6][X] = 1) and
+         (((Y + 10 < Height) and
+             (TheArray[Y + 7][X] = 0) and
+             (TheArray[Y + 8][X] = 0) and
+             (TheArray[Y + 9][X] = 0) and
+             (TheArray[Y + 10][X] = 0)) or
+             ((Y - 4 >= 0) and
+                 (TheArray[Y - 1][X] = 0) and
+                 (TheArray[Y - 2][X] = 0) and
+                 (TheArray[Y - 3][X] = 0) and
+                 (TheArray[Y - 4][X] = 0))) then
       begin
         Inc(Penalty, 40);
       end;
@@ -629,7 +743,8 @@ end;
 
 // Helper function for applyMaskPenaltyRule1. We need this for doing this calculation in both
 // vertical and horizontal orders respectively.
-function TEncoder.ApplyMaskPenaltyRule1Internal(Matrix: TByteMatrix; IsHorizontal: Boolean): Integer;
+function TEncoder.ApplyMaskPenaltyRule1Internal(Matrix: TByteMatrix;
+  IsHorizontal: Boolean): Integer;
 var
   Penalty: Integer;
   NumSameBitCells: Integer;
@@ -656,8 +771,7 @@ begin
   begin
     ILimit := Matrix.Height;
     JLimit := Matrix.Width;
-  end
-  else
+  end else
   begin
     ILimit := Matrix.Width;
     JLimit := Matrix.Height;
@@ -679,12 +793,12 @@ begin
         // We'll give penalty of 3.
         if NumSameBitCells = 5 then
           Inc(Penalty, 3)
-        else if NumSameBitCells > 5 then
+        else
+          if NumSameBitCells > 5 then
             // After five repetitive cells, we'll add the penalty one
             // by one.
-          Inc(Penalty, 1);
-      end
-      else
+            Inc(Penalty, 1);
+      end else
       begin
         NumSameBitCells := 1;  // Include the cell itself.
         PrevBit := bit;
@@ -721,7 +835,7 @@ begin
   inherited;
 end;
 
-function TQRCode.at(X, Y: Integer): Integer;
+function TQRCode.At(X, Y: Integer): Integer;
 var
   Value: Integer;
 begin
@@ -736,11 +850,20 @@ function TQRCode.IsValid: Boolean;
 begin
   Result :=
     // First check if all version are not uninitialized.
-    (Assigned(FECLevel) and (FVersion <> -1) and (FMatrixWidth <> -1) and (FMaskPattern <> -1) and (FNumTotalBytes <> -1) and (FNumDataBytes <> -1) and (FNumECBytes <> -1) and (FNumRSBlocks <> -1) and
+    (Assigned(FECLevel) and
+    (FVersion <> -1) and
+    (FMatrixWidth <> -1) and
+    (FMaskPattern <> -1) and
+    (FNumTotalBytes <> -1) and
+    (FNumDataBytes <> -1) and
+    (FNumECBytes <> -1) and
+    (FNumRSBlocks <> -1) and
     // Then check them in other ways..
-    IsValidMaskPattern(FMaskPattern) and (FNumTotalBytes = FNumDataBytes + FNumECBytes) and
+    IsValidMaskPattern(FMaskPattern) and
+    (FNumTotalBytes = FNumDataBytes + FNumECBytes) and
     // ByteMatrix stuff.
-    Assigned(FMatrix) and (FMatrixWidth = FMatrix.Width) and
+    Assigned(FMatrix) and
+    (FMatrixWidth = FMatrix.Width) and
     // See 7.3.1 of JISX0510:2004 (Fp.5).
     (FMatrix.Width = FMatrix.Height)); // Must be square.
 end;
@@ -760,7 +883,8 @@ begin
   FMatrix := NewMatrix;
 end;
 
-procedure TQRCode.SetAll(VersionNum, NumBytes, NumDataBytes, NumRSBlocks, NumECBytes, MatrixWidth: Integer);
+procedure TQRCode.SetAll(VersionNum, NumBytes, NumDataBytes, NumRSBlocks,
+  NumECBytes, MatrixWidth: Integer);
 begin
   FVersion := VersionNum;
   FNumTotalBytes := NumBytes;
@@ -877,7 +1001,8 @@ begin
   Result := Penalty;
 end;
 
-function TEncoder.Encode(const Content: WideString; EncodeOptions: Integer; ECLevel: TErrorCorrectionLevel; QRCode: TQRCode): WideString;
+function TEncoder.Encode(const Content: WideString; EncodeOptions: Integer;
+  ECLevel: TErrorCorrectionLevel; QRCode: TQRCode): WideString;
 var
   Mode: TMode;
   DataBits: TBitArray;
@@ -913,29 +1038,25 @@ begin
   // Hard part: need to know version to know how many bits length takes. But need to know how many
   // bits it takes to know version. First we take a guess at version by assuming version will be
   // the minimum, 1:
-  if FVersion <> nil then
-  begin
-    ProvisionalVersion := FVersion;
-  end
-  else
-  begin
-    ProvisionalVersion := TVersion.GetVersionForNumber(1);
-  end;
+  ProvisionalVersion := TVersion.GetVersionForNumber(1);
   try
-    ProvisionalBitsNeeded := HeaderBits.GetSize + GetModeCharacterCountBits(Mode, ProvisionalVersion) + DataBits.GetSize;
+    ProvisionalBitsNeeded := HeaderBits.GetSize +
+      GetModeCharacterCountBits(Mode, ProvisionalVersion) +
+      DataBits.GetSize;
   finally
     ProvisionalVersion.Free;
   end;
 
   ProvisionalVersion := TVersion.ChooseVersion(ProvisionalBitsNeeded, ECLevel);
-  FVersion := ProvisionalVersion;
 
   if not Assigned(ProvisionalVersion) then
     raise EQRMatrixTooLarge.Create(SQRMatrixTooLarge);
 
   try
     // Use that guess to calculate the right version. I am still not sure this works in 100% of cases.
-    BitsNeeded := HeaderBits.GetSize + GetModeCharacterCountBits(Mode, ProvisionalVersion) + DataBits.GetSize;
+    BitsNeeded := HeaderBits.GetSize +
+      GetModeCharacterCountBits(Mode, ProvisionalVersion) +
+      DataBits.GetSize;
     Version := TVersion.ChooseVersion(BitsNeeded, ECLevel);
   finally
     ProvisionalVersion.Free;
@@ -954,7 +1075,8 @@ begin
       NumLetters := DataBits.GetSizeInBytes
     else
       NumLetters := Length(Result);
-    AppendLengthInfo(NumLetters, Version.VersionNumber, Mode, HeaderAndDataBits);
+    AppendLengthInfo(NumLetters, Version.VersionNumber, Mode,
+      HeaderAndDataBits);
     // Put data together into the overall payload
     HeaderAndDataBits.AppendBitArray(DataBits);
 
@@ -965,7 +1087,8 @@ begin
     TerminateBits(NumDataBytes, HeaderAndDataBits);
 
     // Interleave data bits with error correction code.
-    InterleaveWithECBytes(HeaderAndDataBits, Version.GetTotalCodewords, NumDataBytes, ECBlocks.GetNumBlocks, FinalBits);
+    InterleaveWithECBytes(HeaderAndDataBits, Version.GetTotalCodewords,
+      NumDataBytes, ECBlocks.GetNumBlocks, FinalBits);
 
     // QRCode qrCode = new QRCode();  // This is passed in
 
@@ -978,7 +1101,8 @@ begin
     Dimension := Version.GetDimensionForVersion;
     Matrix := TByteMatrix.Create(Dimension, Dimension);
 
-    QRCode.MaskPattern := ChooseMaskPattern(FinalBits, ECLevel, Version.VersionNumber, Matrix);
+    QRCode.MaskPattern := ChooseMaskPattern(FinalBits, ECLevel,
+      Version.VersionNumber, Matrix);
 
     Matrix.Free;
     Matrix := TByteMatrix.Create(Dimension, Dimension);
@@ -986,7 +1110,8 @@ begin
     // Build the matrix and set it to "qrCode".
     MatrixUtil := TMatrixUtil.Create;
     try
-      MatrixUtil.BuildMatrix(FinalBits, QRCode.ECLevel, QRCode.Version, QRCode.MaskPattern, Matrix);
+      MatrixUtil.BuildMatrix(FinalBits, QRCode.ECLevel, QRCode.Version,
+        QRCode.MaskPattern, Matrix);
     finally
       MatrixUtil.Free;
     end;
@@ -1001,7 +1126,8 @@ begin
   end;
 end;
 
-function TEncoder.FilterContent(const Content: WideString; Mode: TMode; EncodeOptions: Integer): WideString;
+function TEncoder.FilterContent(const Content: WideString; Mode: TMode;
+  EncodeOptions: Integer): WideString;
 var
   X: Integer;
   CanAdd: Boolean;
@@ -1012,14 +1138,17 @@ begin
     CanAdd := False;
     if Mode = qmNumeric then
       CanAdd := (Content[X] >= '0') and (Content[X] <= '9')
-    else if Mode = qmAlphanumeric then
+    else
+    if Mode = qmAlphanumeric then
       CanAdd := GetAlphanumericCode(Ord(Content[X])) > -1
-    else if Mode = qmByte then
+    else
+    if Mode = qmByte then
     begin
       if EncodeOptions = ENCODING_8BIT then
         CanAdd := Ord(Content[X]) <= $FF
-      else if EncodeOptions in [ENCODING_UTF8_NOBOM, ENCODING_UTF8_BOM] then
-        CanAdd := True;
+      else
+        if EncodeOptions in [ENCODING_UTF8_NOBOM, ENCODING_UTF8_BOM] then
+          CanAdd := True;
     end;
     if CanAdd then
       Result := Result + Content[X];
@@ -1037,7 +1166,8 @@ begin
 end;
 
 // Choose the mode based on the content
-function TEncoder.ChooseMode(const Content: WideString; var EncodeOptions: Integer): TMode;
+function TEncoder.ChooseMode(const Content: WideString;
+  var EncodeOptions: Integer): TMode;
 var
   AllNumeric: Boolean;
   AllAlphanumeric: Boolean;
@@ -1070,8 +1200,7 @@ begin
         else
           Inc(I);
       end;
-    end
-    else
+    end else
       AllAlphanumeric := False;
 
     if not AllAlphanumeric then
@@ -1086,31 +1215,28 @@ begin
         else
           Inc(I);
       end;
-    end
-    else
+    end else
       AllISO := False;
 
     if AllNumeric then
       Result := qmNumeric
-    else if AllAlphanumeric then
+    else
+    if AllAlphanumeric then
       Result := qmAlphanumeric
-    else if AllISO then
+    else
+    if AllISO then
     begin
       Result := qmByte;
       EncodeOptions := 3;
-    end
-    else
+    end else
     begin
       Result := qmByte;
       EncodeOptions := 4;
     end;
-  end
-  else
+  end else
     case EncodeOptions of
-      1:
-        Result := qmNumeric;
-      2:
-        Result := qmAlphanumeric;
+      1: Result := qmNumeric;
+      2: Result := qmAlphanumeric;
     else
       Result := qmByte;
     end;
@@ -1138,7 +1264,8 @@ begin
   end;
 end;}
 
-function TEncoder.ChooseMaskPattern(Bits: TBitArray; ECLevel: TErrorCorrectionLevel; Version: Integer; Matrix: TByteMatrix): Integer;
+function TEncoder.ChooseMaskPattern(Bits: TBitArray; ECLevel:
+  TErrorCorrectionLevel; Version: Integer; Matrix: TByteMatrix): Integer;
 var
   MinPenalty: Integer;
   BestMaskPattern: Integer;
@@ -1211,7 +1338,9 @@ end;
 // Get number of data bytes and number of error correction bytes for block id "blockID". Store
 // the result in "numDataBytesInBlock", and "numECBytesInBlock". See table 12 in 8.5.1 of
 // JISX0510:2004 (p.30)
-procedure TEncoder.GetNumDataBytesAndNumECBytesForBlockID(NumTotalBytes, NumDataBytes, NumRSBlocks, BlockID: Integer; var NumDataBytesInBlock: TIntegerArray; var NumECBytesInBlock: TIntegerArray);
+procedure TEncoder.GetNumDataBytesAndNumECBytesForBlockID(NumTotalBytes,
+  NumDataBytes, NumRSBlocks, BlockID: Integer;
+  var NumDataBytesInBlock: TIntegerArray; var NumECBytesInBlock: TIntegerArray);
 var
   NumRSBlocksInGroup1: Integer;
   NumRSBlocksInGroup2: Integer;
@@ -1257,7 +1386,9 @@ begin
     Exit;
   end;
   // 196 = (13 + 26) * 4 + (14 + 26) * 1
-  if NumTotalBytes <> ((NumDataBytesInGroup1 + NumECBytesInGroup1) * NumRsBlocksInGroup1) + ((NumDataBytesInGroup2 + NumECBytesInGroup2) * NumRsBlocksInGroup2) then
+  if NumTotalBytes <>
+      ((NumDataBytesInGroup1 + NumECBytesInGroup1) * NumRsBlocksInGroup1) +
+      ((NumDataBytesInGroup2 + NumECBytesInGroup2) * NumRsBlocksInGroup2) then
   begin
     FEncoderError := True;
     Exit;
@@ -1267,8 +1398,7 @@ begin
   begin
     NumDataBytesInBlock[0] := NumDataBytesInGroup1;
     NumECBytesInBlock[0] := numECBytesInGroup1;
-  end
-  else
+  end else
   begin
     NumDataBytesInBlock[0] := NumDataBytesInGroup2;
     NumECBytesInBlock[0] := numEcBytesInGroup2;
@@ -1277,7 +1407,8 @@ end;
 
 // Interleave "bits" with corresponding error correction bytes. On success, store the result in
 // "result". The interleave rule is complicated. See 8.6 of JISX0510:2004 (p.37) for details.
-procedure TEncoder.InterleaveWithECBytes(Bits: TBitArray; NumTotalBytes, NumDataBytes, NumRSBlocks: Integer; var Result: TBitArray);
+procedure TEncoder.InterleaveWithECBytes(Bits: TBitArray; NumTotalBytes,
+  NumDataBytes, NumRSBlocks: Integer; var Result: TBitArray);
 var
   DataBytesOffset: Integer;
   MaxNumDataBytes: Integer;
@@ -1315,7 +1446,9 @@ begin
     begin
       SetLength(NumDataBytesInBlock, 1);
       SetLength(NumECBytesInBlock, 1);
-      GetNumDataBytesAndNumECBytesForBlockID(NumTotalBytes, NumDataBytes, NumRSBlocks, I, NumDataBytesInBlock, NumEcBytesInBlock);
+      GetNumDataBytesAndNumECBytesForBlockID(
+          NumTotalBytes, NumDataBytes, NumRSBlocks, I,
+          NumDataBytesInBlock, NumEcBytesInBlock);
 
       Size := NumDataBytesInBlock[0];
       SetLength(DataBytes, Size);
@@ -1361,7 +1494,8 @@ begin
     FEncoderError := True;
 end;
 
-function TEncoder.GenerateECBytes(DataBytes: TByteArray; NumECBytesInBlock: Integer): TByteArray;
+function TEncoder.GenerateECBytes(DataBytes: TByteArray; NumECBytesInBlock:
+  Integer): TByteArray;
 var
   NumDataBytes: Integer;
   ToEncode: TIntegerArray;
@@ -1402,7 +1536,8 @@ begin
 end;
 
 // Append length info. On success, store the result in "bits".
-procedure TEncoder.AppendLengthInfo(NumLetters, VersionNum: Integer; Mode: TMode; Bits: TBitArray);
+procedure TEncoder.AppendLengthInfo(NumLetters, VersionNum: Integer; Mode:
+  TMode; Bits: TBitArray);
 var
   NumBits: Integer;
   Version: TVersion;
@@ -1421,7 +1556,8 @@ begin
 end;
 
 // Append "bytes" in "mode" mode (encoding) into "bits". On success, store the result in "bits".
-procedure TEncoder.AppendBytes(const Content: WideString; Mode: TMode; Bits: TBitArray; EncodeOptions: Integer);
+procedure TEncoder.AppendBytes(const Content: WideString; Mode: TMode; Bits:
+  TBitArray; EncodeOptions: Integer);
 begin
   case Mode of
     qmNumeric:
@@ -1437,7 +1573,8 @@ begin
   end;
 end;
 
-procedure TEncoder.AppendNumericBytes(const Content: WideString; Bits: TBitArray);
+procedure TEncoder.AppendNumericBytes(const Content: WideString; Bits:
+  TBitArray);
 var
   ContentLength: Integer;
   I: Integer;
@@ -1457,15 +1594,14 @@ begin
       Num3 := Ord(Content[I + 2 + 1]) - Ord('0');
       Bits.AppendBits(Num1 * 100 + Num2 * 10 + Num3, 10);
       Inc(I, 3);
-    end
-    else if I + 1 < ContentLength then
+    end else
+    if I + 1 < ContentLength then
     begin
       // Encode two numeric letters in seven bits.
       Num2 := Ord(Content[I + 1 + 1]) - Ord('0');
       Bits.AppendBits(Num1 * 10 + Num2, 7);
       Inc(I, 2);
-    end
-    else
+    end else
     begin
       // Encode one numeric letter in four bits.
       Bits.AppendBits(Num1, 4);
@@ -1474,7 +1610,8 @@ begin
   end;
 end;
 
-procedure TEncoder.AppendAlphanumericBytes(const Content: WideString; Bits: TBitArray);
+procedure TEncoder.AppendAlphanumericBytes(const Content: WideString; Bits:
+  TBitArray);
 var
   ContentLength: Integer;
   I: Integer;
@@ -1502,8 +1639,7 @@ begin
       // Encode two alphanumeric letters in 11 bits.
       Bits.AppendBits(Code1 * 45 + Code2, 11);
       Inc(I, 2);
-    end
-    else
+    end else
     begin
       // Encode one alphanumeric letter in six bits.
       Bits.AppendBits(Code1, 6);
@@ -1512,7 +1648,8 @@ begin
   end;
 end;
 
-procedure TEncoder.Append8BitBytes(const Content: WideString; Bits: TBitArray; EncodeOptions: Integer);
+procedure TEncoder.Append8BitBytes(const Content: WideString; Bits: TBitArray;
+  EncodeOptions: Integer);
 var
   Bytes: TByteArray;
   I: Integer;
@@ -1524,8 +1661,8 @@ begin
     SetLength(Bytes, Length(Content));
     for I := 1 to Length(Content) do
       Bytes[I - 1] := Ord(Content[I]) and $FF;
-  end
-  else if EncodeOptions = 4 then
+  end else
+  if EncodeOptions = 4 then
   begin
     // Add the UTF-8 BOM
     UTF8Version := #$EF#$BB#$BF + UTF8Encode(Content);
@@ -1534,8 +1671,8 @@ begin
     if Length(UTF8Version) > 0 then
       Move(UTF8Version[1], Bytes[0], Length(UTF8Version));
 {$WARNINGS ON}
-  end
-  else if EncodeOptions = 5 then
+  end else
+  if EncodeOptions = 5 then
   begin
     // No BOM
     UTF8Version := UTF8Encode(Content);
@@ -1572,7 +1709,8 @@ begin
       Subtracted := -1;
       if (Code >= $8140) and (Code <= $9ffc) then
         Subtracted := Code - $8140
-      else if (Code >= $e040) and (Code <= $ebbf) then
+      else
+      if (Code >= $e040) and (Code <= $ebbf) then
         Subtracted := Code - $c140;
       if Subtracted = -1 then
       begin
@@ -1600,7 +1738,8 @@ end;
 
 // Build 2D matrix of QR Code from "dataBits" with "ecLevel", "version" and "getMaskPattern". On
 // success, store the result in "matrix" and return true.
-procedure TMatrixUtil.BuildMatrix(DataBits: TBitArray; ECLevel: TErrorCorrectionLevel; Version, MaskPattern: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.BuildMatrix(DataBits: TBitArray; ECLevel:
+  TErrorCorrectionLevel; Version, MaskPattern: Integer; Matrix: TByteMatrix);
 begin
   ClearMatrix(Matrix);
   EmbedBasicPatterns(Version, Matrix);
@@ -1637,7 +1776,8 @@ begin
 end;
 
 // Embed type information. On success, modify the matrix.
-procedure TMatrixUtil.EmbedTypeInfo(ECLevel: TErrorCorrectionLevel; MaskPattern: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedTypeInfo(ECLevel: TErrorCorrectionLevel;
+  MaskPattern: Integer; Matrix: TByteMatrix);
 var
   TypeInfoBits: TBitArray;
   I: Integer;
@@ -1666,8 +1806,7 @@ begin
         X2 := Matrix.Width - I - 1;
         Y2 := 8;
         Matrix.SetBoolean(X2, Y2, Bit);
-      end
-      else
+      end else
       begin
         // Left bottom corner.
         X2 := 8;
@@ -1682,7 +1821,8 @@ end;
 
 // Embed version information if need be. On success, modify the matrix and return true.
 // See 8.10 of JISX0510:2004 (p.47) for how to embed version information.
-procedure TMatrixUtil.MaybeEmbedVersionInfo(Version: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.MaybeEmbedVersionInfo(Version: Integer; Matrix:
+  TByteMatrix);
 var
   VersionInfoBits: TBitArray;
   I, J: Integer;
@@ -1716,7 +1856,8 @@ end;
 // Embed "dataBits" using "getMaskPattern". On success, modify the matrix and return true.
 // For debugging purposes, it skips masking process if "getMaskPattern" is -1.
 // See 8.7 of JISX0510:2004 (p.38) for how to embed data bits.
-procedure TMatrixUtil.EmbedDataBits(DataBits: TBitArray; MaskPattern: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedDataBits(DataBits: TBitArray; MaskPattern: Integer;
+  Matrix: TByteMatrix);
 var
   BitIndex: Integer;
   Direction: Integer;
@@ -1746,14 +1887,14 @@ begin
         begin
           Bit := DataBits.Get(BitIndex);
           Inc(BitIndex);
-        end
-        else
+        end else
           // Padding bit. If there is no bit left, we'll fill the left cells
           // with 0, as described in 8.4.9 of JISX0510:2004 (p. 24).
           Bit := False;
 
         // Skip masking if mask_pattern is -1.
-        if (MaskPattern <> -1) and GetDataMaskBit(MaskPattern, XX, Y) then
+        if (MaskPattern <> -1) and GetDataMaskBit(MaskPattern, XX, Y)
+        then
           Bit := not Bit;
         Matrix.SetBoolean(XX, Y, Bit);
       end;
@@ -1830,7 +1971,8 @@ end;
 // Make bit vector of type information. On success, store the result in "bits" and return true.
 // Encode error correction level and mask pattern. See 8.9 of
 // JISX0510:2004 (p.45) for details.
-procedure TMatrixUtil.MakeTypeInfoBits(ECLevel: TErrorCorrectionLevel; MaskPattern: Integer; Bits: TBitArray);
+procedure TMatrixUtil.MakeTypeInfoBits(ECLevel: TErrorCorrectionLevel;
+  MaskPattern: Integer; Bits: TBitArray);
 var
   TypeInfo: Integer;
   BCHCode: Integer;
@@ -1867,31 +2009,26 @@ begin
   Intermediate := 0;
   if (MaskPattern >= 0) and (MaskPattern < NUM_MASK_PATTERNS) then
     case (MaskPattern) of
-      0:
-        Intermediate := (Y + X) and 1;
-      1:
-        Intermediate := Y and 1;
-      2:
-        Intermediate := X mod 3;
-      3:
-        Intermediate := (Y + X) mod 3;
-      4:
-        Intermediate := ((y shr 1) + (X div 3)) and 1;
+      0: Intermediate := (Y + X) and 1;
+      1: Intermediate := Y and 1;
+      2: Intermediate := X mod 3;
+      3: Intermediate := (Y + X) mod 3;
+      4: Intermediate := ((y shr 1) + (X div 3)) and 1;
       5:
-        begin
-          Temp := Y * X;
-          Intermediate := (Temp and 1) + (Temp mod 3);
-        end;
+      begin
+        Temp := Y * X;
+        Intermediate := (Temp and 1) + (Temp mod 3);
+      end;
       6:
-        begin
-          Temp := Y * X;
-          Intermediate := ((Temp and 1) + (Temp mod 3)) and 1;
-        end;
+      begin
+        Temp := Y * X;
+        Intermediate := ((Temp and 1) + (Temp mod 3)) and 1;
+      end;
       7:
-        begin
-          Temp := Y * X;
-          Intermediate := ((temp mod 3) + ((Y + X) and 1)) and 1;
-        end;
+      begin
+        Temp := Y * X;
+        Intermediate := ((temp mod 3) + ((Y + X) and 1)) and 1;
+      end;
     end;
   Result := Intermediate = 0;
 end;
@@ -1944,7 +2081,8 @@ begin
     Matrix.SetInteger(8, Matrix.Height - 8, 1);
 end;
 
-procedure TMatrixUtil.EmbedHorizontalSeparationPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedHorizontalSeparationPattern(XStart, YStart: Integer;
+  Matrix: TByteMatrix);
 var
   X: Integer;
 begin
@@ -1960,7 +2098,8 @@ begin
   end;
 end;
 
-procedure TMatrixUtil.EmbedVerticalSeparationPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedVerticalSeparationPattern(XStart, YStart: Integer;
+  Matrix: TByteMatrix);
 var
   Y: Integer;
 begin
@@ -1979,7 +2118,8 @@ end;
 // Note that we cannot unify the function with embedPositionDetectionPattern() despite they are
 // almost identical, since we cannot write a function that takes 2D arrays in different sizes in
 // C/C++. We should live with the fact.
-procedure TMatrixUtil.EmbedPositionAdjustmentPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedPositionAdjustmentPattern(XStart, YStart: Integer;
+  Matrix: TByteMatrix);
 var
   X, Y: Integer;
 begin
@@ -1996,7 +2136,8 @@ begin
     end;
 end;
 
-procedure TMatrixUtil.EmbedPositionDetectionPattern(XStart, YStart: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedPositionDetectionPattern(XStart, YStart: Integer;
+  Matrix: TByteMatrix);
 var
   X, Y: Integer;
 begin
@@ -2009,12 +2150,14 @@ begin
         FMatrixUtilError := True;
         Exit;
       end;
-      Matrix.SetInteger(XStart + X, YStart + Y, POSITION_DETECTION_PATTERN[Y][X]);
+      Matrix.SetInteger(XStart + X, YStart + Y,
+        POSITION_DETECTION_PATTERN[Y][X]);
     end;
 end;
 
 // Embed position detection patterns and surrounding vertical/horizontal separators.
-procedure TMatrixUtil.EmbedPositionDetectionPatternsAndSeparators(Matrix: TByteMatrix);
+procedure TMatrixUtil.EmbedPositionDetectionPatternsAndSeparators(Matrix:
+  TByteMatrix);
 var
   PDPWidth: Integer;
   HSPWidth: Integer;
@@ -2027,14 +2170,15 @@ begin
   // Right top corner.
   EmbedPositionDetectionPattern(Matrix.Width - PDPWidth, 0, Matrix);
   // Left bottom corner.
-  EmbedPositionDetectionPattern(0, Matrix.Width - PDPWidth, Matrix);
+  EmbedPositionDetectionPattern(0, Matrix.Width- PDPWidth, Matrix);
 
   // Embed horizontal separation patterns around the squares.
   HSPWidth := Length(HORIZONTAL_SEPARATION_PATTERN[0]);
   // Left top corner.
   EmbedHorizontalSeparationPattern(0, HSPWidth - 1, Matrix);
   // Right top corner.
-  EmbedHorizontalSeparationPattern(Matrix.Width - HSPWidth, HSPWidth - 1, Matrix);
+  EmbedHorizontalSeparationPattern(Matrix.Width - HSPWidth,
+      HSPWidth - 1, Matrix);
   // Left bottom corner.
   EmbedHorizontalSeparationPattern(0, Matrix.Width - HSPWidth, Matrix);
 
@@ -2049,7 +2193,8 @@ begin
 end;
 
 // Embed position adjustment patterns if need be.
-procedure TMatrixUtil.MaybeEmbedPositionAdjustmentPatterns(Version: Integer; Matrix: TByteMatrix);
+procedure TMatrixUtil.MaybeEmbedPositionAdjustmentPatterns(Version: Integer;
+  Matrix: TByteMatrix);
 var
   Index: Integer;
   Coordinates: array of Integer;
@@ -2061,7 +2206,8 @@ begin
     Index := Version - 1;
     NumCoordinates := Length(POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE[Index]);
     SetLength(Coordinates, NumCoordinates);
-    Move(POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE[Index][0], Coordinates[0], NumCoordinates * SizeOf(Integer));
+    Move(POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE[Index][0], Coordinates[0],
+      NumCoordinates * SizeOf(Integer));
     for I := 0 to NumCoordinates - 1 do
       for J := 0 to NumCoordinates - 1 do
       begin
@@ -2132,7 +2278,8 @@ begin
   Inc(FSize);
 end;
 
-procedure TBitArray.ToBytes(BitOffset: Integer; Source: TByteArray; Offset, NumBytes: Integer);
+procedure TBitArray.ToBytes(BitOffset: Integer; Source: TByteArray; Offset,
+  NumBytes: Integer);
 var
   I: Integer;
   J: Integer;
@@ -2195,7 +2342,8 @@ end;
 
 { TVersion }
 
-class function TVersion.ChooseVersion(NumInputBits: Integer; ECLevel: TErrorCorrectionLevel): TVersion;
+class function TVersion.ChooseVersion(NumInputBits: Integer;
+  ECLevel: TErrorCorrectionLevel): TVersion;
 var
   VersionNum: Integer;
   Version: TVersion;
@@ -2224,13 +2372,14 @@ begin
     begin
       Result := Version;
       Break;
-    end
-    else
+    end else
       Version.Free;
   end;
 end;
 
-constructor TVersion.Create(VersionNumber: Integer; AlignmentPatternCenters: array of Integer; ECBlocks1, ECBlocks2, ECBlocks3, ECBlocks4: TECBlocks);
+constructor TVersion.Create(VersionNumber: Integer;
+  AlignmentPatternCenters: array of Integer; ECBlocks1, ECBlocks2, ECBlocks3,
+  ECBlocks4: TECBlocks);
 var
   Total: Integer;
   ECBlock: TECB;
@@ -2240,7 +2389,8 @@ begin
   FVersionNumber := VersionNumber;
   SetLength(FAlignmentPatternCenters, Length(AlignmentPatternCenters));
   if Length(AlignmentPatternCenters) > 0 then
-    Move(AlignmentPatternCenters[0], FAlignmentPatternCenters[0], Length(AlignmentPatternCenters) * SizeOf(Integer));
+    Move(AlignmentPatternCenters[0], FAlignmentPatternCenters[0],
+      Length(AlignmentPatternCenters) * SizeOf(Integer));
   SetLength(FECBlocks, 4);
   FECBlocks[0] := ECBlocks1;
   FECBlocks[1] := ECBlocks2;
@@ -2271,7 +2421,8 @@ begin
   Result := 17 + 4 * VersionNumber;
 end;
 
-function TVersion.GetECBlocksForLevel(ECLevel: TErrorCorrectionLevel): TECBlocks;
+function TVersion.GetECBlocksForLevel(ECLevel: TErrorCorrectionLevel):
+  TECBlocks;
 begin
   Result := FECBlocks[Ord(ECLevel.Ordinal)];
 end;
@@ -2283,94 +2434,254 @@ end;
 
 class function TVersion.GetVersionForNumber(VersionNum: Integer): TVersion;
 
-  function MakeECB(Count, DataCodewords: Integer): TECB;
-  begin
-    Result.Count := Count;
-    Result.DataCodewords := DataCodewords;
-  end;
+function MakeECB(Count, DataCodewords: Integer): TECB;
+begin
+  Result.Count := Count;
+  Result.DataCodewords := DataCodewords;
+end;
 
 begin
   case VersionNum of
     1:
-      Result := TVersion.Create(1, [], TECBlocks.Create(7, MakeECB(1, 19)), TECBlocks.Create(10, MakeECB(1, 16)), TECBlocks.Create(13, MakeECB(1, 13)), TECBlocks.Create(17, MakeECB(1, 9)));
+    Result := TVersion.Create(1, [],
+      TECBlocks.Create(7, MakeECB(1, 19)),
+      TECBlocks.Create(10, MakeECB(1, 16)),
+      TECBlocks.Create(13, MakeECB(1, 13)),
+      TECBlocks.Create(17, MakeECB(1, 9)));
     2:
-      Result := TVersion.Create(2, [6, 18], TECBlocks.Create(10, MakeECB(1, 34)), TECBlocks.Create(16, MakeECB(1, 28)), TECBlocks.Create(22, MakeECB(1, 22)), TECBlocks.Create(28, MakeECB(1, 16)));
+    Result := TVersion.Create(2, [6, 18],
+      TECBlocks.Create(10, MakeECB(1, 34)),
+      TECBlocks.Create(16, MakeECB(1, 28)),
+      TECBlocks.Create(22, MakeECB(1, 22)),
+      TECBlocks.Create(28, MakeECB(1, 16)));
     3:
-      Result := TVersion.Create(3, [6, 22], TECBlocks.Create(15, MakeECB(1, 55)), TECBlocks.Create(26, MakeECB(1, 44)), TECBlocks.Create(18, MakeECB(2, 17)), TECBlocks.Create(22, MakeECB(2, 13)));
+    Result := TVersion.Create(3, [6, 22],
+      TECBlocks.Create(15, MakeECB(1, 55)),
+      TECBlocks.Create(26, MakeECB(1, 44)),
+      TECBlocks.Create(18, MakeECB(2, 17)),
+      TECBlocks.Create(22, MakeECB(2, 13)));
     4:
-      Result := TVersion.Create(4, [6, 26], TECBlocks.Create(20, MakeECB(1, 80)), TECBlocks.Create(18, MakeECB(2, 32)), TECBlocks.Create(26, MakeECB(2, 24)), TECBlocks.Create(16, MakeECB(4, 9)));
+    Result := TVersion.Create(4, [6, 26],
+      TECBlocks.Create(20, MakeECB(1, 80)),
+      TECBlocks.Create(18, MakeECB(2, 32)),
+      TECBlocks.Create(26, MakeECB(2, 24)),
+      TECBlocks.Create(16, MakeECB(4, 9)));
     5:
-      Result := TVersion.Create(5, [6, 30], TECBlocks.Create(26, MakeECB(1, 108)), TECBlocks.Create(24, MakeECB(2, 43)), TECBlocks.Create(18, MakeECB(2, 15), MakeECB(2, 16)), TECBlocks.Create(22, MakeECB(2, 11), MakeECB(2, 12)));
+    Result := TVersion.Create(5, [6, 30],
+      TECBlocks.Create(26, MakeECB(1, 108)),
+      TECBlocks.Create(24, MakeECB(2, 43)),
+      TECBlocks.Create(18, MakeECB(2, 15), MakeECB(2, 16)),
+      TECBlocks.Create(22, MakeECB(2, 11), MakeECB(2, 12)));
     6:
-      Result := TVersion.Create(6, [6, 34], TECBlocks.Create(18, MakeECB(2, 68)), TECBlocks.Create(16, MakeECB(4, 27)), TECBlocks.Create(24, MakeECB(4, 19)), TECBlocks.Create(28, MakeECB(4, 15)));
+    Result := TVersion.Create(6, [6, 34],
+      TECBlocks.Create(18, MakeECB(2, 68)),
+      TECBlocks.Create(16, MakeECB(4, 27)),
+      TECBlocks.Create(24, MakeECB(4, 19)),
+      TECBlocks.Create(28, MakeECB(4, 15)));
     7:
-      Result := TVersion.Create(7, [6, 22, 38], TECBlocks.Create(20, MakeECB(2, 78)), TECBlocks.Create(18, MakeECB(4, 31)), TECBlocks.Create(18, MakeECB(2, 14), MakeECB(4, 15)), TECBlocks.Create(26, MakeECB(4, 13), MakeECB(1, 14)));
+    Result := TVersion.Create(7, [6, 22, 38],
+      TECBlocks.Create(20, MakeECB(2, 78)),
+      TECBlocks.Create(18, MakeECB(4, 31)),
+      TECBlocks.Create(18, MakeECB(2, 14), MakeECB(4, 15)),
+      TECBlocks.Create(26, MakeECB(4, 13), MakeECB(1, 14)));
     8:
-      Result := TVersion.Create(8, [6, 24, 42], TECBlocks.Create(24, MakeECB(2, 97)), TECBlocks.Create(22, MakeECB(2, 38), MakeECB(2, 39)), TECBlocks.Create(22, MakeECB(4, 18), MakeECB(2, 19)), TECBlocks.Create(26, MakeECB(4, 14), MakeECB(2, 15)));
+    Result := TVersion.Create(8, [6, 24, 42],
+      TECBlocks.Create(24, MakeECB(2, 97)),
+      TECBlocks.Create(22, MakeECB(2, 38), MakeECB(2, 39)),
+      TECBlocks.Create(22, MakeECB(4, 18), MakeECB(2, 19)),
+      TECBlocks.Create(26, MakeECB(4, 14), MakeECB(2, 15)));
     9:
-      Result := TVersion.Create(9, [6, 26, 46], TECBlocks.Create(30, MakeECB(2, 116)), TECBlocks.Create(22, MakeECB(3, 36), MakeECB(2, 37)), TECBlocks.Create(20, MakeECB(4, 16), MakeECB(4, 17)), TECBlocks.Create(24, MakeECB(4, 12), MakeECB(4, 13)));
+    Result := TVersion.Create(9, [6, 26, 46],
+      TECBlocks.Create(30, MakeECB(2, 116)),
+      TECBlocks.Create(22, MakeECB(3, 36), MakeECB(2, 37)),
+      TECBlocks.Create(20, MakeECB(4, 16), MakeECB(4, 17)),
+      TECBlocks.Create(24, MakeECB(4, 12), MakeECB(4, 13)));
     10:
-      Result := TVersion.Create(10, [6, 28, 50], TECBlocks.Create(18, MakeECB(2, 68), MakeECB(2, 69)), TECBlocks.Create(26, MakeECB(4, 43), MakeECB(1, 44)), TECBlocks.Create(24, MakeECB(6, 19), MakeECB(2, 20)), TECBlocks.Create(28, MakeECB(6, 15), MakeECB(2, 16)));
+    Result := TVersion.Create(10, [6, 28, 50],
+      TECBlocks.Create(18, MakeECB(2, 68), MakeECB(2, 69)),
+      TECBlocks.Create(26, MakeECB(4, 43), MakeECB(1, 44)),
+      TECBlocks.Create(24, MakeECB(6, 19), MakeECB(2, 20)),
+      TECBlocks.Create(28, MakeECB(6, 15), MakeECB(2, 16)));
     11:
-      Result := TVersion.Create(11, [6, 30, 54], TECBlocks.Create(20, MakeECB(4, 81)), TECBlocks.Create(30, MakeECB(1, 50), MakeECB(4, 51)), TECBlocks.Create(28, MakeECB(4, 22), MakeECB(4, 23)), TECBlocks.Create(24, MakeECB(3, 12), MakeECB(8, 13)));
+    Result := TVersion.Create(11, [6, 30, 54],
+      TECBlocks.Create(20, MakeECB(4, 81)),
+      TECBlocks.Create(30, MakeECB(1, 50), MakeECB(4, 51)),
+      TECBlocks.Create(28, MakeECB(4, 22), MakeECB(4, 23)),
+      TECBlocks.Create(24, MakeECB(3, 12), MakeECB(8, 13)));
     12:
-      Result := TVersion.Create(12, [6, 32, 58], TECBlocks.Create(24, MakeECB(2, 92), MakeECB(2, 93)), TECBlocks.Create(22, MakeECB(6, 36), MakeECB(2, 37)), TECBlocks.Create(26, MakeECB(4, 20), MakeECB(6, 21)), TECBlocks.Create(28, MakeECB(7, 14), MakeECB(4, 15)));
+    Result := TVersion.Create(12, [6, 32, 58],
+      TECBlocks.Create(24, MakeECB(2, 92), MakeECB(2, 93)),
+      TECBlocks.Create(22, MakeECB(6, 36), MakeECB(2, 37)),
+      TECBlocks.Create(26, MakeECB(4, 20), MakeECB(6, 21)),
+      TECBlocks.Create(28, MakeECB(7, 14), MakeECB(4, 15)));
     13:
-      Result := TVersion.Create(13, [6, 34, 62], TECBlocks.Create(26, MakeECB(4, 107)), TECBlocks.Create(22, MakeECB(8, 37), MakeECB(1, 38)), TECBlocks.Create(24, MakeECB(8, 20), MakeECB(4, 21)), TECBlocks.Create(22, MakeECB(12, 11), MakeECB(4, 12)));
+    Result := TVersion.Create(13, [6, 34, 62],
+      TECBlocks.Create(26, MakeECB(4, 107)),
+      TECBlocks.Create(22, MakeECB(8, 37), MakeECB(1, 38)),
+      TECBlocks.Create(24, MakeECB(8, 20), MakeECB(4, 21)),
+      TECBlocks.Create(22, MakeECB(12, 11), MakeECB(4, 12)));
     14:
-      Result := TVersion.Create(14, [6, 26, 46, 66], TECBlocks.Create(30, MakeECB(3, 115), MakeECB(1, 116)), TECBlocks.Create(24, MakeECB(4, 40), MakeECB(5, 41)), TECBlocks.Create(20, MakeECB(11, 16), MakeECB(5, 17)), TECBlocks.Create(24, MakeECB(11, 12), MakeECB(5, 13)));
+    Result := TVersion.Create(14, [6, 26, 46, 66],
+      TECBlocks.Create(30, MakeECB(3, 115), MakeECB(1, 116)),
+      TECBlocks.Create(24, MakeECB(4, 40), MakeECB(5, 41)),
+      TECBlocks.Create(20, MakeECB(11, 16), MakeECB(5, 17)),
+      TECBlocks.Create(24, MakeECB(11, 12), MakeECB(5, 13)));
     15:
-      Result := TVersion.Create(15, [6, 26, 48, 70], TECBlocks.Create(22, MakeECB(5, 87), MakeECB(1, 88)), TECBlocks.Create(24, MakeECB(5, 41), MakeECB(5, 42)), TECBlocks.Create(30, MakeECB(5, 24), MakeECB(7, 25)), TECBlocks.Create(24, MakeECB(11, 12), MakeECB(7, 13)));
+    Result := TVersion.Create(15, [6, 26, 48, 70],
+      TECBlocks.Create(22, MakeECB(5, 87), MakeECB(1, 88)),
+      TECBlocks.Create(24, MakeECB(5, 41), MakeECB(5, 42)),
+      TECBlocks.Create(30, MakeECB(5, 24), MakeECB(7, 25)),
+      TECBlocks.Create(24, MakeECB(11, 12), MakeECB(7, 13)));
     16:
-      Result := TVersion.Create(16, [6, 26, 50, 74], TECBlocks.Create(24, MakeECB(5, 98), MakeECB(1, 99)), TECBlocks.Create(28, MakeECB(7, 45), MakeECB(3, 46)), TECBlocks.Create(24, MakeECB(15, 19), MakeECB(2, 20)), TECBlocks.Create(30, MakeECB(3, 15), MakeECB(13, 16)));
+    Result := TVersion.Create(16, [6, 26, 50, 74],
+      TECBlocks.Create(24, MakeECB(5, 98), MakeECB(1, 99)),
+      TECBlocks.Create(28, MakeECB(7, 45), MakeECB(3, 46)),
+      TECBlocks.Create(24, MakeECB(15, 19), MakeECB(2, 20)),
+      TECBlocks.Create(30, MakeECB(3, 15), MakeECB(13, 16)));
     17:
-      Result := TVersion.Create(17, [6, 30, 54, 78], TECBlocks.Create(28, MakeECB(1, 107), MakeECB(5, 108)), TECBlocks.Create(28, MakeECB(10, 46), MakeECB(1, 47)), TECBlocks.Create(28, MakeECB(1, 22), MakeECB(15, 23)), TECBlocks.Create(28, MakeECB(2, 14), MakeECB(17, 15)));
+    Result := TVersion.Create(17, [6, 30, 54, 78],
+      TECBlocks.Create(28, MakeECB(1, 107), MakeECB(5, 108)),
+      TECBlocks.Create(28, MakeECB(10, 46), MakeECB(1, 47)),
+      TECBlocks.Create(28, MakeECB(1, 22), MakeECB(15, 23)),
+      TECBlocks.Create(28, MakeECB(2, 14), MakeECB(17, 15)));
     18:
-      Result := TVersion.Create(18, [6, 30, 56, 82], TECBlocks.Create(30, MakeECB(5, 120), MakeECB(1, 121)), TECBlocks.Create(26, MakeECB(9, 43), MakeECB(4, 44)), TECBlocks.Create(28, MakeECB(17, 22), MakeECB(1, 23)), TECBlocks.Create(28, MakeECB(2, 14), MakeECB(19, 15)));
+    Result := TVersion.Create(18, [6, 30, 56, 82],
+      TECBlocks.Create(30, MakeECB(5, 120), MakeECB(1, 121)),
+      TECBlocks.Create(26, MakeECB(9, 43), MakeECB(4, 44)),
+      TECBlocks.Create(28, MakeECB(17, 22), MakeECB(1, 23)),
+      TECBlocks.Create(28, MakeECB(2, 14), MakeECB(19, 15)));
     19:
-      Result := TVersion.Create(19, [6, 30, 58, 86], TECBlocks.Create(28, MakeECB(3, 113), MakeECB(4, 114)), TECBlocks.Create(26, MakeECB(3, 44), MakeECB(11, 45)), TECBlocks.Create(26, MakeECB(17, 21), MakeECB(4, 22)), TECBlocks.Create(26, MakeECB(9, 13), MakeECB(16, 14)));
+    Result := TVersion.Create(19, [6, 30, 58, 86],
+      TECBlocks.Create(28, MakeECB(3, 113), MakeECB(4, 114)),
+      TECBlocks.Create(26, MakeECB(3, 44), MakeECB(11, 45)),
+      TECBlocks.Create(26, MakeECB(17, 21), MakeECB(4, 22)),
+      TECBlocks.Create(26, MakeECB(9, 13), MakeECB(16, 14)));
     20:
-      Result := TVersion.Create(20, [6, 34, 62, 90], TECBlocks.Create(28, MakeECB(3, 107), MakeECB(5, 108)), TECBlocks.Create(26, MakeECB(3, 41), MakeECB(13, 42)), TECBlocks.Create(30, MakeECB(15, 24), MakeECB(5, 25)), TECBlocks.Create(28, MakeECB(15, 15), MakeECB(10, 16)));
+    Result := TVersion.Create(20, [6, 34, 62, 90],
+      TECBlocks.Create(28, MakeECB(3, 107), MakeECB(5, 108)),
+      TECBlocks.Create(26, MakeECB(3, 41), MakeECB(13, 42)),
+      TECBlocks.Create(30, MakeECB(15, 24), MakeECB(5, 25)),
+      TECBlocks.Create(28, MakeECB(15, 15), MakeECB(10, 16)));
     21:
-      Result := TVersion.Create(21, [6, 28, 50, 72, 94], TECBlocks.Create(28, MakeECB(4, 116), MakeECB(4, 117)), TECBlocks.Create(26, MakeECB(17, 42)), TECBlocks.Create(28, MakeECB(17, 22), MakeECB(6, 23)), TECBlocks.Create(30, MakeECB(19, 16), MakeECB(6, 17)));
+    Result := TVersion.Create(21, [6, 28, 50, 72, 94],
+      TECBlocks.Create(28, MakeECB(4, 116), MakeECB(4, 117)),
+      TECBlocks.Create(26, MakeECB(17, 42)),
+      TECBlocks.Create(28, MakeECB(17, 22), MakeECB(6, 23)),
+      TECBlocks.Create(30, MakeECB(19, 16), MakeECB(6, 17)));
     22:
-      Result := TVersion.Create(22, [6, 26, 50, 74, 98], TECBlocks.Create(28, MakeECB(2, 111), MakeECB(7, 112)), TECBlocks.Create(28, MakeECB(17, 46)), TECBlocks.Create(30, MakeECB(7, 24), MakeECB(16, 25)), TECBlocks.Create(24, MakeECB(34, 13)));
+    Result := TVersion.Create(22, [6, 26, 50, 74, 98],
+      TECBlocks.Create(28, MakeECB(2, 111), MakeECB(7, 112)),
+      TECBlocks.Create(28, MakeECB(17, 46)),
+      TECBlocks.Create(30, MakeECB(7, 24), MakeECB(16, 25)),
+      TECBlocks.Create(24, MakeECB(34, 13)));
     23:
-      Result := TVersion.Create(23, [6, 30, 54, 78, 102], TECBlocks.Create(30, MakeECB(4, 121), MakeECB(5, 122)), TECBlocks.Create(28, MakeECB(4, 47), MakeECB(14, 48)), TECBlocks.Create(30, MakeECB(11, 24), MakeECB(14, 25)), TECBlocks.Create(30, MakeECB(16, 15), MakeECB(14, 16)));
+    Result := TVersion.Create(23, [6, 30, 54, 78, 102],
+      TECBlocks.Create(30, MakeECB(4, 121), MakeECB(5, 122)),
+      TECBlocks.Create(28, MakeECB(4, 47), MakeECB(14, 48)),
+      TECBlocks.Create(30, MakeECB(11, 24), MakeECB(14, 25)),
+      TECBlocks.Create(30, MakeECB(16, 15), MakeECB(14, 16)));
     24:
-      Result := TVersion.Create(24, [6, 28, 54, 80, 106], TECBlocks.Create(30, MakeECB(6, 117), MakeECB(4, 118)), TECBlocks.Create(28, MakeECB(6, 45), MakeECB(14, 46)), TECBlocks.Create(30, MakeECB(11, 24), MakeECB(16, 25)), TECBlocks.Create(30, MakeECB(30, 16), MakeECB(2, 17)));
+    Result := TVersion.Create(24, [6, 28, 54, 80, 106],
+      TECBlocks.Create(30, MakeECB(6, 117), MakeECB(4, 118)),
+      TECBlocks.Create(28, MakeECB(6, 45), MakeECB(14, 46)),
+      TECBlocks.Create(30, MakeECB(11, 24), MakeECB(16, 25)),
+      TECBlocks.Create(30, MakeECB(30, 16), MakeECB(2, 17)));
     25:
-      Result := TVersion.Create(25, [6, 32, 58, 84, 110], TECBlocks.Create(26, MakeECB(8, 106), MakeECB(4, 107)), TECBlocks.Create(28, MakeECB(8, 47), MakeECB(13, 48)), TECBlocks.Create(30, MakeECB(7, 24), MakeECB(22, 25)), TECBlocks.Create(30, MakeECB(22, 15), MakeECB(13, 16)));
+    Result := TVersion.Create(25, [6, 32, 58, 84, 110],
+      TECBlocks.Create(26, MakeECB(8, 106), MakeECB(4, 107)),
+      TECBlocks.Create(28, MakeECB(8, 47), MakeECB(13, 48)),
+      TECBlocks.Create(30, MakeECB(7, 24), MakeECB(22, 25)),
+      TECBlocks.Create(30, MakeECB(22, 15), MakeECB(13, 16)));
     26:
-      Result := TVersion.Create(26, [6, 30, 58, 86, 114], TECBlocks.Create(28, MakeECB(10, 114), MakeECB(2, 115)), TECBlocks.Create(28, MakeECB(19, 46), MakeECB(4, 47)), TECBlocks.Create(28, MakeECB(28, 22), MakeECB(6, 23)), TECBlocks.Create(30, MakeECB(33, 16), MakeECB(4, 17)));
+    Result := TVersion.Create(26, [6, 30, 58, 86, 114],
+      TECBlocks.Create(28, MakeECB(10, 114), MakeECB(2, 115)),
+      TECBlocks.Create(28, MakeECB(19, 46), MakeECB(4, 47)),
+      TECBlocks.Create(28, MakeECB(28, 22), MakeECB(6, 23)),
+      TECBlocks.Create(30, MakeECB(33, 16), MakeECB(4, 17)));
     27:
-      Result := TVersion.Create(27, [6, 34, 62, 90, 118], TECBlocks.Create(30, MakeECB(8, 122), MakeECB(4, 123)), TECBlocks.Create(28, MakeECB(22, 45), MakeECB(3, 46)), TECBlocks.Create(30, MakeECB(8, 23), MakeECB(26, 24)), TECBlocks.Create(30, MakeECB(12, 15), MakeECB(28, 16)));
+    Result := TVersion.Create(27, [6, 34, 62, 90, 118],
+      TECBlocks.Create(30, MakeECB(8, 122), MakeECB(4, 123)),
+      TECBlocks.Create(28, MakeECB(22, 45), MakeECB(3, 46)),
+      TECBlocks.Create(30, MakeECB(8, 23), MakeECB(26, 24)),
+      TECBlocks.Create(30, MakeECB(12, 15), MakeECB(28, 16)));
     28:
-      Result := TVersion.Create(28, [6, 26, 50, 74, 98, 122], TECBlocks.Create(30, MakeECB(3, 117), MakeECB(10, 118)), TECBlocks.Create(28, MakeECB(3, 45), MakeECB(23, 46)), TECBlocks.Create(30, MakeECB(4, 24), MakeECB(31, 25)), TECBlocks.Create(30, MakeECB(11, 15), MakeECB(31, 16)));
+    Result := TVersion.Create(28, [6, 26, 50, 74, 98, 122],
+      TECBlocks.Create(30, MakeECB(3, 117), MakeECB(10, 118)),
+      TECBlocks.Create(28, MakeECB(3, 45), MakeECB(23, 46)),
+      TECBlocks.Create(30, MakeECB(4, 24), MakeECB(31, 25)),
+      TECBlocks.Create(30, MakeECB(11, 15), MakeECB(31, 16)));
     29:
-      Result := TVersion.Create(29, [6, 30, 54, 78, 102, 126], TECBlocks.Create(30, MakeECB(7, 116), MakeECB(7, 117)), TECBlocks.Create(28, MakeECB(21, 45), MakeECB(7, 46)), TECBlocks.Create(30, MakeECB(1, 23), MakeECB(37, 24)), TECBlocks.Create(30, MakeECB(19, 15), MakeECB(26, 16)));
+    Result := TVersion.Create(29, [6, 30, 54, 78, 102, 126],
+      TECBlocks.Create(30, MakeECB(7, 116), MakeECB(7, 117)),
+      TECBlocks.Create(28, MakeECB(21, 45), MakeECB(7, 46)),
+      TECBlocks.Create(30, MakeECB(1, 23), MakeECB(37, 24)),
+      TECBlocks.Create(30, MakeECB(19, 15), MakeECB(26, 16)));
     30:
-      Result := TVersion.Create(30, [6, 26, 52, 78, 104, 130], TECBlocks.Create(30, MakeECB(5, 115), MakeECB(10, 116)), TECBlocks.Create(28, MakeECB(19, 47), MakeECB(10, 48)), TECBlocks.Create(30, MakeECB(15, 24), MakeECB(25, 25)), TECBlocks.Create(30, MakeECB(23, 15), MakeECB(25, 16)));
+    Result := TVersion.Create(30, [6, 26, 52, 78, 104, 130],
+      TECBlocks.Create(30, MakeECB(5, 115), MakeECB(10, 116)),
+      TECBlocks.Create(28, MakeECB(19, 47), MakeECB(10, 48)),
+      TECBlocks.Create(30, MakeECB(15, 24), MakeECB(25, 25)),
+      TECBlocks.Create(30, MakeECB(23, 15), MakeECB(25, 16)));
     31:
-      Result := TVersion.Create(31, [6, 30, 56, 82, 108, 134], TECBlocks.Create(30, MakeECB(13, 115), MakeECB(3, 116)), TECBlocks.Create(28, MakeECB(2, 46), MakeECB(29, 47)), TECBlocks.Create(30, MakeECB(42, 24), MakeECB(1, 25)), TECBlocks.Create(30, MakeECB(23, 15), MakeECB(28, 16)));
+    Result := TVersion.Create(31, [6, 30, 56, 82, 108, 134],
+      TECBlocks.Create(30, MakeECB(13, 115), MakeECB(3, 116)),
+      TECBlocks.Create(28, MakeECB(2, 46), MakeECB(29, 47)),
+      TECBlocks.Create(30, MakeECB(42, 24), MakeECB(1, 25)),
+      TECBlocks.Create(30, MakeECB(23, 15), MakeECB(28, 16)));
     32:
-      Result := TVersion.Create(32, [6, 34, 60, 86, 112, 138], TECBlocks.Create(30, MakeECB(17, 115)), TECBlocks.Create(28, MakeECB(10, 46), MakeECB(23, 47)), TECBlocks.Create(30, MakeECB(10, 24), MakeECB(35, 25)), TECBlocks.Create(30, MakeECB(19, 15), MakeECB(35, 16)));
+    Result := TVersion.Create(32, [6, 34, 60, 86, 112, 138],
+      TECBlocks.Create(30, MakeECB(17, 115)),
+      TECBlocks.Create(28, MakeECB(10, 46), MakeECB(23, 47)),
+      TECBlocks.Create(30, MakeECB(10, 24), MakeECB(35, 25)),
+      TECBlocks.Create(30, MakeECB(19, 15), MakeECB(35, 16)));
     33:
-      Result := TVersion.Create(33, [6, 30, 58, 86, 114, 142], TECBlocks.Create(30, MakeECB(17, 115), MakeECB(1, 116)), TECBlocks.Create(28, MakeECB(14, 46), MakeECB(21, 47)), TECBlocks.Create(30, MakeECB(29, 24), MakeECB(19, 25)), TECBlocks.Create(30, MakeECB(11, 15), MakeECB(46, 16)));
+    Result := TVersion.Create(33, [6, 30, 58, 86, 114, 142],
+      TECBlocks.Create(30, MakeECB(17, 115), MakeECB(1, 116)),
+      TECBlocks.Create(28, MakeECB(14, 46), MakeECB(21, 47)),
+      TECBlocks.Create(30, MakeECB(29, 24), MakeECB(19, 25)),
+      TECBlocks.Create(30, MakeECB(11, 15), MakeECB(46, 16)));
     34:
-      Result := TVersion.Create(34, [6, 34, 62, 90, 118, 146], TECBlocks.Create(30, MakeECB(13, 115), MakeECB(6, 116)), TECBlocks.Create(28, MakeECB(14, 46), MakeECB(23, 47)), TECBlocks.Create(30, MakeECB(44, 24), MakeECB(7, 25)), TECBlocks.Create(30, MakeECB(59, 16), MakeECB(1, 17)));
+    Result := TVersion.Create(34, [6, 34, 62, 90, 118, 146],
+      TECBlocks.Create(30, MakeECB(13, 115), MakeECB(6, 116)),
+      TECBlocks.Create(28, MakeECB(14, 46), MakeECB(23, 47)),
+      TECBlocks.Create(30, MakeECB(44, 24), MakeECB(7, 25)),
+      TECBlocks.Create(30, MakeECB(59, 16), MakeECB(1, 17)));
     35:
-      Result := TVersion.Create(35, [6, 30, 54, 78, 102, 126, 150], TECBlocks.Create(30, MakeECB(12, 121), MakeECB(7, 122)), TECBlocks.Create(28, MakeECB(12, 47), MakeECB(26, 48)), TECBlocks.Create(30, MakeECB(39, 24), MakeECB(14, 25)), TECBlocks.Create(30, MakeECB(22, 15), MakeECB(41, 16)));
+    Result := TVersion.Create(35, [6, 30, 54, 78, 102, 126, 150],
+      TECBlocks.Create(30, MakeECB(12, 121), MakeECB(7, 122)),
+      TECBlocks.Create(28, MakeECB(12, 47), MakeECB(26, 48)),
+      TECBlocks.Create(30, MakeECB(39, 24), MakeECB(14, 25)),
+      TECBlocks.Create(30, MakeECB(22, 15), MakeECB(41, 16)));
     36:
-      Result := TVersion.Create(36, [6, 24, 50, 76, 102, 128, 154], TECBlocks.Create(30, MakeECB(6, 121), MakeECB(14, 122)), TECBlocks.Create(28, MakeECB(6, 47), MakeECB(34, 48)), TECBlocks.Create(30, MakeECB(46, 24), MakeECB(10, 25)), TECBlocks.Create(30, MakeECB(2, 15), MakeECB(64, 16)));
+    Result := TVersion.Create(36, [6, 24, 50, 76, 102, 128, 154],
+      TECBlocks.Create(30, MakeECB(6, 121), MakeECB(14, 122)),
+      TECBlocks.Create(28, MakeECB(6, 47), MakeECB(34, 48)),
+      TECBlocks.Create(30, MakeECB(46, 24), MakeECB(10, 25)),
+      TECBlocks.Create(30, MakeECB(2, 15), MakeECB(64, 16)));
     37:
-      Result := TVersion.Create(37, [6, 28, 54, 80, 106, 132, 158], TECBlocks.Create(30, MakeECB(17, 122), MakeECB(4, 123)), TECBlocks.Create(28, MakeECB(29, 46), MakeECB(14, 47)), TECBlocks.Create(30, MakeECB(49, 24), MakeECB(10, 25)), TECBlocks.Create(30, MakeECB(24, 15), MakeECB(46, 16)));
+    Result := TVersion.Create(37, [6, 28, 54, 80, 106, 132, 158],
+      TECBlocks.Create(30, MakeECB(17, 122), MakeECB(4, 123)),
+      TECBlocks.Create(28, MakeECB(29, 46), MakeECB(14, 47)),
+      TECBlocks.Create(30, MakeECB(49, 24), MakeECB(10, 25)),
+      TECBlocks.Create(30, MakeECB(24, 15), MakeECB(46, 16)));
     38:
-      Result := TVersion.Create(38, [6, 32, 58, 84, 110, 136, 162], TECBlocks.Create(30, MakeECB(4, 122), MakeECB(18, 123)), TECBlocks.Create(28, MakeECB(13, 46), MakeECB(32, 47)), TECBlocks.Create(30, MakeECB(48, 24), MakeECB(14, 25)), TECBlocks.Create(30, MakeECB(42, 15), MakeECB(32, 16)));
+    Result := TVersion.Create(38, [6, 32, 58, 84, 110, 136, 162],
+      TECBlocks.Create(30, MakeECB(4, 122), MakeECB(18, 123)),
+      TECBlocks.Create(28, MakeECB(13, 46), MakeECB(32, 47)),
+      TECBlocks.Create(30, MakeECB(48, 24), MakeECB(14, 25)),
+      TECBlocks.Create(30, MakeECB(42, 15), MakeECB(32, 16)));
     39:
-      Result := TVersion.Create(39, [6, 26, 54, 82, 110, 138, 166], TECBlocks.Create(30, MakeECB(20, 117), MakeECB(4, 118)), TECBlocks.Create(28, MakeECB(40, 47), MakeECB(7, 48)), TECBlocks.Create(30, MakeECB(43, 24), MakeECB(22, 25)), TECBlocks.Create(30, MakeECB(10, 15), MakeECB(67, 16)));
+    Result := TVersion.Create(39, [6, 26, 54, 82, 110, 138, 166],
+      TECBlocks.Create(30, MakeECB(20, 117), MakeECB(4, 118)),
+      TECBlocks.Create(28, MakeECB(40, 47), MakeECB(7, 48)),
+      TECBlocks.Create(30, MakeECB(43, 24), MakeECB(22, 25)),
+      TECBlocks.Create(30, MakeECB(10, 15), MakeECB(67, 16)));
     40:
-      Result := TVersion.Create(40, [6, 30, 58, 86, 114, 142, 170], TECBlocks.Create(30, MakeECB(19, 118), MakeECB(6, 119)), TECBlocks.Create(28, MakeECB(18, 47), MakeECB(31, 48)), TECBlocks.Create(30, MakeECB(34, 24), MakeECB(34, 25)), TECBlocks.Create(30, MakeECB(20, 15), MakeECB(61, 16)));
+    Result := TVersion.Create(40, [6, 30, 58, 86, 114, 142, 170],
+      TECBlocks.Create(30, MakeECB(19, 118), MakeECB(6, 119)),
+      TECBlocks.Create(28, MakeECB(18, 47), MakeECB(31, 48)),
+      TECBlocks.Create(30, MakeECB(34, 24), MakeECB(34, 25)),
+      TECBlocks.Create(30, MakeECB(20, 15), MakeECB(61, 16)));
   else
     Result := nil;
   end;
@@ -2385,7 +2696,8 @@ begin
   FECBlocks[0] := ECBlocks;
 end;
 
-constructor TECBlocks.Create(ECCodewordsPerBlock: Integer; ECBlocks1, ECBlocks2: TECB);
+constructor TECBlocks.Create(ECCodewordsPerBlock: Integer; ECBlocks1,
+  ECBlocks2: TECB);
 begin
   FECCodewordsPerBlock := ECCodewordsPerBlock;
   SetLength(FECBlocks, 2);
@@ -2455,7 +2767,8 @@ var
 begin
   if Degree >= FCachedGenerators.Count then
   begin
-    LastGenerator := TGenericGFPoly(FCachedGenerators[FCachedGenerators.Count - 1]);
+    LastGenerator := TGenericGFPoly(FCachedGenerators[FCachedGenerators.Count -
+      1]);
 
     for D := FCachedGenerators.Count to Degree do
     begin
@@ -2520,7 +2833,8 @@ begin
       NumZeroCoefficients := ECBytes - Length(Coefficients);
       for I := 0 to NumZeroCoefficients - 1 do
         ToEncode[DataBytes + I] := 0;
-      Move(Coefficients[0], ToEncode[DataBytes + NumZeroCoefficients], Length(Coefficients) * SizeOf(Integer));
+      Move(Coefficients[0], ToEncode[DataBytes + NumZeroCoefficients],
+        Length(Coefficients) * SizeOf(Integer));
     end;
   end;
 end;
@@ -2573,7 +2887,8 @@ begin
       Move(LargerCoefficients[0], SumDiff[0], LengthDiff * SizeOf(Integer));
 
     for I := LengthDiff to Length(LargerCoefficients) - 1 do
-      SumDiff[I] := TGenericGF.AddOrSubtract(SmallerCoefficients[I - LengthDiff], LargerCoefficients[I]);
+      SumDiff[I] := TGenericGF.AddOrSubtract(SmallerCoefficients[I -
+        LengthDiff], LargerCoefficients[I]);
 
     Result := TGenericGFPoly.Create(FField, SumDiff);
   end;
@@ -2584,7 +2899,8 @@ begin
   Result := FCoefficients;
 end;
 
-constructor TGenericGFPoly.Create(AField: TGenericGF; ACoefficients: TIntegerArray);
+constructor TGenericGFPoly.Create(AField: TGenericGF;
+  ACoefficients: TIntegerArray);
 var
   CoefficientsLength: Integer;
   FirstNonZero: Integer;
@@ -2597,7 +2913,8 @@ begin
   begin
     // Leading term must be non-zero for anything except the constant polynomial "0"
     FirstNonZero := 1;
-    while (FirstNonZero < CoefficientsLength) and (ACoefficients[FirstNonZero] = 0) do
+    while (FirstNonZero < CoefficientsLength) and
+        (ACoefficients[FirstNonZero] = 0) do
       Inc(FirstNonZero);
 
     if FirstNonZero = CoefficientsLength then
@@ -2607,8 +2924,7 @@ begin
       SetLength(FCoefficients, CoefficientsLength - FirstNonZero);
       FCoefficients := Copy(ACoefficients, FirstNonZero, Length(FCoefficients));
     end;
-  end
-  else
+  end else
     FCoefficients := ACoefficients;
 end;
 
@@ -2641,7 +2957,8 @@ begin
     while (Remainder.GetDegree >= Other.GetDegree) and not Remainder.IsZero do
     begin
       DegreeDifference := Remainder.GetDegree - Other.GetDegree;
-      Scale := FField.Multiply(Remainder.GetCoefficient(Remainder.GetDegree), InverseDenominatorLeadingTerm);
+      Scale := FField.Multiply(Remainder.GetCoefficient(Remainder.GetDegree),
+        InverseDenominatorLeadingTerm);
       Term := Other.MultiplyByMonomial(DegreeDifference, Scale);
       IterationQuotient := FField.BuildMonomial(degreeDifference, scale);
       Quotient := Quotient.AddOrSubtract(IterationQuotient);
@@ -2704,14 +3021,16 @@ begin
       begin
         ACoeff := ACoefficients[I];
         for J := 0 to BLength - 1 do
-          Product[I + J] := TGenericGF.AddOrSubtract(Product[I + J], FField.Multiply(ACoeff, BCoefficients[J]));
+          Product[I + J] := TGenericGF.AddOrSubtract(Product[I + J],
+            FField.Multiply(ACoeff, BCoefficients[J]));
       end;
       Result := TGenericGFPoly.Create(FField, Product);
     end;
   end;
 end;
 
-function TGenericGFPoly.MultiplyByMonomial(Degree, Coefficient: Integer): TGenericGFPoly;
+function TGenericGFPoly.MultiplyByMonomial(Degree,
+  Coefficient: Integer): TGenericGFPoly;
 var
   I: Integer;
   Size: Integer;
@@ -2892,15 +3211,15 @@ begin
   inherited Destroy;
 end;
 
-procedure TDelphiZXingQRCode.RegisterEncoder(NewEncoding: Integer; NewEncoder: TEncoderClass);
+procedure TDelphiZXingQRCode.RegisterEncoder(NewEncoding: Integer;
+  NewEncoder: TEncoderClass);
 begin
   if NewEncoding >= FEncoders.Count then
   begin
     while FEncoders.Count < NewEncoding do
       FEncoders.Add(nil);
     FEncoders.Add(NewEncoder);
-  end
-  else
+  end else
     FEncoders[NewEncoding] := NewEncoder
 end;
 
@@ -2908,7 +3227,8 @@ function TDelphiZXingQRCode.GetIsBlack(Row, Column: Integer): Boolean;
 begin
   Dec(Row, FQuietZone);
   Dec(Column, FQuietZone);
-  if (Row >= 0) and (Column >= 0) and (Row < FRows - FQuietZone * 2) and (Column < FColumns - FQuietZone * 2) then
+  if (Row >= 0) and (Column >= 0) and (Row < FRows - FQuietZone * 2) and
+      (Column < FColumns - FQuietZone * 2) then
     Result := FElements[Column, Row]
   else
     Result := False;
@@ -2941,14 +3261,16 @@ end;
 
 procedure TDelphiZXingQRCode.SetQuietZone(NewQuietZone: Integer);
 begin
-  if (FQuietZone <> NewQuietZone) and (NewQuietZone >= 0) and (NewQuietZone <= 100) then
+  if (FQuietZone <> NewQuietZone) and (NewQuietZone >= 0) and
+    (NewQuietZone <= 100) then
   begin
     FQuietZone := NewQuietZone;
     Update;
   end;
 end;
 
-procedure TDelphiZXingQRCode.SetErrorCorrectionOrdinal(Value: TErrorCorrectionOrdinal);
+procedure TDelphiZXingQRCode.SetErrorCorrectionOrdinal(Value:
+  TErrorCorrectionOrdinal);
 begin
   if FErrorCorrectionOrdinal <> Value then
   begin
@@ -2980,7 +3302,6 @@ begin
   QRCode := TQRCode.Create;
   FFilteredData := '';
   try
-    Encoder.Version := FVersion;
     FFilteredData := Encoder.Encode(FData, FEncoding, Level, QRCode);
     if Assigned(QRCode.FMatrix) then
     begin
@@ -3021,4 +3342,3 @@ begin
 end;
 
 end.
-

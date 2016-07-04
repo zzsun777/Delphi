@@ -2,8 +2,8 @@ inherited fAllCommand: TfAllCommand
   Caption = 'fAllCommand'
   ClientHeight = 227
   ClientWidth = 403
-  ExplicitWidth = 419
-  ExplicitHeight = 265
+  ExplicitWidth = 409
+  ExplicitHeight = 255
   PixelsPerInch = 96
   TextHeight = 13
   object btn1: TButton

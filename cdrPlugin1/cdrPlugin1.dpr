@@ -97,14 +97,15 @@ uses
   frmFindText in 'frmFindText.pas' {fFindText},
   DragControl in '..\控件包\DragControl.pas',
   SpeedButtonEx in '..\控件包\SpeedButtonEx.pas',
-  frmCheck in 'frmCheck.pas' {fCheck};
+  frmCheck in 'frmCheck.pas' {fCheck},
+  frmBatchImport in 'frmBatchImport.pas' {fBatchImport};
 
 {$R *.res}
 
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
-      CVersion: Integer = 2016060402;
+      CVersion: Integer = 2016070301;
       CommandBarName: WideString = 'tisn201600401';
       CommandID_All: WideString = 'cdrplugin1_全部';
       CommandID_ConvertTo: WideString = 'cdrplugin1_转换';
@@ -129,6 +130,7 @@ type
     procedure OnPluginCMD(strCMD: string); safecall;
     procedure AddPluginCommands;
     procedure RemovePluginCommands;
+    procedure OnException(Sender: TObject; E: Exception);
   public
     constructor Create;
   public
@@ -175,6 +177,8 @@ var
   inifile: TIniFile;
   rVersion: Integer;
 begin
+  Vcl.Forms.Application.Handle := FApp.AppWindow.Handle;
+  Vcl.Forms.Application.OnException := OnException;
   AddPluginCommands;
   inifile := GetSettingsInifile;
   rVersion := inifile.ReadInteger('插件配置', '版本号', 0);
@@ -207,7 +211,7 @@ begin
       st.SaveToFile(tmpPath + 'TTx7.cdws');
       st.Free;
       FApp.ImportWorkspace(tmpPath + 'TTx7.cdws');
-      //DeleteFile(tmpPath + 'TTx7.cdws')
+      DeleteFile(tmpPath + 'TTx7.cdws')
     end
     else if FApp.VersionMajor >= 18 then
     begin
@@ -224,61 +228,56 @@ begin
 end;
 
 procedure TisnPlugin.OnPluginCMD(strCMD: string);
-var
-  MainApp: TComponent;
 begin
-  MainApp := Vcl.Forms.Application;
-  TApplication(MainApp).Handle := FApp.AppWindow.Handle;
   if not Assigned(fAllCommand) then
-    fAllCommand := TfAllCommand.Create(MainApp, FApp);
-  fAllCommand := TfAllCommand.Create(MainApp, FApp);
+    fAllCommand := TfAllCommand.Create(Vcl.Forms.Application, FApp);
   if strCMD = CommandID_All then
   begin
-    if not Assigned(fMain) then
-      fMain := TfMain.Create(MainApp, FApp);
-    fMain.Show;
+    if not Assigned(ffMain) then
+      ffMain := TfMain.Create(Vcl.Forms.Application, FApp);
+    ffMain.Show;
   end
   else if strCMD = CommandID_ToJPG then
   begin
-    if not Assigned(fToJPG) then
-      fToJPG := TfToJPG.Create(MainApp, FApp);
-    fToJPG.Show;
+    if not Assigned(ffToJPG) then
+      ffToJPG := TfToJPG.Create(Vcl.Forms.Application, FApp);
+    ffToJPG.Show;
   end
   else if strCMD = CommandID_ConvertTo then
   begin
     if not Assigned(fConvertTo) then
-      fConvertTo := TfConvertTo.Create(MainApp, FApp);
+      fConvertTo := TfConvertTo.Create(Vcl.Forms.Application, FApp);
     fConvertTo.Show;
   end
   else if strCMD = CommandID_CropMark then
   begin
     if not Assigned(fCropMark) then
-      fCropMark := TfCropMark.Create(MainApp, FApp);
+      fCropMark := TfCropMark.Create(Vcl.Forms.Application, FApp);
     fCropMark.Show;
   end
   else if strCMD = CommandID_OnkeyPS then
   begin
     if not Assigned(fOnekeyPS) then
-      fOnekeyPS := TfOnekeyPS.Create(MainApp, FApp);
+      fOnekeyPS := TfOnekeyPS.Create(Vcl.Forms.Application, FApp);
     fOnekeyPS.Show;
   end
   else if strCMD = CommandID_QRCode then
   begin
     if not Assigned(fQrcode) then
-      fQrcode := TfQrcode.Create(MainApp, FApp);
+      fQrcode := TfQrcode.Create(Vcl.Forms.Application, FApp);
     fQrcode.Show;
   end
   else if strCMD = CommandID_Select then
   begin
     if not Assigned(fSelect) then
-      fSelect := TfSelect.Create(MainApp, FApp);
+      fSelect := TfSelect.Create(Vcl.Forms.Application, FApp);
     fSelect.Show;
   end
   else if strCMD = CommandID_FontRecognition then
   begin
-    if not Assigned(fMain) then
-      fMain := TfMain.Create(MainApp, FApp);
-    fMain.Show;
+    if not Assigned(ffMain) then
+      ffMain := TfMain.Create(Vcl.Forms.Application, FApp);
+    ffMain.Show;
   end
   else if strCMD = CommandID_PageAdaptation then
   begin
@@ -324,6 +323,11 @@ begin
     FApp.RemovePluginCommand(pair.Key);
   end;
 end;
+
+procedure TisnPlugin.OnException(Sender: TObject; E: Exception);
+begin
+  DebugUtils.ShowMessage('TisnPlugin.OnException' + E.Message);
+end;
 {$REGION 'IVGAppPlugin'}
 
 procedure TisnPlugin.OnLoad(const Application: IVGApplication);
@@ -347,25 +351,23 @@ end;
 
 procedure TisnPlugin.StopSession;
 begin
-  try
+  if FApp.VersionMajor = 14 then
+  begin
     self.FApp.UnadviseEvents(self.m_lCookie);
     RemovePluginCommands;
-
-    //X4中不会自动释放，导致关闭CorelDraw程序后进程不会退出，所以在这手动释放一下
-    self.FApp._Release;
-    self.Destroy;
-  except
-    on E: Exception do
-      MessageBox(0, PWideChar(E.Message + e.StackTrace), 'StopSession', 0);
+    if self.FApp <> nil then
+    begin
+      self.Destroy;
+    end;
   end;
 end;
 
 procedure TisnPlugin.OnUnload;
 begin
-
+  self.FApp.UnadviseEvents(self.m_lCookie);
+  RemovePluginCommands;
   if self.FApp <> nil then
   begin
-    self.FApp._Release;
     self.Destroy;
   end;
 end;
@@ -451,14 +453,12 @@ begin
   Result := hr;
 end;
 
-//此处很重要
 function TisnPlugin._AddRef;
 begin
   inc(self.m_ulRefCount);
   Result := self.m_ulRefCount;
 end;
 
-//此处很重要
 function TisnPlugin._Release;
 begin
   dec(self.m_ulRefCount);
@@ -477,11 +477,6 @@ end;
 
 function DllEnterPoint(Reason: Integer): Boolean;
 begin
-  case Reason of
-    DLL_PROCESS_ATTACH:
-      begin
-      end;
-  end;
   Result := True;
 end;
 

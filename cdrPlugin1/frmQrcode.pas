@@ -210,11 +210,11 @@ begin
     //Encoding := cmbEncoding.ItemIndex;
     if cbbVersion.ItemIndex = 0 then
     begin
-      Version := nil;
+      //Version := 0;
     end
     else
     begin
-      Version := TVersion.GetVersionForNumber(cbbVersion.ItemIndex);
+      //Version := cbbVersion.ItemIndex;
     end;
     ErrorCorrectionOrdinal := TErrorCorrectionOrdinal(cbbErrorCorrectionLevel.ItemIndex);
     //QuietZone := StrToIntDef(edtQuietZone.Text, 4);

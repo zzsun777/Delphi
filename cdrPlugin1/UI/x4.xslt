@@ -11,9 +11,9 @@
             <item guidRef="53175317-5317-5317-5317-900000000002"/>
             <item guidRef="53175317-5317-5317-5317-900000000003"/>
             <item guidRef="53175317-5317-5317-5317-900000000004"/>
-            <item guidRef="53175317-5317-5317-5317-900000000007"/>
+            <item guidRef="53175317-5317-5317-5317-900000000005"/>
             <item guidRef="53175317-5317-5317-5317-900000000008"/>
-            <item guidRef="53175317-5317-5317-5317-900000000009"/>
+            <item guidRef="53175317-5317-5317-5317-90000000000F"/>
             <item guidRef="266435b4-6e53-460f-9fa7-f45be187d400"/>
             <item guidRef="53175317-5317-5317-5317-900000000098"/>
             <item guidRef="53175317-5317-5317-5317-900000000099"/>
@@ -249,7 +249,7 @@ BwcHBwcH90RiGAAOODBKBwcHBwcHBwcHBwcHBwcHBwf3ZwAAbfcHBwcHBwcHBwcHBwcHBwcHBwcH
 Bw4OBwcHBwcHBwcHBwcHBwcHBwcHBwcHBw4OBwcHBwcHBwcHBwcHBwcHBwcHBwcHBw4OBwcHBwcH
 BwcHBwcHBwcHBwcHBwcHBw4OBwcHBwcHBwcHBwfw8PAAoKCgAPDw8AAAAAAA</userLargeBitmap>
         </itemData>
-        <itemData guid="53175317-5317-5317-5317-900000000007" dynamicCommand="cdrplugin1_二维码" dynamicCategory="ab489730-8791-45d2-a825-b78bbe0d6a5d" userCaption="二维码" userToopTip="二维码">
+        <itemData guid="53175317-5317-5317-5317-900000000005" dynamicCommand="cdrplugin1_二维码" dynamicCategory="ab489730-8791-45d2-a825-b78bbe0d6a5d" userCaption="二维码" userToopTip="二维码">
           <userSmallBitmap xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="bin.base64">//8BABAAV0NtblVJX1VJSXRlbUJtcAAAAAAAAAAAKAAAAAAEAAAAAQAAKAAAABAAAAAQAAAAAQAI
 AAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAIAAAIAAAACAgACAAAAAgACAAICAAADAwMAA
 wNzAAPDKpgAzAAAAAAAzADMAMwAzMwAAFhYWABwcHAAiIiIAKSkpAFVVVQBNTU0AQkJCADk5OQCA
@@ -363,7 +363,7 @@ vf//80f5+fn5IA5DBwcHBwdt+P///72U9f////NH+fn5+SBEBwcHBwdt+P/////////////zR/n5
 bW1tbW1tbexH+flvBwcHBwcHBwcHBwcHBwcHBwcHBwfvR5MHBwcHBwcHBwcHBwcHBwcHBwcHBwcH
 BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwfw8PAAoKCgAPDw8AAAAAAA</userLargeBitmap>
         </itemData>
-        <itemData guid="53175317-5317-5317-5317-900000000009" dynamicCommand="cdrplugin1_字体识别" dynamicCategory="ab489730-8791-45d2-a825-b78bbe0d6a5d" userCaption="字体识别" userToopTip="字体识别">
+        <itemData guid="53175317-5317-5317-5317-90000000000F" dynamicCommand="cdrplugin1_全部" dynamicCategory="ab489730-8791-45d2-a825-b78bbe0d6a5d" userCaption="全部" userToopTip="全部">
           <userSmallBitmap xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="bin.base64">//8BABAAV0NtblVJX1VJSXRlbUJtcAAAAAAAAAAAKAAAAAAEAAAAAQAAKAAAABAAAAAQAAAAAQAI
 AAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAIAAAIAAAACAgACAAAAAgACAAICAAADAwMAA
 wNzAAPDKpgAzAAAAAAAzADMAMwAzMwAAFhYWABwcHAAiIiIAKSkpAFVVVQBNTU0AQkJCADk5OQCA
@@ -598,14 +598,14 @@ BwcHBwcHBwcHBwcHBwcHBwcHb28HBwcHBwcHBwfw8PAAoKCgAPDw8AAAAAAA</userLargeBitmap>
       <xsl:if test="not(./itemData[@guid='53175317-5317-5317-5317-900000000004'])">
         <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000004']"/>
       </xsl:if>
-      <xsl:if test="not(./itemData[@guid='53175317-5317-5317-5317-900000000007'])">
-        <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000007']"/>
+      <xsl:if test="not(./itemData[@guid='53175317-5317-5317-5317-900000000005'])">
+        <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000005']"/>
       </xsl:if>
       <xsl:if test="not(./itemData[@guid='53175317-5317-5317-5317-900000000008'])">
         <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000008']"/>
       </xsl:if>
-      <xsl:if test="not(./itemData[@guid='53175317-5317-5317-5317-900000000009'])">
-        <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000009']"/>
+      <xsl:if test="not(./itemData[@guid='53175317-5317-5317-5317-90000000000F'])">
+        <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-90000000000F']"/>
       </xsl:if>
       <xsl:if test="not(./itemData[@guid='266435b4-6e53-460f-9fa7-f45be187d400'])">
         <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='266435b4-6e53-460f-9fa7-f45be187d400']"/>
@@ -630,14 +630,14 @@ BwcHBwcHBwcHBwcHBwcHBwcHb28HBwcHBwcHBwfw8PAAoKCgAPDw8AAAAAAA</userLargeBitmap>
   <xsl:template match="uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000004']">
     <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000004']"/>
   </xsl:template>
-  <xsl:template match="uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000007']">
-    <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000007']"/>
+  <xsl:template match="uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000005']">
+    <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000005']"/>
   </xsl:template>
   <xsl:template match="uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000008']">
     <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000008']"/>
   </xsl:template>
-  <xsl:template match="uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000009']">
-    <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-900000000009']"/>
+  <xsl:template match="uiConfig/items/itemData[@guid='53175317-5317-5317-5317-90000000000F']">
+    <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='53175317-5317-5317-5317-90000000000F']"/>
   </xsl:template>
   <xsl:template match="uiConfig/items/itemData[@guid='266435b4-6e53-460f-9fa7-f45be187d400']">
     <xsl:copy-of select="document('')/*/export:data/uiConfig/items/itemData[@guid='266435b4-6e53-460f-9fa7-f45be187d400']"/>

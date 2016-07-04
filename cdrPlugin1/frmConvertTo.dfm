@@ -559,6 +559,7 @@ inherited fConvertTo: TfConvertTo
     43C20FFF0000FFF807E01FFF0000FFFC0FF03FFF0000FFFF0FF0FFFF0000FFFF
     8FF1FFFF0000FFFF87E1FFFF0000FFFFC3C3FFFF0000FFFFC003FFFF0000FFFF
     E007FFFF0000FFFFF00FFFFF0000}
+  ShowHint = True
   OnCreate = FormCreate
   ExplicitWidth = 297
   ExplicitHeight = 225
@@ -569,7 +570,7 @@ inherited fConvertTo: TfConvertTo
     Top = 8
     Width = 273
     Height = 153
-    ActivePage = ts1
+    ActivePage = ts3
     TabOrder = 0
     object ts1: TTabSheet
       Caption = #36716#26354
@@ -582,22 +583,30 @@ inherited fConvertTo: TfConvertTo
         TabOrder = 0
         OnClick = btn1Click
       end
-      object btn2: TButton
+      object btnTextOL: TButton
         Left = 12
         Top = 47
         Width = 75
         Height = 25
-        Caption = 'btn2'
+        Caption = #25991#23383#21435#23574#31361
         TabOrder = 1
+        OnClick = btnTextOLClick
+      end
+      object btnOL2OBJ: TButton
+        Left = 12
+        Top = 78
+        Width = 75
+        Height = 25
+        Hint = #25226#36718#24275#36716#25442#20026#21333#29420#30340#23545#35937#65292#39640#29256#26412#23384#20302#29256#26412#36718#24275#21487#33021#20250#21464#24418#65292#24314#35758#20351#29992#27492#39033
+        Caption = #36718#24275#36716#23545#35937
+        Enabled = False
+        TabOrder = 2
+        OnClick = btnOL2OBJClick
       end
     end
     object ts2: TTabSheet
       Caption = #39068#33394#27169#24335
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object btn_ToCMYK: TButton
         Left = 127
         Top = 20
@@ -631,10 +640,6 @@ inherited fConvertTo: TfConvertTo
     object ts3: TTabSheet
       Caption = #22270#29255
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object btn_CompressPic: TButton
         Left = 3
         Top = 3
@@ -643,6 +648,24 @@ inherited fConvertTo: TfConvertTo
         Caption = #21387#32553#22270#29255
         TabOrder = 0
         OnClick = btn_CompressPicClick
+      end
+      object btnBadPic: TButton
+        Left = 3
+        Top = 34
+        Width = 75
+        Height = 25
+        Caption = #38450#28866#22270
+        TabOrder = 1
+        OnClick = btnBadPicClick
+      end
+      object btnEffect2BMP: TButton
+        Left = 3
+        Top = 65
+        Width = 75
+        Height = 25
+        Caption = #29305#25928#36716#20301#22270
+        TabOrder = 2
+        OnClick = btnEffect2BMPClick
       end
     end
   end

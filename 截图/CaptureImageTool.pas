@@ -90,7 +90,6 @@ implementation
 {$R *.dfm}
 procedure TTCaptureImageTool.Init;
 begin
-  //FreeMemeory;
   Screen.Cursors[1] := LoadCursor(HInstance, 'Cursor_m');
   _selectCursor := 1;
   _drawCursor := crCross;
@@ -390,11 +389,7 @@ begin
   g := TGPGraphics.FromImage(bmp);
   g.DrawImage(allBmp, 0, 0, SelectImageRect.X, SelectImageRect.Y, SelectImageRect.Width, SelectImageRect.Height, UnitPixel);
   g.Flush;
-  allBmp := nil;
-  allGraphics := nil;
-  g := nil;
   Result := bmp;
-  bmp := nil;
 end;
 
 procedure TTCaptureImageTool.FreeMemeory;
@@ -455,7 +450,7 @@ var
   pen: IGPPen;
 begin
   rectF := TGPRectF.Create(0, 0, Width, Height);
-  txt := 'µ¥»÷×ó¼ü²¢ÍÏ¶¯Ñ¡Ôñ·¶Î§' + #13#10 + 'µ¥»÷ÓÒ¼üÍË³ö';
+  txt := 'µ¥»÷×ó¼ü²¢ÍÏ¶¯Ñ¡Ôñ·¶Î§'#13#10'µ¥»÷ÓÒ¼üÍË³ö';
   textSize := g.MeasureString(txt, TextFont, rectF, TGPStringFormat.GenericDefault);
   screenBounds := TGPRect.Create(Screen.WorkAreaRect);
   x := 0;
@@ -685,19 +680,26 @@ begin
   g.SmoothingMode := SmoothingModeAntiAlias;
   bmp := TGPBitmap.Create(_backGroundImage.Handle, _backGroundImage.Palette);
   g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
-  bmp := nil;
   if (SelectImageRect.Width <> 0) and (SelectImageRect.Height <> 0) then
   begin
     rect := SelectImageRect;
     brush := TGPSolidBrush.Create(TGPColor.Create(150, 100, 100, 100));
-    rectT := TGPRect.Create(0, 0, Width, rect.Y);
-    rectB := TGPRect.Create(0, rect.Y + rect.Height, Width, Height - rect.Y - rect.Height);
-    rectL := TGPRect.Create(0, rect.Y, rect.X, rect.Height);
-    rectR := TGPRect.Create(rect.X + rect.Width, rect.Y, Width - rect.X - rect.Width, rect.Height);
-    g.FillRectangle(brush, rectT);
-    g.FillRectangle(brush, rectB);
-    g.FillRectangle(brush, rectL);
-    g.FillRectangle(brush, rectR);
+    if 1 = 0 then
+    begin
+      rectT := TGPRect.Create(0, 0, Width, rect.Y);
+      rectB := TGPRect.Create(0, rect.Y + rect.Height, Width, Height - rect.Y - rect.Height);
+      rectL := TGPRect.Create(0, rect.Y, rect.X, rect.Height);
+      rectR := TGPRect.Create(rect.X + rect.Width, rect.Y, Width - rect.X - rect.Width, rect.Height);
+      g.FillRectangle(brush, rectT);
+      g.FillRectangle(brush, rectB);
+      g.FillRectangle(brush, rectL);
+      g.FillRectangle(brush, rectR);
+    end
+    else
+    begin
+      g.FillRectangle(brush, 0, 0, _backGroundImage.Width, _backGroundImage.Height);
+      g.DrawImage(bmp, rect.X, rect.Y, rect.X, rect.Y, rect.Width, rect.Height, TGPUnit.UnitPixel);
+    end;
     DrawImageSizeInfo(g, rect);
     if _mouseDown then
     begin
@@ -720,9 +722,6 @@ begin
     DrawTooltip(g, TGPPoint.Create(Mouse.CursorPos.X, Mouse.CursorPos.Y));
   end;
   g.Flush;
-  brush := nil;
-  pen := nil;
-  g := nil;
 end;
 {$ENDREGION}
 

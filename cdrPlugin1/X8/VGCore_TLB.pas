@@ -1296,6 +1296,7 @@ const
   cdrOLEObjectShape = $0000000C;
   cdrContourGroupShape = $0000000D;
   cdrLinearDimensionShape = $0000000E;
+  //调和对象
   cdrBevelGroupShape = $0000000F;
   cdrDropShadowGroupShape = $00000010;
   cdr3DObjectShape = $00000011;
@@ -1549,15 +1550,24 @@ type
   cdrEffectType = TOleEnum;
 
 const
+  //调和特效
   cdrBlend = $00000000;
+  //立体特效
   cdrExtrude = $00000001;
+  //封套特效
   cdrEnvelope = $00000002;
+  //文本路径
   cdrTextOnPath = $00000003;
+  //控制路径
   cdrControlPath = $00000004;
+  //下落阴影
   cdrDropShadow = $00000005;
+  //轮廓特效
   cdrContour = $00000006;
+  //变形
   cdrDistortion = $00000007;
   cdrPerspective = $00000008;
+  //滤镜
   cdrLens = $00000009;
   cdrCustomEffect = $0000000A;
 
@@ -7423,13 +7433,16 @@ type
     property Components: IVGComponents readonly dispid 1610743891;
     property SymbolLibrary: IVGSymbolLibrary readonly dispid 1610743892;
     function CreateCurve: IVGCurve; dispid 1610743893;
-    function CreateCurveFromArray(var Source: {NOT_OLEAUTO(PSafeArray)}OleVariant; NumElements: Integer): IVGCurve; dispid 1610743894;
+    function CreateCurveFromArray(var Source: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant; NumElements: Integer): IVGCurve; dispid 1610743894;
     procedure LoadStyleSheet(const FileName: WideString); dispid 1610743895;
     procedure SaveStyleSheet(const FileName: WideString); dispid 1610743896;
     procedure SaveStyleSheetAsDefault; dispid 1610743897;
-    procedure CreateSelection(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743898;
+    procedure CreateSelection(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant); dispid 1610743898;
     procedure AddToSelection(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743899;
-    procedure RemoveFromSelection(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743900;
+    procedure RemoveFromSelection(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant); dispid 1610743900;
     property SelectableShapes: IVGShapes readonly dispid 1610743901;
     function ToUnits(Value: Double; FromUnit: cdrUnit): Double; dispid 1610743902;
     function FromUnits(Value: Double; ToUnit: cdrUnit): Double; dispid 1610743903;
@@ -7446,7 +7459,8 @@ type
     function CreateFill(const FillString: WideString): IVGFill; dispid 1610743919;
     function CreateOutline(const OutlineString: WideString): IVGOutline; dispid 1610743920;
     property HatchLibraries: IVGHatchLibraries readonly dispid 1610743921;
-    function CreateShapeRangeFromArray(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGShapeRange; dispid 1610743922;
+    function CreateShapeRangeFromArray(var ShapeArray: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant): IVGShapeRange; dispid 1610743922;
     procedure ClearUndoList; dispid 1610743923;
     property SourcePlatformVersion: Double dispid 1610743924;
     property SourceFormat: cdrFilter readonly dispid 1610743926;
@@ -7479,7 +7493,8 @@ type
     property Palette: IVGPalette readonly dispid 1610743957;
     property TextFormatter: Integer dispid 1610743958;
     property StyleSheet: IVGStyleSheet readonly dispid 1610743960;
-    procedure InteractiveImport(var FileNames: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743961;
+    procedure InteractiveImport(var FileNames: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant); dispid 1610743961;
     function AddColorsToDocPalette(SelectedOnly: WordBool; MaxColorsPerBitmap: Integer): WordBool; dispid 1610743962;
     function CreateColorStyles(UseFills: WordBool; UseOutlines: WordBool; SelectedOnly: WordBool; NumberOfColorHarmonies: Integer; ConvertColorsTo: cdrColorType): Integer; dispid 1610743963;
     function CreateCurveFitToPoints(const Points: IVGPointRange; UseCurrentViewForTolerance: WordBool; tolerance: Double): IVGCurve; dispid 1610743964;
@@ -7487,8 +7502,12 @@ type
     function SampleColorAtPoint(x: Double; y: Double; ColorType: cdrColorType): IVGColor; dispid 1610743966;
     function SampleColorInArea(x1: Double; y1: Double; x2: Double; y2: Double; XSamples: Integer; YSamples: Integer; ColorType: cdrColorType): IVGColor; dispid 1610743967;
     procedure ShowAllHiddenObjects; dispid 1610743968;
-    procedure InteractiveImportWithContentIdentifier(var FileNames: {NOT_OLEAUTO(PSafeArray)}OleVariant; var ContentIdentifiers: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743969;
-    procedure ReplaceContentByIdentifier(var ContentIdentifiers: {NOT_OLEAUTO(PSafeArray)}OleVariant; var FileNames: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743970;
+    procedure InteractiveImportWithContentIdentifier(var FileNames:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant; var ContentIdentifiers:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743969;
+    procedure ReplaceContentByIdentifier(var ContentIdentifiers:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant; var FileNames:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743970;
     property ContentIdentifiers: {NOT_OLEAUTO(PSafeArray)}OleVariant readonly dispid 1610743971;
     function CustomCommand(const ComponentID: WideString; const CommandID: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant): OleVariant; dispid 1610743972;
     property Math: IVGMathUtils readonly dispid 1610743973;
@@ -7853,7 +7872,8 @@ type
     property EnhancedOutlines: IVGOutlineStyles readonly dispid 1610743921;
     function AddPluginCommand(const CommandID: WideString; const Caption: WideString; const Tooltip: WideString): WordBool; dispid 1610743922;
     function RemovePluginCommand(const CommandID: WideString): WordBool; dispid 1610743923;
-    function CreateOutlineStyle(DashDotCount: Integer; var DashDotLengths: {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGOutlineStyle; dispid 1610743924;
+    function CreateOutlineStyle(DashDotCount: Integer; var DashDotLengths:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGOutlineStyle; dispid 1610743924;
     property StartupMode: cdrAppStartupMode dispid 1610743925;
     property GlobalUserData: IVGProperties readonly dispid 1610743927;
     property SessionUserData: IVGProperties readonly dispid 1610743928;
@@ -8206,7 +8226,7 @@ type
     procedure Delete; safecall;
     procedure MoveAbove(const Layer: IVGLayer); safecall;
     procedure MoveBelow(const Layer: IVGLayer); safecall;
-    procedure Import(const FileName: WideString; Filter: cdrFilter; const Options: IVGStructImportOptions); safecall;
+    procedure Import(const FileName: WideString; Filter: cdrFilter = cdrAutoSense; const Options: IVGStructImportOptions = nil); safecall;
     function CreateRectangle(Left: Double; Top: Double; Right: Double; Bottom: Double; CornerUL: Integer; CornerUR: Integer; CornerLR: Integer; CornerLL: Integer): IVGShape; safecall;
     function CreateEllipse(Left: Double; Top: Double; Right: Double; Bottom: Double; StartAngle: Double; EndAngle: Double; Pie: WordBool): IVGShape; safecall;
     function CreatePolygon(Left: Double; Top: Double; Right: Double; Bottom: Double; Sides: Integer; SubPaths: Integer; Complexity: Integer; Star: WordBool; StarComplexity: Integer; MaxComplexity: Integer): IVGShape; safecall;
@@ -8338,7 +8358,8 @@ type
     function CreateArtisticTextWide(Left: Double; Bottom: Double; const Text: WideString; LanguageID: cdrTextLanguage; CharSet: cdrTextCharSet; const Font: WideString; Size: Single; Bold: cdrTriState; Italic: cdrTriState; Underline: cdrFontLine; Alignment: cdrAlignment): IVGShape; dispid 1610743854;
     function CreateParagraphTextWide(Left: Double; Top: Double; Right: Double; Bottom: Double; const Text: WideString; LanguageID: cdrTextLanguage; CharSet: cdrTextCharSet; const Font: WideString; Size: Single; Bold: cdrTriState; Italic: cdrTriState; Underline: cdrFontLine; Alignment: cdrAlignment): IVGShape; dispid 1610743855;
     function CustomCommand(const ComponentID: WideString; const CommandID: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant): OleVariant; dispid 1610743856;
-    function CreateCustomShape(const TypeID: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGShape; dispid 1610743857;
+    function CreateCustomShape(const TypeID: WideString; var Parameters:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGShape; dispid 1610743857;
     function CreateLinearDimension(Type_: cdrLinearDimensionType; const Point1: IVGSnapPoint; const Point2: IVGSnapPoint; TextCentered: WordBool; TextX: Double; TextY: Double; Style: cdrDimensionStyle; Precision: Integer; ShowUnits: WordBool; Units: cdrDimensionLinearUnits; Placement: cdrDimensionPlacement; HorizontalText: WordBool; BoxedText: WordBool; LeadingZero: WordBool; const Prefix: WideString; const Suffix: WideString; OutlineWidth: Double; const Arrows: IVGArrowHead; const OutlineColor: IVGColor; const TextFont: WideString; TextSize: Double; const TextColor: IVGColor): IVGShape; dispid 1610743858;
     function CreateAngularDimension(const Center: IVGSnapPoint; const Point1: IVGSnapPoint; const Point2: IVGSnapPoint; TextX: Double; TextY: Double; Precision: Integer; ShowUnits: WordBool; Units: cdrDimensionAngularUnits; BoxedText: WordBool; LeadingZero: WordBool; const Prefix: WideString; const Suffix: WideString; OutlineWidth: Double; const Arrows: IVGArrowHead; const OutlineColor: IVGColor; const TextFont: WideString; TextSize: Double; const TextColor: IVGColor): IVGShape; dispid 1610743859;
     function CreateSymbol(x: Double; y: Double; const SymbolName: WideString; const Library_: IVGSymbolLibrary): IVGShape; dispid 1610743860;
@@ -8536,7 +8557,7 @@ type
     function Get_Transparency: IVGTransparency; safecall;
     procedure GetMatrix(out d11: Double; out d12: Double; out d21: Double; out d22: Double; out tx: Double; out ty: Double); safecall;
     procedure SetMatrix(d11: Double; d12: Double; d21: Double; d22: Double; tx: Double; ty: Double); safecall;
-    function ConvertToBitmapEx(Mode: cdrImageType; Dithered: WordBool; Transparent: WordBool; Resolution: Integer; AntiAliasing: cdrAntiAliasingType; UseColorProfile: WordBool; AlwaysOverprintBlack: WordBool; OverprintBlackLimit: Integer): IVGShape; safecall;
+    function ConvertToBitmapEx(Mode: cdrImageType = cdrRGBColorImage; Dithered: WordBool = True; Transparent: WordBool = True; Resolution: Integer = 300; AntiAliasing: cdrAntiAliasingType = cdrNormalAntiAliasing; UseColorProfile: WordBool = True; AlwaysOverprintBlack: WordBool = False; OverprintBlackLimit: Integer = 100): IVGShape; safecall;
     procedure SkewEx(AngleX: Double; AngleY: Double; CenterX: Double; CenterY: Double); safecall;
     procedure RotateEx(Angle: Double; CenterX: Double; CenterY: Double); safecall;
     function Get_ParentGroup: IVGShape; safecall;
@@ -8860,7 +8881,8 @@ type
     property DisplayCurve: IVGCurve readonly dispid 1610743941;
     function CustomCommand(const ComponentID: WideString; const CommandID: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant): OleVariant; dispid 1610743942;
     property Custom: IVGCustomShape readonly dispid 1610743943;
-    function CreateCustomEffect(const EffectID: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGEffect; dispid 1610743944;
+    function CreateCustomEffect(const EffectID: WideString; var Parameters:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGEffect; dispid 1610743944;
     function CreateCustomDistortion(const DistortionID: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant): IVGEffect; dispid 1610743945;
     procedure AlignToShape(Type_: cdrAlignType; const Shape: IVGShape; TextAlignOrigin: cdrTextAlignOrigin); dispid 1610743946;
     procedure AlignToShapeRange(Type_: cdrAlignType; const ShapeRange: IVGShapeRange; TextAlignOrigin: cdrTextAlignOrigin); dispid 1610743947;
@@ -9180,7 +9202,8 @@ type
     procedure BindToDocument(const Document: IVGDocument); dispid 1610743818;
     function GetCopy: IVGCurve; dispid 1610743819;
     procedure CopyAssign(const Source: IVGCurve); dispid 1610743820;
-    function CreateSubPathFromArray(var Source: {NOT_OLEAUTO(PSafeArray)}OleVariant; Closed: WordBool; NumElements: Integer): IVGSubPath; dispid 1610743821;
+    function CreateSubPathFromArray(var Source: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant; Closed: WordBool; NumElements: Integer): IVGSubPath; dispid 1610743821;
     procedure AppendCurve(const Source: IVGCurve); dispid 1610743822;
     function GetCurveInfo: {NOT_OLEAUTO(PSafeArray)}OleVariant; dispid 1610743823;
     function PutCurveInfo(var Source: {NOT_OLEAUTO(PSafeArray)}OleVariant; NumElements: Integer): Integer; dispid 1610743824;
@@ -11451,7 +11474,7 @@ type
     procedure Sort(const CompareExpression: WideString; StartIndex: Integer; EndIndex: Integer; Data: OleVariant); safecall;
     procedure SetPixelAlignedRendering(PixelAligned: WordBool); safecall;
     function CreateDocumentFrom(TemporaryDocument: WordBool): IVGDocument; safecall;
-    procedure AlignAndDistribute(MethodH: cdrAlignDistributeH; MethodV: cdrAlignDistributeV; AlignTo: cdrAlignShapesTo; DistributeArea: cdrDistributeArea; UseOutline: WordBool = False; TextAlignOrigin : cdrTextAlignOrigin = cdrTextAlignBoundingBox; PointX: Double = 0; PointY: Double = 0; const DistributeRect: IVGRect = nil); safecall;
+    procedure AlignAndDistribute(MethodH: cdrAlignDistributeH; MethodV: cdrAlignDistributeV; AlignTo: cdrAlignShapesTo; DistributeArea: cdrDistributeArea; UseOutline: WordBool = False; TextAlignOrigin: cdrTextAlignOrigin = cdrTextAlignBoundingBox; PointX: Double = 0; PointY: Double = 0; const DistributeRect: IVGRect = nil); safecall;
     procedure SetOutlinePropertiesEx(Width: Double; const Style: IVGOutlineStyle; const Color: IVGColor; const StartArrow: IVGArrowHead; const EndArrow: IVGArrowHead; BehindFill: cdrTriState; ScaleWithShape: cdrTriState; LineCaps: cdrOutlineLineCaps; LineJoin: cdrOutlineLineJoin; NibAngle: Double; NibStretch: Integer; DashDotLength: Double; PenWidth: Double; MiterLimit: Double; Justification: cdrOutlineJustification); safecall;
     function CreateBoundary(x: Double; y: Double; PlaceOnTop: WordBool; DeleteSource: WordBool): IVGShape; safecall;
     function EqualDivide(Divisions: Integer; Gap: Double; Group: WordBool; Combine: WordBool; DeleteSource: WordBool): IVGShapeRange; safecall;
@@ -12249,7 +12272,8 @@ type
     property TextureName: WideString readonly dispid 1610743831;
     property StyleName: WideString readonly dispid 1610743832;
     procedure Select(const Texture: WideString; const Library_: WideString); dispid 1610743833;
-    procedure SetProperties(var SettingArray: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 1610743834;
+    procedure SetProperties(var SettingArray: {NOT_OLEAUTO(PSafeArray)}
+      OleVariant); dispid 1610743834;
     property MirrorFill: WordBool dispid 1610743835;
     property Properties: IVGTextureFillProperties readonly dispid 1610743837;
     property MirrorFillX: WordBool dispid 1610743838;
@@ -12591,7 +12615,7 @@ type
     procedure Set_LineJoin(pVal: cdrOutlineLineJoin); safecall;
     function Get_ScaleWithShape: WordBool; safecall;
     procedure Set_ScaleWithShape(pVal: WordBool); safecall;
-    procedure SetProperties(Width: Double; const Style: IVGOutlineStyle; const Color: IVGColor; const StartArrow: IVGArrowHead; const EndArrow: IVGArrowHead; BehindFill: cdrTriState; ScaleWithShape: cdrTriState; LineCaps: cdrOutlineLineCaps; LineJoin: cdrOutlineLineJoin; NibAngle: Double; NibStretch: Integer; DashDotLength: Double; PenWidth: Double; MiterLimit: Double); safecall;
+    procedure SetProperties(Width: Double = -1; const Style: IVGOutlineStyle = nil; const Color: IVGColor = nil; const StartArrow: IVGArrowHead = nil; const EndArrow: IVGArrowHead = nil; BehindFill: cdrTriState = cdrUndefined; ScaleWithShape: cdrTriState = cdrUndefined; LineCaps: cdrOutlineLineCaps = cdrOutlineUndefinedLineCaps; LineJoin: cdrOutlineLineJoin = cdrOutlineUndefinedLineJoin; NibAngle: Double = -9999; NibStretch: Integer = 0; DashDotLength: Double = -1; PenWidth: Double = 0; MiterLimit: Double = 0); safecall;
     function Get_Size: Double; safecall;
     procedure Set_Size(pVal: Double); safecall;
     function GetCopy: IVGOutline; safecall;
@@ -20532,7 +20556,8 @@ type
     procedure Quit; dispid 19;
     procedure OnPluginCommand(const CommandID: WideString); dispid 20;
     procedure OnUpdatePluginCommand(const CommandID: WideString; var Enabled: WordBool; var Checked: cdrCommandCheckState); dispid 21;
-    procedure OnApplicationEvent(const EventName: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 22;
+    procedure OnApplicationEvent(const EventName: WideString; var Parameters:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 22;
   end;
 
 // *********************************************************************//
@@ -20671,7 +20696,8 @@ type
     procedure Quit; dispid 19;
     procedure OnPluginCommand(const CommandID: WideString); dispid 20;
     procedure OnUpdatePluginCommand(const CommandID: WideString; var Enabled: WordBool; var Checked: cdrCommandCheckState); dispid 21;
-    procedure OnApplicationEvent(const EventName: WideString; var Parameters: {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 22;
+    procedure OnApplicationEvent(const EventName: WideString; var Parameters:
+      {NOT_OLEAUTO(PSafeArray)}OleVariant); dispid 22;
   end;
 
 // *********************************************************************//

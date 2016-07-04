@@ -13,6 +13,8 @@ type
     chkGD2BMP: TCheckBox;
     chkOL2FILL: TCheckBox;
     btnAutoStart: TButton;
+    chkTXTOL: TCheckBox;
+    lst1: TListBox;
   private
     { Private declarations }
   public
@@ -20,7 +22,7 @@ type
   end;
 
 var
-  fCheck: TfCheck;
+  ffCheck: TfCheck;
 
 implementation
 

@@ -381,7 +381,7 @@ begin
               begin
                 if ARegistry.OpenKey('SOFTWARE\WOW6432Node\Corel\Setup\' + s, False) then
                 begin
-                  X732p := ARegistry.ReadString('Destination');
+                  X832p := ARegistry.ReadString('Destination');
                   ARegistry.CloseKey;
                 end;
               end;
@@ -439,7 +439,7 @@ begin
               begin
                 if ARegistry.OpenKey('SOFTWARE\Corel\Setup\' + s, False) then
                 begin
-                  X732p := ARegistry.ReadString('Destination');
+                  X832p := ARegistry.ReadString('Destination');
                   ARegistry.CloseKey;
                 end;
               end;
@@ -471,7 +471,7 @@ begin
       begin
         if not FileExists(v) then
         begin
-          CreateDir(v);
+          ForceDirectories(v);
         end;
       end
       else

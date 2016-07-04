@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, VGCore_TLB, BaseForm, Vcl.StdCtrls,
   frmToJPG, frmConvertTo, frmScreen, frmCropMark, frmAlign, frmAllCommand,
-  frmFontRecognition, frmTest;
+  frmFontRecognition, frmTest, frmCheck,frmBatchImport;
 
 type
   TfMain = class(TTBaseForm)
@@ -16,19 +16,22 @@ type
     btn3: TButton;
     btn4: TButton;
     btn5: TButton;
+    btn6: TButton;
+    btn7: TButton;
     procedure btn_ToJPGClick(Sender: TObject);
     procedure btn1Click(Sender: TObject);
     procedure btn2Click(Sender: TObject);
     procedure btn3Click(Sender: TObject);
     procedure btn4Click(Sender: TObject);
     procedure btn5Click(Sender: TObject);
+    procedure btn7Click(Sender: TObject);
   private
     f: TTBaseForm;
   public
   end;
 
 var
-  fMain: TfMain;
+  ffMain: TfMain;
 
 implementation
 
@@ -69,17 +72,25 @@ end;
 procedure TfMain.btn5Click(Sender: TObject);
 begin
   inherited;
-  if not Assigned(fFontRecognition) then
-    fFontRecognition := TfFontRecognition.Create(self, FApp);
-  fFontRecognition.Show;
+  if not Assigned(ffCheck) then
+    ffCheck := TfCheck.Create(self, FApp);
+  ffCheck.Show;
+end;
+
+procedure TfMain.btn7Click(Sender: TObject);
+begin
+  inherited;
+  if not Assigned(ffBatchImport) then
+    ffBatchImport := TfBatchImport.Create(Self,FApp);
+  ffBatchImport.Show;
 end;
 
 procedure TfMain.btn_ToJPGClick(Sender: TObject);
 begin
   inherited;
-  if not Assigned(fToJPG) then
-    fToJPG := TfToJPG.Create(Self, FApp);
-  fToJPG.Show;
+  if not Assigned(ffToJPG) then
+    ffToJPG := TfToJPG.Create(Self, FApp);
+  ffToJPG.Show;
 end;
 
 end.

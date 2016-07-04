@@ -14,6 +14,13 @@ object Form1: TForm1
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object img1: TImage
+    Left = 96
+    Top = 296
+    Width = 105
+    Height = 105
+    Stretch = True
+  end
   object btn1: TButton
     Left = 48
     Top = 96
@@ -38,5 +45,22 @@ object Form1: TForm1
     Height = 21
     TabOrder = 2
     Text = 'edt2'
+  end
+  object btn2: TButton
+    Left = 416
+    Top = 232
+    Width = 75
+    Height = 25
+    Caption = 'btn2'
+    TabOrder = 3
+    OnClick = btn2Click
+  end
+  object edt3: TEdit
+    Left = 400
+    Top = 40
+    Width = 121
+    Height = 21
+    TabOrder = 4
+    Text = 'D:\1.jpg'
   end
 end

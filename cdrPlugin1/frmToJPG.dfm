@@ -1,9 +1,11 @@
 object fToJPG: TfToJPG
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
   Caption = #22270#29255#23548#20986
-  ClientHeight = 554
-  ClientWidth = 578
+  ClientHeight = 564
+  ClientWidth = 588
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -574,7 +576,6 @@ object fToJPG: TfToJPG
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object grp1: TGroupBox

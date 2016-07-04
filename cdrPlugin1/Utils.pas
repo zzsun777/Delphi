@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.ShlObj, System.SysUtils, Winapi.Windows, Winapi.Messages, System.Variants,
-  System.Classes, System.IniFiles;
+  System.Classes, System.IniFiles, VGCore_TLB;
 
 const
   DEBUG: Boolean = True;
@@ -72,7 +72,10 @@ function GetFolderPath(nFolder: Integer): string;
 /// 获取全局设置<b>TIniFile</b>，注意Destroy
 /// </summary>
 /// <returns>返回一个<b>TIniFile</b></returns>
+
 function GetSettingsInifile: TIniFile;
+
+function GetLife(s: IVGShape): Boolean;
 
 type
   DebugUtils = class
@@ -99,21 +102,33 @@ end;
 
 function GetSettingsInifile: TIniFile;
 var
-  ModuleFileName: array[0..255] of char;
-  dllPath: WideString;
+  settingsPath: WideString;
   settingsIniFilename: WideString;
 begin
-  GetModuleFileName(GetModuleHandle(PWideChar(GetModuleName(HInstance))), @ModuleFileName[0], SizeOf(ModuleFileName));
-  dllPath := ModuleFileName;
-  settingsIniFilename := ExtractFilePath(dllPath) + ChangeFileExt(ExtractFileName(GetModuleName(HInstance)), '') + '.ini';
+  settingsPath := GetFolderPath(CSIDL_APPDATA) + '\tisn\settings\';
+  if not FileExists(settingsPath) then
+  begin
+    ForceDirectories(settingsPath);
+  end;
+  settingsIniFilename := settingsPath + ChangeFileExt(ExtractFileName(GetModuleName(HInstance)), '') + '.ini';
   Result := TIniFile.Create(settingsIniFilename);
+end;
+
+function GetLife(s: IVGShape): Boolean;
+begin
+  try
+    s.type_;
+    Result := True;
+  except
+    Result := False;
+  end;
 end;
 
 class procedure DebugUtils.ShowMessage(msg: WideString);
 begin
   if DEBUG then
   begin
-    MessageBox(0, PWideChar(msg), 'DEBUG', 0);
+    MessageBox(HInstance, PWideChar(msg), 'DEBUG', 0);
   end;
 end;
 

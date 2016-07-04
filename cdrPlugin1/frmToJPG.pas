@@ -68,7 +68,6 @@ type
     procedure chk_InculdePagenameClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure btn1Click(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
@@ -96,11 +95,12 @@ type
     procedure OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray); override;
     procedure DocumentOpen(const Doc: IVGDocument; const FileName: WideString); override;
     procedure DocumentNew(const Doc: IVGDocument; FromTemplate: WordBool; const Template: WideString; IncludeGraphics: WordBool); override;
+    procedure DocumentClose(const Doc: IVGDocument); override;
     procedure SelectionChange; override;
   end;
 
 var
-  fToJPG: TfToJPG;
+  ffToJPG: TfToJPG;
 
 implementation
 
@@ -225,13 +225,6 @@ begin
   end;
 end;
 
-procedure TfToJPG.FormShow(Sender: TObject);
-var
-  I: Integer;
-begin
-  inherited;
-end;
-
 procedure TfToJPG.OnApplicationEvent(const EventName: WideString; var Parameters: PSafeArray);
 begin
   AddMessage(EventName);
@@ -249,8 +242,17 @@ begin
   SetName;
 end;
 
+procedure TfToJPG.DocumentClose(const Doc: IVGDocument);
+begin
+  inherited;
+  GetDocList;
+  SetName;
+end;
+
 procedure TfToJPG.SelectionChange;
 begin
+  if FApp.ActiveDocument = nil then
+    Exit;
   if FApp.ActiveDocument.Selection.Shapes.Count > 0 then
   begin
     rb_Selection.Enabled := true;
@@ -286,7 +288,7 @@ begin
   except
     on e: Exception do
     begin
-      DebugUtils.ShowMessage('TfToJPG.SetName  ´íÎó£º' + e.Message);
+      //DebugUtils.ShowMessage('TfToJPG.SetName  ´íÎó£º' + e.Message);
     end;
   end;
 end;
