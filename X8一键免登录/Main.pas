@@ -10,7 +10,9 @@ uses
 type
   TForm1 = class(TForm)
     btn1: TButton;
+    btn2: TButton;
     procedure btn1Click(Sender: TObject);
+    procedure btn2Click(Sender: TObject);
   private
     hostsAdd: TDictionary<string, string>;
     function GetFolderPath(nFolder: Integer): string;
@@ -29,6 +31,11 @@ var
 implementation
 
 {$R *.dfm}
+procedure TForm1.btn2Click(Sender: TObject);
+begin
+  Close;
+end;
+
 function TForm1.CheckTask(ExeFileName: string): Boolean; //检测XX进程是否存在函数
 const
   PROCESS_TERMINATE = $0001;
@@ -101,6 +108,7 @@ begin
   hostsAdd.Add('mc.corel.com', '127.0.0.1');
   hostsAdd.Add('origin-mc.corel.com', '127.0.0.1');
   hostsAdd.Add('iws.corel.com', '127.0.0.1');
+  hostsAdd.Add('ipm.corel.com', '127.0.0.1');
   hostsPath := 'C:\Windows\System32\drivers\etc\hosts';
   if not FileExists(hostsPath) then
   begin

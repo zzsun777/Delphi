@@ -2,22 +2,45 @@ unit QType;
 
 interface
 
+uses
+  ThoughtWorks.QRCode.Geom.Point;
+
 type
-  TBooleans = array of Boolean;
+  TBooleans = TArray<Boolean>;
 
-  T2DBoolean = array of array of Boolean;
+  T2DBoolean = TArray<TBooleans>;
 
-  TBytes = array of Byte;
+  TTBytes = TArray<Byte>;
 
-  T2DByte = array of array of Byte;
+  T2DByte = TArray<TTBytes>;
 
-  TIntegers = array of Integer;
+  TIntegers = TArray<Integer>;
 
-  T2DInteger = array of array of Integer;
+  T2DInteger = TArray<TIntegers>;
 
-  TShortInts = array of ShortInt;
+  TShortInts = TArray<ShortInt>;
+
+  T2DShorInt = TArray<TShortInts>;
+
+  TTStrings = TArray<string>;
+
+  T2DPoint = array of array of TPoint;
+
+function URShift(number: Integer; bits: Integer): Integer; overload;
 
 implementation
+
+function URShift(number: Integer; bits: Integer): Integer;
+begin
+  if number >= 0 then
+  begin
+    Result := number shr bits;
+  end
+  else
+  begin
+    Result := (number shr bits) + (2 shl not bits);
+  end;
+end;
 
 end.
 

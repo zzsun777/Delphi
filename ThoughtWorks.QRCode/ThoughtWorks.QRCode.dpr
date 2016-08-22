@@ -1,5 +1,7 @@
 program ThoughtWorks.QRCode;
 
+{$R 'ThoughtWorks.QRCode.Resources.res' 'ThoughtWorks.QRCode.Resources.rc'}
+
 uses
   Vcl.Forms,
   main in 'main.pas' {Form1},
@@ -11,7 +13,10 @@ uses
   ThoughtWorks.QRCode.Codec.QRCodeEncoder in 'ThoughtWorks.QRCode.Codec.QRCodeEncoder.pas',
   GdiPlus in '..\图标Base64生成\GdiPlus\Lib\GdiPlus.pas',
   GdiPlusHelpers in '..\图标Base64生成\GdiPlus\Lib\GdiPlusHelpers.pas',
-  QType in 'data\QType.pas';
+  QType in 'data\QType.pas',
+  ThoughtWorks.QRCode.Codec.QRCodeDecoder in 'ThoughtWorks.QRCode.Codec.QRCodeDecoder.pas',
+  ThoughtWorks.QRCode.Codec.Data.QRCodeSymbol in 'data\ThoughtWorks.QRCode.Codec.Data.QRCodeSymbol.pas',
+  ThoughtWorks.QRCode.Geom.Point in 'geom\ThoughtWorks.QRCode.Geom.Point.pas';
 
 {$R *.res}
 

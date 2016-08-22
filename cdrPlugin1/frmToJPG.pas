@@ -56,6 +56,7 @@ type
     lst1: TListBox;
     btn_Exit: TButton;
     btn1: TButton;
+    chkAlone: TCheckBox;
     procedure btn_BrowserClick(Sender: TObject);
     procedure btn_ExportClick(Sender: TObject);
     procedure rb_CurDocumentClick(Sender: TObject);
@@ -74,14 +75,19 @@ type
     outFileName: string;
     ind: Integer;
     firstKTime, secondKTime: TDateTime;
+    FStructExportOptions: IVGStructExportOptions;
+    FDestDir: string;
   private
     procedure AddMessage(msg: string);
     procedure SetName;
     procedure LoadSettings;
     procedure SaveSettings;
+    procedure GetStructExportOptions;
+    function GetDestDir: Boolean;
     procedure Export_;
     procedure ExportDocument(doc: IVGDocument);
     procedure ExportPic(page: IVGPage);
+    procedure ExportShape(sr: IVGShapeRange);
     procedure GetSize(page: IVGPage; var re: array of Double);
     function CheckFilExists(fileName: string): WordBool;
     function GetPageName(page: IVGPage): string;
@@ -343,6 +349,80 @@ begin
   settingsIniFile.WriteBool(settingsSection, '透明处理', chk_Transparent.Checked);
   settingsIniFile.WriteBool(settingsSection, '保持图层', chk_MaintainLayers.Checked);
   {================}
+end;
+
+procedure TfToJPG.GetStructExportOptions;
+var
+  smooth: cdrAntiAliasingType;
+  s: Integer;
+  sc: Double;
+  dt: array[0..1] of Double;
+begin
+  FStructExportOptions := FApp.CreateStructExportOptions;
+
+  if chk_Smooth.Checked then
+  begin
+    smooth := cdrNormalAntiAliasing;
+  end
+  else
+  begin
+    smooth := cdrNoAntiAliasing;
+  end;
+  FStructExportOptions.AntiAliasingType := smooth;
+  FStructExportOptions.ImageType := cdrImageType(cbb_ColorMode.ItemIndex);
+  FStructExportOptions.Compression := cdrCompressionType(cbb_CompressType.ItemIndex);
+  FStructExportOptions.UseColorProfile := chk_UseColorProfile.Checked;
+    //特别注意，透明度在jpg等无透明的格式的时候不能为True，不然光滑处理将会失效
+  FStructExportOptions.Transparent := chk_Transparent.Checked;
+  if FApp.VersionMajor > 14 then
+  begin
+    FStructExportOptions.AlwaysOverprintBlack := chk_OverPrintBlack.Checked;
+  end;
+  FStructExportOptions.MaintainLayers := chk_MaintainLayers.Checked;
+
+    //AddMessage('测试111');
+
+  s := 72;
+  if cbb_Resolution.Text <> '' then
+  begin
+    TryStrToInt(cbb_Resolution.Text, s);
+  end;
+  FStructExportOptions.ResolutionX := s;
+  FStructExportOptions.ResolutionY := s;
+
+  FApp.ActiveDocument.Unit_ := cdrPixel;
+  sc := 1;
+  if cbb_Scale.Text <> '' then
+  begin
+    TryStrToFloat(cbb_Scale.Text, sc);
+  end;
+  if sc = 0 then
+  begin
+    AddMessage('缩放数值不能为0,退出');
+    Exit;
+  end;
+  if sc <> 1 then
+  begin
+    GetSize(page, dt);
+    FStructExportOptions.SizeX := Trunc(dt[0] * sc * (s / 300.0));
+    FStructExportOptions.SizeY := Trunc(dt[1] * sc * (s / 300.0));
+  end;
+end;
+
+function TfToJPG.GetDestDir: Boolean;
+begin
+  FDestDir := edt_Location.Text;
+  if not FileExists(FDestDir) then
+  begin
+    AddMessage(Format('保存文件夹 %s 不存在！退出', [FDestDir]));
+    Result := False;
+    Exit;
+  end;
+  if not FDestDir.EndsWith('\') then
+  begin
+    FDestDir := FDestDir + '\';
+  end;
+  Result := True;
 end;
 
 procedure TfToJPG.rb_CurDocumentClick(Sender: TObject);
@@ -682,6 +762,11 @@ begin
     begin
       AddMessage('导出选中范围');
       ExportPic(FApp.ActiveDocument.ActivePage);
+    end
+    else if chkAlone.Checked then
+    begin
+      AddMessage('选中对象分别导出');
+      ExportPic(FApp.ActiveDocument.ActivePage);
     end;
 done:
     //Application.ProcessMessages;
@@ -717,15 +802,8 @@ end;
 procedure TfToJPG.ExportPic(page: IVGPage);
 var
   namen: string;
-  filter: cdrFilter;
-  DestDir, FileName: string;
-  ext: string;
+  FileName: string;
   ef: ICorelExportFilter;
-  seo: IVGStructExportOptions;
-  smooth: cdrAntiAliasingType;
-  s: Integer;
-  sc: Double;
-  dt: array[0..1] of Double;
   rct: IVGRect;
   sr: IVGShapeRange;
   hz: WordBool;
@@ -746,78 +824,23 @@ begin
       namen := outFileName;
     end;
 
-    filter := GetFilter;
-    ext := GetExt;
-    seo := FApp.CreateStructExportOptions;
+    GetStructExportOptions;
 
-    if chk_Smooth.Checked then
+    if not GetDestDir then
     begin
-      smooth := cdrNormalAntiAliasing;
-    end
-    else
-    begin
-      smooth := cdrNoAntiAliasing;
-    end;
-    seo.AntiAliasingType := smooth;
-    seo.ImageType := cdrImageType(cbb_ColorMode.ItemIndex);
-    seo.Compression := cdrCompressionType(cbb_CompressType.ItemIndex);
-    seo.UseColorProfile := chk_UseColorProfile.Checked;
-    //特别注意，透明度在jpg等无透明的格式的时候不能为True，不然光滑处理将会失效
-    seo.Transparent := chk_Transparent.Checked;
-    if FApp.VersionMajor > 14 then
-    begin
-      seo.AlwaysOverprintBlack := chk_OverPrintBlack.Checked;
-    end;
-    seo.MaintainLayers := chk_MaintainLayers.Checked;
-
-    //AddMessage('测试111');
-
-    s := 72;
-    if cbb_Resolution.Text <> '' then
-    begin
-      TryStrToInt(cbb_Resolution.Text, s);
-    end;
-    seo.ResolutionX := s;
-    seo.ResolutionY := s;
-
-    FApp.ActiveDocument.Unit_ := cdrPixel;
-    sc := 1;
-    if cbb_Scale.Text <> '' then
-    begin
-      TryStrToFloat(cbb_Scale.Text, sc);
-    end;
-    if sc = 0 then
-    begin
-      AddMessage('缩放数值不能为0,退出');
-      Exit;
-    end;
-    if sc <> 1 then
-    begin
-      GetSize(page, dt);
-      seo.SizeX := Trunc(dt[0] * sc * (s / 300.0));
-      seo.SizeY := Trunc(dt[1] * sc * (s / 300.0));
+      exit;
     end;
 
-    DestDir := edt_Location.Text;
-    if not FileExists(DestDir) then
-    begin
-      //AddMessage(Format('保存文件夹 %s 不存在！退出', [DestDir]));
-      //Exit;
-    end;
-    if not DestDir.EndsWith('\') then
-    begin
-      DestDir := DestDir + '\';
-    end;
     //page.Activate;
     if rb_Selection.Checked then
     begin
-      FileName := DestDir + namen + GetPageName(page) + GetIndex + ext;
+      FileName := FDestDir + namen + GetPageName(page) + GetIndex + GetExt;
       if CheckFilExists(FileName) then
       begin
         exit;
       end;
       //page.Activate;
-      ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrSelection, seo, nil);
+      ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrSelection, FStructExportOptions, nil);
       ef.Finish;
       exit;
     end
@@ -829,14 +852,14 @@ begin
       rct.y := sr.BottomY;
       rct.Width := sr.SizeWidth;
       rct.Height := sr.SizeHeight;
-      seo._Set_ExportArea(rct);
-      FileName := DestDir + namen + GetPageName(page) + GetIndex + ext;
+      FStructExportOptions._Set_ExportArea(rct);
+      FileName := FDestDir + namen + GetPageName(page) + GetIndex + GetExt;
       if CheckFilExists(FileName) then
       begin
         exit;
       end;
       //page.Activate;
-      ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+      ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrCurrentPage, FStructExportOptions, nil);
       ef.Finish;
       exit;
     end
@@ -859,14 +882,14 @@ begin
           rct.Width := page.SizeWidth / 2;
           rct.Height := page.SizeHeight;
         end;
-        seo._Set_ExportArea(rct);
-        FileName := DestDir + namen + GetPageName(page) + '1前' + GetIndex + ext;
+        FStructExportOptions._Set_ExportArea(rct);
+        FileName := FDestDir + namen + GetPageName(page) + '1前' + GetIndex + GetExt;
         if CheckFilExists(FileName) then
         begin
           exit;
         end;
         page.Activate;
-        ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+        ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrCurrentPage, FStructExportOptions, nil);
         ef.Finish;
         if hz then
         begin
@@ -876,30 +899,34 @@ begin
         begin
           rct.x := page.SizeWidth / 2;
         end;
-        seo._Set_ExportArea(rct);
-        FileName := DestDir + namen + GetPageName(page) + '2后' + GetIndex + ext;
+        FStructExportOptions._Set_ExportArea(rct);
+        FileName := FDestDir + namen + GetPageName(page) + '2后' + GetIndex + GetExt;
         if CheckFilExists(FileName) then
         begin
           Exit;
         end;
         //page.Activate;
-        ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+        ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrCurrentPage, FStructExportOptions, nil);
         ef.Finish;
         Exit;
       end
       else
       begin
         rct := FApp.CreateRect(page.LeftX, page.BottomY, page.SizeWidth, page.SizeHeight);
-        seo._Set_ExportArea(rct);
+        FStructExportOptions._Set_ExportArea(rct);
       end;
+    end
+    else if chkAlone.Checked then
+    begin
+
     end;
-    FileName := DestDir + namen + GetPageName(page) + GetIndex + ext;
+    FileName := FDestDir + namen + GetPageName(page) + GetIndex + GetExt;
     if CheckFilExists(FileName) then
     begin
       Exit;
     end;
     //page.Activate;
-    ef := FApp.ActiveDocument.ExportEx(FileName, filter, cdrCurrentPage, seo, nil);
+    ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrCurrentPage, FStructExportOptions, nil);
     ef.Finish;
   except
     on E: Exception do
@@ -907,6 +934,32 @@ begin
       debugUtils.ShowMessage('ExportPic ++++ ' + e.Message);
     end;
   end;
+end;
+
+procedure TfToJPG.ExportShape(sr: IVGShapeRange);
+var
+  namen: string;
+  FileName: string;
+  ef: ICorelExportFilter;
+begin
+  namen := outFileName;
+  if not GetDestDir then
+  begin
+    Exit;
+  end;
+
+  FApp.ActiveDocument.ClearSelection;
+  sr.AddToSelection;
+
+  FileName := FDestDir + namen + GetPageName(page) + GetIndex + GetExt;
+  if CheckFilExists(FileName) then
+  begin
+    exit;
+  end;
+      //page.Activate;
+  ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrSelection, FStructExportOptions, nil);
+  ef.Finish;
+  exit;
 end;
 
 end.

@@ -870,13 +870,21 @@ object fToJPG: TfToJPG
         end
       end
       object chklst_Documents: TCheckListBox
-        Left = 11
-        Top = 47
+        Left = 190
+        Top = 106
         Width = 166
         Height = 82
         ItemHeight = 13
         TabOrder = 8
         Visible = False
+      end
+      object chkAlone: TCheckBox
+        Left = 11
+        Top = 109
+        Width = 118
+        Height = 17
+        Caption = #36873#20013#23545#35937#20998#21035#23548#20986
+        TabOrder = 9
       end
     end
     object btn_Export: TButton
