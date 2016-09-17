@@ -105,7 +105,7 @@ uses
 type
   TisnPlugin = class(TObject, IVGAppPlugin, IDispatch, IUnknown)
     const
-      CVersion: Integer = 2016070301;
+      CVersion: Integer = 2016091701;
       CommandBarName: WideString = 'tisn201600401';
       CommandID_All: WideString = 'cdrplugin1_È«²¿';
       CommandID_ConvertTo: WideString = 'cdrplugin1_×ª»»';

@@ -5,7 +5,7 @@ object fToJPG: TfToJPG
   BorderStyle = bsSingle
   Caption = #22270#29255#23548#20986
   ClientHeight = 564
-  ClientWidth = 588
+  ClientWidth = 580
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -817,7 +817,7 @@ object fToJPG: TfToJPG
         Top = 54
         Width = 78
         Height = 17
-        Caption = #36873#20013#20869#23481
+        Caption = #36873#20013#23545#35937
         TabOrder = 5
         OnClick = rb_CurDocumentClick
       end
@@ -869,22 +869,23 @@ object fToJPG: TfToJPG
             #27178#21521#20998#21106)
         end
       end
-      object chklst_Documents: TCheckListBox
-        Left = 190
-        Top = 106
-        Width = 166
-        Height = 82
-        ItemHeight = 13
-        TabOrder = 8
-        Visible = False
-      end
-      object chkAlone: TCheckBox
+      object rb_Alone: TRadioButton
         Left = 11
-        Top = 109
-        Width = 118
+        Top = 114
+        Width = 113
         Height = 17
         Caption = #36873#20013#23545#35937#20998#21035#23548#20986
         TabOrder = 9
+        OnClick = rb_CurDocumentClick
+      end
+      object chklst_Documents: TCheckListBox
+        Left = 3
+        Top = 47
+        Width = 166
+        Height = 92
+        ItemHeight = 13
+        TabOrder = 8
+        Visible = False
       end
     end
     object btn_Export: TButton
@@ -981,16 +982,6 @@ object fToJPG: TfToJPG
       TabOrder = 14
       OnClick = btn_exitClick
     end
-    object btn1: TButton
-      Left = 16
-      Top = 320
-      Width = 97
-      Height = 25
-      Caption = #32039#24613#36864#20986#25353#38062
-      TabOrder = 15
-      Visible = False
-      OnClick = btn1Click
-    end
   end
   object lst1: TListBox
     Left = 8
@@ -1001,6 +992,16 @@ object fToJPG: TfToJPG
     ItemHeight = 13
     TabOrder = 1
     OnDrawItem = lst1DrawItem
+  end
+  object btn1: TButton
+    Left = 24
+    Top = 328
+    Width = 97
+    Height = 25
+    Caption = #32039#24613#36864#20986#25353#38062
+    TabOrder = 2
+    Visible = False
+    OnClick = btn1Click
   end
   object dlgOpen1: TOpenDialog
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]

@@ -56,7 +56,7 @@ type
     lst1: TListBox;
     btn_Exit: TButton;
     btn1: TButton;
-    chkAlone: TCheckBox;
+    rb_Alone: TRadioButton;
     procedure btn_BrowserClick(Sender: TObject);
     procedure btn_ExportClick(Sender: TObject);
     procedure rb_CurDocumentClick(Sender: TObject);
@@ -87,7 +87,7 @@ type
     procedure Export_;
     procedure ExportDocument(doc: IVGDocument);
     procedure ExportPic(page: IVGPage);
-    procedure ExportShape(sr: IVGShapeRange);
+    procedure ExportShape(sr: IVGShape);
     procedure GetSize(page: IVGPage; var re: array of Double);
     function CheckFilExists(fileName: string): WordBool;
     function GetPageName(page: IVGPage): string;
@@ -403,7 +403,7 @@ begin
   end;
   if sc <> 1 then
   begin
-    GetSize(page, dt);
+    GetSize(Self.FApp.ActivePage, dt);
     FStructExportOptions.SizeX := Trunc(dt[0] * sc * (s / 300.0));
     FStructExportOptions.SizeY := Trunc(dt[1] * sc * (s / 300.0));
   end;
@@ -412,7 +412,7 @@ end;
 function TfToJPG.GetDestDir: Boolean;
 begin
   FDestDir := edt_Location.Text;
-  if not FileExists(FDestDir) then
+  if not DirectoryExists(FDestDir) then
   begin
     AddMessage(Format('保存文件夹 %s 不存在！退出', [FDestDir]));
     Result := False;
@@ -503,8 +503,11 @@ function TfToJPG.CheckFilExists(fileName: string): WordBool;
 begin
   if FileExists(fileName) then
   begin
-    //MessageDlg('文件已存在，是否替换？', mtInformation, mbYesNoCancel, 0);
-
+    if MessageDlg('文件已存在，是否替换？', mtInformation, mbYesNo, 0) = mrNo then
+    begin
+      AddMessage('^文件存在，跳过。。');
+      Result := True;
+    end;
   end;
   Result := False;
 end;
@@ -763,7 +766,7 @@ begin
       AddMessage('导出选中范围');
       ExportPic(FApp.ActiveDocument.ActivePage);
     end
-    else if chkAlone.Checked then
+    else if rb_Alone.Checked then
     begin
       AddMessage('选中对象分别导出');
       ExportPic(FApp.ActiveDocument.ActivePage);
@@ -807,6 +810,8 @@ var
   rct: IVGRect;
   sr: IVGShapeRange;
   hz: WordBool;
+  i: Integer;
+  s: IVGShape;
 begin
   try
     page.Activate;
@@ -916,9 +921,15 @@ begin
         FStructExportOptions._Set_ExportArea(rct);
       end;
     end
-    else if chkAlone.Checked then
+    else if rb_Alone.Checked then
     begin
-
+      sr := FApp.ActiveDocument.SelectionRange;
+      for I := 1 to sr.Count do
+      begin
+        s := sr.Shapes[I];
+        ExportShape(s);
+      end;
+      Exit;
     end;
     FileName := FDestDir + namen + GetPageName(page) + GetIndex + GetExt;
     if CheckFilExists(FileName) then
@@ -936,7 +947,7 @@ begin
   end;
 end;
 
-procedure TfToJPG.ExportShape(sr: IVGShapeRange);
+procedure TfToJPG.ExportShape(sr: IVGShape);
 var
   namen: string;
   FileName: string;
@@ -951,12 +962,11 @@ begin
   FApp.ActiveDocument.ClearSelection;
   sr.AddToSelection;
 
-  FileName := FDestDir + namen + GetPageName(page) + GetIndex + GetExt;
+  FileName := FDestDir + namen + GetPageName(FApp.ActivePage) + '-分别导出' + GetIndex + GetExt;
   if CheckFilExists(FileName) then
   begin
     exit;
   end;
-      //page.Activate;
   ef := FApp.ActiveDocument.ExportEx(FileName, GetFilter, cdrSelection, FStructExportOptions, nil);
   ef.Finish;
   exit;
