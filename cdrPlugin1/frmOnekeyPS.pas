@@ -11,7 +11,7 @@ type
   TfOnekeyPS = class(TTBaseForm)
     btn1: TButton;
     procedure btn1Click(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     savei: TIniFile;
     d11, d12, d21, d22, tx, ty: Double;
@@ -96,7 +96,7 @@ enda:
   SetForegroundWindow(FApp.AppWindow.Handle);
 end;
 
-procedure TfOnekeyPS.FormShow(Sender: TObject);
+procedure TfOnekeyPS.FormCreate(Sender: TObject);
 begin
   inherited;
   savei := GetSettingsInifile;

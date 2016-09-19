@@ -8244,7 +8244,7 @@ type
     function CreateEllipse2(CenterX: Double; CenterY: Double; Radius1: Double; Radius2: Double; StartAngle: Double; EndAngle: Double; Pie: WordBool): IVGShape; safecall;
     function FindShape(const Name: WideString; Type_: cdrShapeType; StaticID: Integer; Recursive: WordBool): IVGShape; safecall;
     function FindShapes(const Name: WideString; Type_: cdrShapeType; Recursive: WordBool): IVGShapeRange; safecall;
-    function CreateRectangle2(x: Double; y: Double; Width: Double; Height: Double; RadiusUL: Double; RadiusUR: Double; RadiusLR: Double; RadiusLL: Double): IVGShape; safecall;
+    function CreateRectangle2(x: Double; y: Double; Width: Double; Height: Double; RadiusUL: Double=0; RadiusUR: Double=0; RadiusLR: Double=0; RadiusLL: Double=0): IVGShape; safecall;
     function CreateFreeConnector(x1: Double; y1: Double; x2: Double; y2: Double): IVGShape; safecall;
     function Get_Properties: IVGProperties; safecall;
     function Get_MasterProperties: IVGProperties; safecall;

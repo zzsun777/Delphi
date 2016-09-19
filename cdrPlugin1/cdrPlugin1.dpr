@@ -98,7 +98,8 @@ uses
   DragControl in '..\控件包\DragControl.pas',
   SpeedButtonEx in '..\控件包\SpeedButtonEx.pas',
   frmCheck in 'frmCheck.pas' {fCheck},
-  frmBatchImport in 'frmBatchImport.pas' {fBatchImport};
+  frmBatchImport in 'frmBatchImport.pas' {fBatchImport},
+  frmObj2Powerclip in 'frmObj2Powerclip.pas' {fObj2Powerclip};
 
 {$R *.res}
 
